@@ -1,0 +1,75 @@
+*.apk
+!builds/**/*.apk
+*.properties
+*.pbxproj
+*.ap_
+*.dex
+*.class
+platforms
+hooks
+merges
+plugins
+Gruntfile.js
+config.xml
+builds
+info.txt
+platforms/android/assets
+platforms/ios/build
+platforms/ios/www/
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+*.xcworkspace
+xcuserdata
+*.moved-aside
+._*
+.Spotlight-V100
+.Trashes
+
+!.gitignore
+.idea/
+nbproject/
+
+.DS_Store
+Gruntfile.js
+
+tmp/**
+tmp/**/*
+*.tmp
+*.bak
+*.swp
+*~.nib
+
+# Thumbnails
+._*
+
+# Files that might appear on external disk
+.Spotlight-V100
+.Trashes
+
+# SublimeText project files
+/*.sublime-project
+
+# Windows image file caches
+Thumbs.db
+
+# Folder config file
+Desktop.ini
+
+node_modules/
+
+# git ignore for android build
+ant-build/
+ant-gen/
+
+#git ignore for ios build
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+*.xcuserstate
+project.xcworkspace/
+xcuserdata/
+*.o
+*.pyc

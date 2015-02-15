@@ -1,0 +1,8 @@
+{
+    "name": "Korrespondent",
+    "version": "0.0.0.1",
+    "start_url": "www/index.html",
+    "icons": {
+        "128": "icon.png"
+    }
+}
