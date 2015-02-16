@@ -1,0 +1,27 @@
+{
+  "name": "korrespondent",
+  "version": "0.0.0",
+  "description": "RSS news",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/starostin/korrespondent.git"
+  },
+  "author": "Starostin",
+  "license": "BSD-2-Clause",
+  "bugs": {
+    "url": "https://github.com/starostin/korrespondent/issues"
+  },
+  "devDependencies": {
+    "grunt": "~0.4.5",
+    "grunt-contrib-jshint": "~0.11.0",
+    "grunt-contrib-copy": "~0.7.0",
+    "grunt-contrib-rename": "0.0.3",
+    "grunt-preprocess": "~4.1.0",
+    "grunt-shell": "~1.1.1",
+    "grunt-string-replace": "~1.0.0"
+  }
+}
