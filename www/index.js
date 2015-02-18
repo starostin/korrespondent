@@ -3,7 +3,11 @@
     // #script_begin#
     
     var scripts = [
-        
+        //------------------------------VIEWS-----------------------
+        "source/views/main_screen/main_screen.js",
+        "source/views/main_screen/news_list/news_list.js",
+        "source/views/main_screen/sidebar_menu/sidebar_menu.js",
+        //------------------------------APP-----------------------
         "source/application/application.js"
     ];
     // #script_end#
