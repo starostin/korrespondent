@@ -5,6 +5,10 @@
     background: red;
     z-index: 2;
 }
+.pull-down{
+    height: 50px;
+    background: blue;
+}
 .news-list {
     position: absolute;
     width: 100%;
