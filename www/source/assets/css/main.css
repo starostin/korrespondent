@@ -17,41 +17,13 @@
     background: yellow;
 }
 .main-list{
-    -webkit-animation: close-sidebar 0.3s;
-    animation: close-sidebar 0.3s;
+    transition: all 0.3s ease-in-out;
     transform: translateX(0);
     z-index: 2;
 }
-.main-list.init{
-    -webkit-animation: none;
-    animation: none;
-    transform: translateX(0);
-    z-index: 2;
-}
+
 .main-list.open {
-    -webkit-animation: open-sidebar 0.3s;
-    animation: open-sidebar 0.3s;
     transform: translateX(90%);
-}
-
-@-webkit-keyframes open-sidebar {
-    from {transform: translateX(0);}
-    to {transform: translateX(90%);}
-}
-
-@keyframes open-sidebar {
-    from {transform: translateX(0);}
-    to {transform: translateX(90%);}
-}
-
-@-webkit-keyframes close-sidebar {
-    from {transform: translateX(90%);}
-    to {transform: translateX(0);}
-}
-
-@keyframes close-sidebar {
-    from {transform: translateX(90%);}
-    to {transform: translateX(0);}
 }
 .arrow{
     position: relative;

@@ -1,6 +1,6 @@
 RAD.view("view.news_list", RAD.Blanks.View.extend({
     url: 'source/views/main_screen/news_list/news_list.html',
-    className: 'main-list init',
+    className: 'main-list',
     events: {
         'click .sidebar-button': 'toggleSidebar',
         'touchstart .news-list': 'onTouchStart',
@@ -17,6 +17,9 @@ RAD.view("view.news_list", RAD.Blanks.View.extend({
             vScrollbar: false,
             topOffset: 50,
             y: -50,
+            onScrollStart: function(){
+                self.onScrollStart();
+            },
             onRefresh: function(){
                 self.onScrollRefresh();
             },
@@ -27,7 +30,12 @@ RAD.view("view.news_list", RAD.Blanks.View.extend({
             onScrollEnd: function(){
                 self.onScrollEnd();
             }
-        })
+        });
+    },
+    onStartAttach: function(){
+        var viewCoord  = this.el.getBoundingClientRect();
+        this.rightLineWidth = viewCoord.width * 0.9;
+        this.halfWidth = viewCoord.width * 0.5;
     },
     ondetach: function(){
         if (this.mScroll) {
@@ -40,13 +48,15 @@ RAD.view("view.news_list", RAD.Blanks.View.extend({
     },
     toggleSidebar: function(){
         this.el.classList.toggle('open');
-        this.el.classList.remove('init');
+    },
+    onScrollStart: function(){
+
     },
     onScrollRefresh: function(){
 
     },
-
     onScrollMove: function(e){
+        console.log( this.mScroll.preventScroll)
         if(this.directionDefined && !this.directionVert){
             this.mScroll.preventScroll = true;
         }
@@ -77,7 +87,8 @@ RAD.view("view.news_list", RAD.Blanks.View.extend({
         this.coordinates.x = [];
         this.coordinates.y = [];
         this.directionDefined = false;
-        this.mScroll.preventScroll = false;
+        this.mScroll.preventScroll = this.el.classList.contains('open');
+        this.startCoord = this.el.getBoundingClientRect();
     },
     onTouchMove: function(e){
         if(this.coordinates.x.length<5){
@@ -91,13 +102,26 @@ RAD.view("view.news_list", RAD.Blanks.View.extend({
         }
     },
     onTouchEnd: function(){
-
+        if(!this.directionDefined || this.directionVert){
+            return;
+        }
+        this.startCoord = {};
+        var tr = this.el.style.transform,
+            value = tr.split('(')[1];
+            value = parseInt(value.split(')')[0]);
+        this.el.style.transition  = 'all 0.3s ease-in-out';
+        this.el.removeAttribute('style');
+        if(value >= this.halfWidth){
+            this.el.classList.add('open');
+        }else{
+            this.el.classList.remove('open')
+        }
     },
     onMoveHorizontally: function(e){
+        this.el.style.transition  = 'none';
         var firstX = this.coordinates.x[this.coordinates.x.length-1],
             newX = e.originalEvent.changedTouches[0].clientX,
-
-            diff = newX - firstX;
+            diff = this.startCoord.left + (newX - firstX);
 
         if(diff<0){
            this.moveLeft(diff);
@@ -117,9 +141,8 @@ RAD.view("view.news_list", RAD.Blanks.View.extend({
         this.el.style.transform = 'translateX(' + (diff)+ 'px)';
     },
     moveRight: function(diff){
-        var viewCoord  = this.el.getBoundingClientRect();
-        if(diff > (viewCoord.width * 0.9) ){
-            diff = viewCoord.width * 0.9;
+        if(diff > this.rightLineWidth ){
+            diff = this.rightLineWidth;
         }
         this.el.style.transform = 'translateX(' + (diff)+ 'px)';
     },

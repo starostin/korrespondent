@@ -1,17 +1,24 @@
 RAD.view("view.sidebar_menu", RAD.views.SlipExt.extend({
     url: 'source/views/main_screen/sidebar_menu/sidebar_menu.html',
+    events: {
+        'touchstart li': 'onTouchStart',
+        'touchend li': 'onTouchEnd',
+        'tap li': 'openNewsListPage'
+    },
     slip_el_name: 'ul',
     className: 'menu-list',
-    onBeforeWait: function(e){
-        console.log('asdasdasd')
+    onTouchStart: function(e){
         var target = e.target;
         target.classList.add('active');
     },
-    onTap: function(){
-        console.log('-=-=-=-==--=-=-=-=')
+    onTouchEnd: function(e){
+        var target = e.target;
+        target.classList.remove('active');
+    },
+    openNewsListPage: function(){
+        document.querySelector('.main-list').classList.remove('open');
     },
     onReorder: function (e) {
-        console.log('-------------')
         var target = e.target,
             insertBefore = e.detail.insertBefore;
         target.classList.remove('active');
