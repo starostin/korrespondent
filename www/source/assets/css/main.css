@@ -9,7 +9,49 @@
     width: 100%;
     position: absolute;
     background: red;
+    text-align: center;
+}
+.sidebar-button{
+    width: 50px;
+    height: 100%;
+    background: yellow;
+}
+.main-list{
+    -webkit-animation: close-sidebar 0.3s;
+    animation: close-sidebar 0.3s;
+    transform: translateX(0);
     z-index: 2;
+}
+.main-list.init{
+    -webkit-animation: none;
+    animation: none;
+    transform: translateX(0);
+    z-index: 2;
+}
+.main-list.open {
+    -webkit-animation: open-sidebar 0.3s;
+    animation: open-sidebar 0.3s;
+    transform: translateX(90%);
+}
+
+@-webkit-keyframes open-sidebar {
+    from {transform: translateX(0);}
+    to {transform: translateX(90%);}
+}
+
+@keyframes open-sidebar {
+    from {transform: translateX(0);}
+    to {transform: translateX(90%);}
+}
+
+@-webkit-keyframes close-sidebar {
+    from {transform: translateX(90%);}
+    to {transform: translateX(0);}
+}
+
+@keyframes close-sidebar {
+    from {transform: translateX(90%);}
+    to {transform: translateX(0);}
 }
 .arrow{
     position: relative;
@@ -34,7 +76,7 @@
     left: 0;
     z-index: 2;
 }
-.news-list ul {
+ul {
     list-style: none;
     padding: 0;
     margin: 0;
@@ -51,6 +93,16 @@
     top: 0;
     left: 0;
     z-index: 1;
+}
+.menu-list li{
+    height: 50px;
+    width: 100%;
+    background: #ECFF22;
+    border: 1px solid black;
+}
+.menu-list li.active{
+    opacity: 0.5;
+    /*background: blue;*/
 }
 
 

@@ -88,6 +88,7 @@ var m = Math,
 		that.wrapper = typeof el == 'object' ? el : doc.getElementById(el);
 		that.wrapper.style.overflow = 'hidden';
 		that.scroller = that.wrapper.children[0];
+        that.preventScroll = false;
 
 		// Default options
 		that.options = {
@@ -410,6 +411,7 @@ iScroll.prototype = {
 	},
 	
 	_move: function (e) {
+        if(this.preventScroll) return;
 		var that = this,
 			point = hasTouch ? e.touches[0] : e,
 			deltaX = point.pageX - that.pointX,
