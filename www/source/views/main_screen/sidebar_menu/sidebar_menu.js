@@ -7,6 +7,9 @@ RAD.view("view.sidebar_menu", RAD.views.SlipExt.extend({
     },
     slip_el_name: 'ul',
     className: 'menu-list',
+    onInitialize: function(){
+      this.sidebar = RAD.models.Sidebar;
+    },
     onTouchStart: function(e){
         var target = e.target;
         target.classList.add('active');
