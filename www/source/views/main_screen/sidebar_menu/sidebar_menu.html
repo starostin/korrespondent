@@ -1,13 +1,11 @@
-<div class="header"><div>{{}}</div>HEADER</div>
+
+<div class="header"><div class="lang">{{ RAD.languages[RAD.models.Settings.get('lang')] }}</div>HEADER</div>
 <div class="wrapper">
     <div class="menu-list">
         <ul>
-            <li>A</li>
-            <li>B</li>
-            <li>C</li>
-            <li>D</li>
-            <li>E</li>
-            <li>F</li>
+            {{# _.each(this.sidebar.toJSON(), function(item, index, items){ }}
+            <li data-id="{{ item.id }}" class="{{# if(item.selected) { }} selected {{# } }}">{{ item.title }}</li>
+            {{# }) }}
         </ul>
     </div>
 </div>

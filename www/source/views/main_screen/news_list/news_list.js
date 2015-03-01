@@ -2,15 +2,29 @@ RAD.view("view.news_list", RAD.Blanks.View.extend({
     url: 'source/views/main_screen/news_list/news_list.html',
     className: 'main-list',
     events: {
-        'click .sidebar-button': 'toggleSidebar',
+        'tap .news-topic': 'toggleSubMenu',
+        'tap .sidebar-button': 'toggleSidebar',
         'touchstart .news-list': 'onTouchStart',
         'touchmove .news-list': 'onTouchMove',
         'touchend .news-list': 'onTouchEnd',
         'touchcancel .news-list': 'onTouchCancel'
     },
-    onattach: function(){
+    onInitialize: function(){
+        this.rotateCoef = 180/50;
+        this.sidebar = RAD.models.Sidebar;
+    },
+    onStartAttach: function(){
+        var viewCoord  = this.el.getBoundingClientRect();
+        this.rightLineWidth = viewCoord.width * 0.9;
+        this.halfWidth = viewCoord.width * 0.5;
+    },
+    onEndDetach: function(){
+        this.removeScroll();
+    },
+    onEndRender: function(){
         var self = this,
             wrapper = this.el.querySelector('.scroll-view');
+        this.removeScroll();
         this.mScroll = new iScroll(wrapper, {
             useTransition: true,
             hScrollbar: false,
@@ -32,19 +46,27 @@ RAD.view("view.news_list", RAD.Blanks.View.extend({
             }
         });
     },
-    onStartAttach: function(){
-        var viewCoord  = this.el.getBoundingClientRect();
-        this.rightLineWidth = viewCoord.width * 0.9;
-        this.halfWidth = viewCoord.width * 0.5;
-    },
-    ondetach: function(){
-        if (this.mScroll) {
-            this.mScroll.destroy();
+   removeScroll: function(){
+       if (this.mScroll) {
+           this.mScroll.destroy();
+       }
+       this.mScroll = null;
+   },
+    onReceiveMsg: function(channel, data){
+        var parts = channel.split('.'),
+            method = parts[2];
+        if(typeof this[method] === 'function'){
+            this[method](data)
+        }else{
+            console.log('view.news_list does not have method '+ method)
         }
-        this.mScroll = null;
     },
-    onInitialize: function(){
-        this.rotateCoef = 180/50;
+    toggleSubMenu: function(e){
+        var subMenu = this.el.querySelector('.sub-menu');
+        subMenu.classList.toggle('open');
+    },
+    changeCategory: function(){
+        this.render();
     },
     toggleSidebar: function(){
         this.el.classList.toggle('open');
@@ -56,7 +78,6 @@ RAD.view("view.news_list", RAD.Blanks.View.extend({
 
     },
     onScrollMove: function(e){
-        console.log( this.mScroll.preventScroll)
         if(this.directionDefined && !this.directionVert){
             this.mScroll.preventScroll = true;
         }

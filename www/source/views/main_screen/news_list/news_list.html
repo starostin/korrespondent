@@ -1,6 +1,22 @@
-<div class="header"> <div class="sidebar-button"></div></div>
+{{# var selected = this.sidebar.findWhere({selected: true})}}
+
+<div class="header-wrapper">
+    <div class="header">
+        <div class="sidebar-button"></div>
+        <div class="news-topic">{{ selected.get('title') }} <span>&#65516</span></div>
+
+    </div>
+    <ul class="sub-menu">
+        {{# _.each(selected.get('subMenus'), function(item, index, items){ }}
+        <li>{{ item }}</li>
+        {{# }) }}
+    </ul>
+</div>
 <div class="wrapper">
+    <div class="back"></div>
+
     <div class="scroll-view news-list">
+
         <div>
             <div class="pull-down" >
                 <div class="arrow"><img src="source/assets/img/arrow.png" alt="arrow" class="arrow-img"/></div>
