@@ -5,6 +5,7 @@
     var scripts = [
         //------------------------------MODELS-----------------------
         "source/models/menu_data.js",
+        "source/models/news.js",
         //------------------------------VIEWS-----------------------
         "source/views/main_screen/main_screen.js",
         "source/views/main_screen/news_list/news_list.js",
