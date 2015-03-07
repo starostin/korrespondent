@@ -1,16 +1,24 @@
 RAD.model('OneNews', Backbone.Model.extend({
-    initialize: function(){
+    initialize: function(data){
 
     }
 }), false);
 RAD.model('News', Backbone.Collection.extend({
     model: RAD.models.OneNews,
-    url: function(){
-        return 'http://k.img.com.ua/rss/ru/all_news2.0.xml';
+    initialize: function(){
+        var selected = RAD.models.Settings.get('selectedSubCategory'),
+            items = JSON.parse(window.localStorage.getItem(selected)) || [];
+        this.reset(items);
     },
-    test: function(){
+    setNews: function(val, lang){
         this.fetch({
-            dataType: 'xml'
+            url: 'http://k.img.com.ua/rss/' + RAD.newsUrls[lang] + '/' + RAD.newsUrls[val] + '.xml',
+            dataType: 'xml',
+            success: function(data){
+                var oldNews = JSON.parse(window.localStorage.getItem(val)) || [];
+                window.localStorage.setItem(val, JSON.stringify(oldNews.concat(data.toJSON())));
+            },
+            reset: true
         })
     },
     parse: function(xml){

@@ -1,14 +1,19 @@
-{{# var selected = this.sidebar.findWhere({selected: true})}}
-
+{{# console.log('RENDER') }}
 <div class="header-wrapper">
     <div class="header">
         <div class="sidebar-button"></div>
-        <div class="news-topic">{{ selected.get('title') }} <span>&#65516</span></div>
+        <div class="news-topic">{{ _.findWhere(this.selected.get('subMenus'), {selected: true}).title }}
+            {{# if(this.selected.get('subMenus').length > 1) { }}
+            <span>&#65516</span>
+            {{# } }}
+        </div>
 
     </div>
     <ul class="sub-menu">
-        {{# _.each(selected.get('subMenus'), function(item, index, items){ }}
-        <li>{{ item }}</li>
+        {{# _.each(this.selected.get('subMenus'), function(item, index, items){ }}
+        {{# if(!item.selected) { }}
+            <li data-id="{{ item.id }}" class="sub-menu-item">{{ item.title }}</li>
+        {{# } }}
         {{# }) }}
     </ul>
 </div>
@@ -17,54 +22,18 @@
 
     <div class="scroll-view news-list">
 
-        <div>
+        <div style>
             <div class="pull-down" >
                 <div class="arrow"><img src="source/assets/img/arrow.png" alt="arrow" class="arrow-img"/></div>
                 <div class="loader" style="display: none">Loading...</div>
             </div>
-            <ul>
-                <li>1</li>
-                <li>2</li>
-                <li>3</li>
-                <li>4</li>
-                <li>5</li>
-                <li>6</li>
-                <li>7</li>
-                <li>8</li>
-                <li>9</li>
-                <li>0</li>
-                <li>2</li>
-                <li>3</li>
-                <li>4</li>
-                <li>5</li>
-                <li>1</li>
-                <li>2</li>
-                <li>3</li>
-                <li>4</li>
-                <li>5</li>
-                <li>6</li>
-                <li>7</li>
-                <li>8</li>
-                <li>9</li>
-                <li>0</li>
-                <li>2</li>
-                <li>3</li>
-                <li>4</li>
-                <li>5</li>
-                <li>1</li>
-                <li>2</li>
-                <li>3</li>
-                <li>4</li>
-                <li>5</li>
-                <li>6</li>
-                <li>7</li>
-                <li>8</li>
-                <li>9</li>
-                <li>0</li>
-                <li>2</li>
-                <li>3</li>
-                <li>4</li>
-                <li>5</li>
+            <ul style="min-height: 1000px">
+                {{# _.each(this.news.toJSON(), function(item, index, items){ }}
+                    <li>
+                        <img class="small-img" src="{{ RAD.utils.getImageLink(item.image) }}"/>
+                        <div class="news-title">{{ item.title }}</div>
+                    </li>
+                {{# }) }}
             </ul>
         </div>
     </div>

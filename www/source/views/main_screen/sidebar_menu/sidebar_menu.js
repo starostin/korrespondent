@@ -20,12 +20,14 @@ RAD.view("view.sidebar_menu", RAD.views.SlipExt.extend({
         this.render();
     },
     updateSelectedOption: function(model, val, opt){
-        var selected = this.sidebar.findWhere({selected: true}),
-            newSelected = this.sidebar.findWhere({id: val});
-        selected.unset('selected');
+        var oldSelected = this.sidebar.findWhere({selected: true}),
+            oldSelectedSub = _.findWhere(oldSelected.get('subMenus'), {selected: true}),
+            newSelected = this.sidebar.findWhere({id: val}),
+            newSelectedSub = _.findWhere(newSelected.get('subMenus'), {id: val});
+        oldSelected.unset('selected');
         newSelected.set('selected', true);
-        window.localStorage.setItem('selectedCategory', val);
-        this.publish('view.news_list.changeCategory', null);
+        delete oldSelectedSub.selected;
+        newSelectedSub.selected = true;
     },
     highlightSelected: function(model, val, opt){
         var id = model.get('id'),
@@ -35,7 +37,6 @@ RAD.view("view.sidebar_menu", RAD.views.SlipExt.extend({
     changeLanguage: function(e){
         var needLang = this.settings.get('lang') === 'rus' ? 'ukr' : 'rus';
         this.settings.set('lang', needLang);
-        window.localStorage.setItem('lang', needLang);
     },
     onTouchStart: function(e){
         var target = e.target;
@@ -50,8 +51,8 @@ RAD.view("view.sidebar_menu", RAD.views.SlipExt.extend({
             id = +curTar.getAttribute('data-id');
         curTar.classList.add('selected');
         this.settings.set('selectedCategory', id);
-
-        document.querySelector('.main-list').classList.remove('open');
+        this.settings.set('selectedSubCategory', id);
+        this.publish('view.news_list.toggleSidebar', null);
     },
     onReorder: function (e) {
         var target = e.target,

@@ -998,8 +998,8 @@
                         }
                     },
                     attachScroll: function () {
-                        console.log(this.scrollOptions)
-                        var wrapper = this.el.querySelector('.scroll-view') || this.el, options = this.scrollOptions ? this.scrollOptions : {};
+                        var wrapper = this.el.querySelector('.scroll-view') || this.el,
+                            options = this.scrollOptions ? this.scrollOptions : {};
                         options.onBeforeScrollStart = function (e) {
                             var regExp = /^(INPUT|TEXTAREA|BUTTON|SELECT)$/;
                             if (!regExp.test(e.target.tagName)) {

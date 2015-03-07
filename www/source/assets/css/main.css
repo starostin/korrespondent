@@ -31,21 +31,29 @@
     width: 100%;
     z-index: 3;
     bottom: 0;
+    transform: translateY(-100%);
     transition: all 0.3s ease-in-out;
 }
 .sub-menu.open{
-    bottom: -100%;
+    transform: translateY(100%);
+}
+.sub-menu-item{
+    height: 30px;
+    line-height: 30px;
+    background: white;
+    width: 100%;
+    border-bottom: 1px solid black;
 }
 .lang{
     display: inline-block;
     height: 100%;
     line-height: 50px;
     float: left;
-    width: 50px;
+    width: 10%;
     background: green;
 }
 .sidebar-button{
-    width: 50px;
+    width: 10%;
     height: 100%;
     background: yellow;
     display: inline-block;
@@ -98,10 +106,18 @@ ul {
     margin: 0;
 }
 .news-list li {
-    height: 50px;
+    height: 100px;
     width: 100%;
     background: green;
     border: 1px solid black;
+}
+.small-img{
+    height: 100px;
+    width: 100px;
+    float: left;
+}
+.news-title{
+
 }
 .sidebar-menu {
     position: absolute;

@@ -1,31 +1,25 @@
-RAD.view("view.news_list", RAD.Blanks.View.extend({
+RAD.view("view.news_list", RAD.Blanks.ScrollableView.extend({
     url: 'source/views/main_screen/news_list/news_list.html',
     className: 'main-list',
     events: {
         'tap .news-topic': 'toggleSubMenu',
         'tap .sidebar-button': 'toggleSidebar',
+        'tap .sub-menu-item': 'changeSubMenu',
         'touchstart .news-list': 'onTouchStart',
         'touchmove .news-list': 'onTouchMove',
         'touchend .news-list': 'onTouchEnd',
         'touchcancel .news-list': 'onTouchCancel'
     },
     onInitialize: function(){
+        var self = this;
         this.rotateCoef = 180/50;
         this.sidebar = RAD.models.Sidebar;
-    },
-    onStartAttach: function(){
-        var viewCoord  = this.el.getBoundingClientRect();
-        this.rightLineWidth = viewCoord.width * 0.9;
-        this.halfWidth = viewCoord.width * 0.5;
-    },
-    onEndDetach: function(){
-        this.removeScroll();
-    },
-    onEndRender: function(){
-        var self = this,
-            wrapper = this.el.querySelector('.scroll-view');
-        this.removeScroll();
-        this.mScroll = new iScroll(wrapper, {
+        this.settings = RAD.models.Settings;
+        this.news = RAD.models.News;
+        this.settings.on('change:selectedSubCategory', this.setNews, this);
+        this.settings.on('change:lang', this.setNews, this);
+        this.news.on('reset', this.updateList, this);
+        this.scrollOptions = options = {
             useTransition: true,
             hScrollbar: false,
             vScrollbar: false,
@@ -44,14 +38,16 @@ RAD.view("view.news_list", RAD.Blanks.View.extend({
             onScrollEnd: function(){
                 self.onScrollEnd();
             }
-        });
+        }
     },
-   removeScroll: function(){
-       if (this.mScroll) {
-           this.mScroll.destroy();
-       }
-       this.mScroll = null;
-   },
+    onStartAttach: function(){
+        var viewCoord  = this.el.getBoundingClientRect();
+        this.rightLineWidth = viewCoord.width * 0.9;
+        this.halfWidth = viewCoord.width * 0.5;
+    },
+    onStartRender: function(){
+        this.selected = this.sidebar.findWhere({selected: true});
+    },
     onReceiveMsg: function(channel, data){
         var parts = channel.split('.'),
             method = parts[2];
@@ -61,12 +57,37 @@ RAD.view("view.news_list", RAD.Blanks.View.extend({
             console.log('view.news_list does not have method '+ method)
         }
     },
+    updateList: function(){
+        this.render();
+    },
+    changeSubMenu: function(e){
+        var curTar = e.currentTarget,
+            newId = +curTar.getAttribute('data-id'),
+            oldSelectedSub = _.findWhere(this.selected.get('subMenus'), {selected: true}),
+            newSelectedSub = _.findWhere(this.selected.get('subMenus'), {id: newId});
+
+        delete oldSelectedSub.selected;
+        newSelectedSub.selected = true;
+        this.settings.set('selectedSubCategory', newId);
+    },
+    setNews: function(model, val, option){
+        var self = this,
+            subMenu = this.el.querySelector('.sub-menu'),
+            newsId = this.settings.get('selectedSubCategory'),
+            lang = this.settings.get('lang');
+        if(subMenu.classList.contains('open')){
+            subMenu.classList.remove('open');
+            $(subMenu).one('transitionend', function(){
+                self.news.setNews(newsId, lang)
+            })
+        }else{
+            this.news.setNews(newsId, lang)
+        }
+
+    },
     toggleSubMenu: function(e){
         var subMenu = this.el.querySelector('.sub-menu');
         subMenu.classList.toggle('open');
-    },
-    changeCategory: function(){
-        this.render();
     },
     toggleSidebar: function(){
         this.el.classList.toggle('open');
