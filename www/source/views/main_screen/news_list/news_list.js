@@ -16,10 +16,12 @@ RAD.view("view.news_list", RAD.Blanks.ScrollableView.extend({
         this.sidebar = RAD.models.Sidebar;
         this.settings = RAD.models.Settings;
         this.news = RAD.models.News;
+        this.bufferNews = RAD.models.BufferNews;
         this.settings.on('change:selectedSubCategory', this.setNews, this);
         this.settings.on('change:lang', this.setNews, this);
         this.news.on('reset', this.updateList, this);
-        this.scrollOptions = options = {
+        this.bufferNews.on('all', this.showUpdateMessage, this);
+        this.scrollOptions  = {
             useTransition: true,
             hScrollbar: false,
             vScrollbar: false,
@@ -60,6 +62,15 @@ RAD.view("view.news_list", RAD.Blanks.ScrollableView.extend({
     updateList: function(){
         this.render();
     },
+    showUpdateMessage: function(model, collection, options){
+        var updateMessage = this.el.querySelector('.update-message');
+        if(this.bufferNews.length){
+            updateMessage.classList.add('show');
+            updateMessage.setAttribute('data-count', this.bufferNews.length);
+        }else {
+            updateMessage.classList.remove('show');
+        }
+    },
     changeSubMenu: function(e){
         var curTar = e.currentTarget,
             newId = +curTar.getAttribute('data-id'),
@@ -70,18 +81,18 @@ RAD.view("view.news_list", RAD.Blanks.ScrollableView.extend({
         newSelectedSub.selected = true;
         this.settings.set('selectedSubCategory', newId);
     },
-    setNews: function(model, val, option){
+    setNews: function(model, val, opt){
         var self = this,
-            subMenu = this.el.querySelector('.sub-menu'),
-            newsId = this.settings.get('selectedSubCategory'),
-            lang = this.settings.get('lang');
+            subMenu = this.el.querySelector('.sub-menu');
+        $.extend(opt, {silent: false});
+        this.bufferNews.reset([]);
         if(subMenu.classList.contains('open')){
             subMenu.classList.remove('open');
             $(subMenu).one('transitionend', function(){
-                self.news.setNews(newsId, lang)
+                self.news.setNews(opt)
             })
         }else{
-            this.news.setNews(newsId, lang)
+            this.news.setNews(opt)
         }
 
     },
@@ -206,12 +217,13 @@ RAD.view("view.news_list", RAD.Blanks.ScrollableView.extend({
             spinner = pullDiv.querySelector('.loader');
         arrow.style.display = 'none';
         spinner.style.display = '';
-        window.setTimeout(function(){
-            spinner.style.display = 'none';
-            pullDiv.classList.remove('update');
-            self.mScroll.refresh();
-            arrow.style.display = '';
-        }, 1000)
+        this.setNews(null, null, {});
+        //window.setTimeout(function(){
+        //    spinner.style.display = 'none';
+        //    pullDiv.classList.remove('update');
+        //    self.mScroll.refresh();
+        //    arrow.style.display = '';
+        //}, 1000)
     },
     onScrollEnd: function(){
         var pullDiv = this.el.querySelector('.pull-down'),

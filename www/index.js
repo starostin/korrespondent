@@ -10,6 +10,8 @@
         "source/views/main_screen/main_screen.js",
         "source/views/main_screen/news_list/news_list.js",
         "source/views/main_screen/sidebar_menu/sidebar_menu.js",
+        //------------------------------SERVICES-----------------------
+        "source/service/check_news.js",
         //------------------------------APP-----------------------
         "source/application/application.js"
     ];
