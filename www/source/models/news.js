@@ -15,8 +15,9 @@ RAD.model('News', Backbone.Collection.extend({
             url: 'http://k.img.com.ua/rss/' + RAD.newsUrls[lang] + '/' + RAD.newsUrls[val] + '.xml',
             dataType: 'xml',
             success: function(data){
-                var oldNews = JSON.parse(window.localStorage.getItem(val)) || [];
-                window.localStorage.setItem(val, JSON.stringify(oldNews.concat(data.toJSON())));
+                var ident = lang+val,
+                    oldNews = JSON.parse(window.localStorage.getItem(ident)) || [];
+                window.localStorage.setItem(ident, JSON.stringify(oldNews.concat(data.toJSON())));
             },
             reset: true
         })

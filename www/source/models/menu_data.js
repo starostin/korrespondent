@@ -177,8 +177,9 @@ RAD.model('Settings', Backbone.Model.extend({
             selectedCategory = window.localStorage.getItem('selectedCategory') || 1,
             selectedSubCategory = window.localStorage.getItem('selectedSubCategory') || 1;
         this.on('change:lang', this.updateLang, this);
-        this.on('change:selectedCategory', this.updateSelectedCategory, this)
-        this.on('change:selectedSubCategory', this.updateSelectedSubCategory, this)
+        this.on('change:selectedCategory', this.updateSelectedCategory, this);
+        this.on('change:selectedSubCategory', this.updateSelectedSubCategory, this);
+
         this.set({
             lang: lang,
             selectedCategory: +selectedCategory,
@@ -198,11 +199,11 @@ RAD.model('Settings', Backbone.Model.extend({
 RAD.model('MenuData', Backbone.Model.extend({
     initialize: function(data){
         var subMenus = data.subMenus;
-        if(data.id === RAD.models.Settings.get('selectedCategory')){
+        if(+data.id === +RAD.models.Settings.get('selectedCategory')){
             this.set('selected', true);
         }
        for(var i=0; i < subMenus.length; i++){
-           if(subMenus[i].id === RAD.models.Settings.get('selectedSubCategory')){
+           if(+subMenus[i].id === +RAD.models.Settings.get('selectedSubCategory')){
                subMenus[i].selected = true;
            }
        }

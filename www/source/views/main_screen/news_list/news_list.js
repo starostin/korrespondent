@@ -19,6 +19,7 @@ RAD.view("view.news_list", RAD.Blanks.ScrollableView.extend({
         this.settings.on('change:selectedSubCategory', this.setNews, this);
         this.settings.on('change:lang', this.setNews, this);
         this.news.on('reset', this.updateList, this);
+        this.setNews();
         this.scrollOptions = options = {
             useTransition: true,
             hScrollbar: false,
@@ -70,18 +71,19 @@ RAD.view("view.news_list", RAD.Blanks.ScrollableView.extend({
         newSelectedSub.selected = true;
         this.settings.set('selectedSubCategory', newId);
     },
-    setNews: function(model, val, option){
+    setNews: function(opt){
         var self = this,
             subMenu = this.el.querySelector('.sub-menu'),
             newsId = this.settings.get('selectedSubCategory'),
             lang = this.settings.get('lang');
-        if(subMenu.classList.contains('open')){
+
+        if(subMenu && subMenu.classList.contains('open')){
             subMenu.classList.remove('open');
             $(subMenu).one('transitionend', function(){
-                self.news.setNews(newsId, lang)
+                self.news.setNews(newsId, lang, opt)
             })
         }else{
-            this.news.setNews(newsId, lang)
+            this.news.setNews(newsId, lang, opt)
         }
 
     },
@@ -206,12 +208,20 @@ RAD.view("view.news_list", RAD.Blanks.ScrollableView.extend({
             spinner = pullDiv.querySelector('.loader');
         arrow.style.display = 'none';
         spinner.style.display = '';
+        this.setNews();
+//        window.setTimeout(function(){
+//            spinner.style.display = 'none';
+//            pullDiv.classList.remove('update');
+//            self.mScroll.refresh();
+//            arrow.style.display = '';
+//        }, 1000)
+    },
+    showErrorMessage: function(){
+        var errorDiv = this.el.querySelector('.message');
+        errorDiv.classList.add('show');
         window.setTimeout(function(){
-            spinner.style.display = 'none';
-            pullDiv.classList.remove('update');
-            self.mScroll.refresh();
-            arrow.style.display = '';
-        }, 1000)
+            errorDiv.classList.remove('show');
+        }, 2000)
     },
     onScrollEnd: function(){
         var pullDiv = this.el.querySelector('.pull-down'),

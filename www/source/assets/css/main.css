@@ -34,6 +34,21 @@
     transform: translateY(-100%);
     transition: all 0.3s ease-in-out;
 }
+.message{
+    background: black;
+    color: white;
+    position: absolute;
+    height: 80px;
+    line-height: 80px;
+    width: 100%;
+    z-index: 3;
+    bottom: 0;
+    transform: translateY(-100%);
+    transition: all 1s ease-in-out;
+}
+.message.show{
+    transform: translateY(100%);
+}
 .sub-menu.open{
     transform: translateY(100%);
 }
