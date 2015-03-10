@@ -20,6 +20,12 @@ RAD.service("service.check_news", RAD.Blanks.Service.extend({
         this.startTracking();
     },
     startTracking: function(){
+        var self = this;
+        this.trackId = window.setTimeout(function(){
+            self.startTracking();
+            RAD.models.News.setNews({});
+        }, this.requestTime);
+        RAD.models.News.setNews({});
         var self = this,
             newNews,
             opt = {

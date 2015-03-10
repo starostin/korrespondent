@@ -14,44 +14,52 @@ RAD.model('BufferNews', Backbone.Collection.extend({
 RAD.model('News', Backbone.Collection.extend({
     model: RAD.models.OneNews,
     initialize: function(){
-        var settings = RAD.models.Settings,
-            val = settings.get('selectedSubCategory'),
-            lang = settings.get('lang'),
-            identifier = lang + val,
-            items = JSON.parse(window.localStorage.getItem(identifier)) || [];
-
+        var selected = RAD.models.Settings.get('selectedSubCategory'),
+            items = JSON.parse(window.localStorage.getItem(selected)) || [];
         this.reset(items);
     },
     getLastNews: function(data){
         var news = RAD.models.BufferNews.length ? RAD.models.BufferNews : this,
             maxDate = _.max(news.toJSON(), function(item){
                 return +new Date(item.pubDate)
-            }),
-            newNews = _.filter(data.toJSON(), function(item){
-                console.log('---------------------item date--------------', item.pubDate)
-                console.log('---------------------max date--------------', maxDate.pubDate)
+            });
+            return _.filter(data, function(item){
                 return +new Date(item.pubDate) > +new Date(maxDate.pubDate);
             });
-        return newNews;
     },
     setNews: function(opt){
-        var settings = RAD.models.Settings,
+        var self = this,
+            settings = RAD.models.Settings,
             val = settings.get('selectedSubCategory'),
             lang = settings.get('lang'),
-            identifier = lang + val;
+            identifier = lang + val,
+            oldNews = JSON.parse(window.localStorage.getItem(identifier)) || [];
+
+
         var options = {
             url: 'http://k.img.com.ua/rss/' + RAD.newsUrls[lang] + '/' + RAD.newsUrls[val] + '.xml',
+            type: 'GET',
             dataType: 'xml',
-            silent: true,
-            reset: true,
             success: function(data){
-                var oldNews = JSON.parse(window.localStorage.getItem(val)) || [];
-                window.localStorage.setItem(val, JSON.stringify(oldNews.concat(data.toJSON())));
-            },
-            reset: true
-        })
+                data = self.parseXml(data);
+                if(!oldNews.length){
+                    RAD.models.News.reset(oldNews.concat(data));
+                    window.localStorage.setItem(identifier, JSON.stringify(oldNews.concat(data)));
+                }else if(opt.addBuffer){
+                    RAD.models.News.reset(oldNews.concat(data));
+                    window.localStorage.setItem(identifier, JSON.stringify(oldNews.concat(data)));
+                }else{
+                    self.reset(oldNews);
+                    var newNews = RAD.models.News.getLastNews(data);
+                    RAD.models.BufferNews.add(newNews, {silent: true});
+                    RAD.models.BufferNews.trigger('add');
+                }
+            }
+        };
+//        $.extend(options, opt);
+        $.ajax(options);
     },
-    parse: function(xml){
+    parseXml: function(xml){
         var newsArr = [];
         $(xml).find("item").each(function() {
             var $this = $(this),

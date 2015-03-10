@@ -17,9 +17,11 @@ RAD.view("view.news_list", RAD.Blanks.ScrollableView.extend({
         this.settings = RAD.models.Settings;
         this.news = RAD.models.News;
         this.bufferNews = RAD.models.BufferNews;
+        this.bufferNews = RAD.models.BufferNews;
         this.settings.on('change:selectedSubCategory', this.setNews, this);
         this.settings.on('change:lang', this.setNews, this);
         this.news.on('reset', this.updateList, this);
+        this.bufferNews.on('all', this.showUpdateMessage, this);
         this.bufferNews.on('all', this.showUpdateMessage, this);
         this.scrollOptions  = {
         this.setNews();
@@ -83,18 +85,14 @@ RAD.view("view.news_list", RAD.Blanks.ScrollableView.extend({
         newSelectedSub.selected = true;
         this.settings.set('selectedSubCategory', newId);
     },
-    setNews: function(model, val, opt){
+    setNews: function(model, val, option){
         var self = this,
-            subMenu = this.el.querySelector('.sub-menu');
-        $.extend(opt, {silent: false});
-        this.bufferNews.reset([]);
+            subMenu = this.el.querySelector('.sub-menu'),
+            newsId = this.settings.get('selectedSubCategory'),
+            lang = this.settings.get('lang');
+        this.bufferNews.reset();
         if(subMenu.classList.contains('open')){
             subMenu.classList.remove('open');
-            $(subMenu).one('transitionend', function(){
-                self.news.setNews(opt)
-            })
-        }else{
-            this.news.setNews(opt)
         }
 
     },
@@ -219,13 +217,8 @@ RAD.view("view.news_list", RAD.Blanks.ScrollableView.extend({
             spinner = pullDiv.querySelector('.loader');
         arrow.style.display = 'none';
         spinner.style.display = '';
+        this.news.setNews({addBuffer: true});
         this.setNews();
-//        window.setTimeout(function(){
-//            spinner.style.display = 'none';
-//            pullDiv.classList.remove('update');
-//            self.mScroll.refresh();
-//            arrow.style.display = '';
-//        }, 1000)
     },
     showErrorMessage: function(){
         var errorDiv = this.el.querySelector('.message');

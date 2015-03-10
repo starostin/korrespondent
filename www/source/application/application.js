@@ -10,6 +10,8 @@ RAD.application(function (core) {
             content: "view.main_screen",
             animation: 'none'
         };
+        core.startService();
+        core.publish('navigation.show', options);
         var settings = RAD.models.Settings,
             val = settings.get('selectedSubCategory'),
             lang = settings.get('lang'),
