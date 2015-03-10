@@ -1,4 +1,5 @@
 RAD.model('OneNews', Backbone.Model.extend({
+    idAttribute: "guid",
     initialize: function(data){
 
     }
@@ -13,9 +14,16 @@ RAD.model('BufferNews', Backbone.Collection.extend({
 }), true);
 RAD.model('News', Backbone.Collection.extend({
     model: RAD.models.OneNews,
+    comparator: function(item){
+        return -(+new Date(item.get('pubDate')));
+    },
     initialize: function(){
-        var selected = RAD.models.Settings.get('selectedSubCategory'),
-            items = JSON.parse(window.localStorage.getItem(selected)) || [];
+        var settings = RAD.models.Settings,
+            val = settings.get('selectedSubCategory'),
+            lang = settings.get('lang'),
+            identifier = lang + val,
+            items = JSON.parse(window.localStorage.getItem(identifier)) || [];
+
         this.reset(items);
     },
     getLastNews: function(data){
@@ -23,9 +31,9 @@ RAD.model('News', Backbone.Collection.extend({
             maxDate = _.max(news.toJSON(), function(item){
                 return +new Date(item.pubDate)
             });
-            return _.filter(data, function(item){
-                return +new Date(item.pubDate) > +new Date(maxDate.pubDate);
-            });
+        return _.filter(data, function(item){
+            return +new Date(item.pubDate) > +new Date(maxDate.pubDate);
+        });
     },
     setNews: function(opt){
         var self = this,

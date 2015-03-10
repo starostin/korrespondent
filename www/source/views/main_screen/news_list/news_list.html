@@ -12,7 +12,7 @@
     <ul class="sub-menu">
         {{# _.each(this.selected.get('subMenus'), function(item, index, items){ }}
         {{# if(!item.selected) { }}
-            <li data-id="{{ item.id }}" class="sub-menu-item">{{ item.title }}</li>
+        <li data-id="{{ item.id }}" class="sub-menu-item">{{ item.title }}</li>
         {{# } }}
         {{# }) }}
     </ul>
@@ -31,10 +31,10 @@
             </div>
             <ul style="min-height: 1000px">
                 {{# _.each(this.news.toJSON(), function(item, index, items){ }}
-                    <li>
-                        <img class="small-img" src="{{ item.image }}"/>
-                        <div class="news-title">{{ item.title }}</div>
-                    </li>
+                <li>
+                    <img class="small-img" src="{{ item.image }}"/>
+                    <div class="news-title">{{ item.title }}</div>
+                </li>
                 {{# }) }}
             </ul>
         </div>

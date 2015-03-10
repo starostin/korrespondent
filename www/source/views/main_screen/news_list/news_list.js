@@ -17,14 +17,10 @@ RAD.view("view.news_list", RAD.Blanks.ScrollableView.extend({
         this.settings = RAD.models.Settings;
         this.news = RAD.models.News;
         this.bufferNews = RAD.models.BufferNews;
-        this.bufferNews = RAD.models.BufferNews;
         this.settings.on('change:selectedSubCategory', this.setNews, this);
         this.settings.on('change:lang', this.setNews, this);
         this.news.on('reset', this.updateList, this);
         this.bufferNews.on('all', this.showUpdateMessage, this);
-        this.bufferNews.on('all', this.showUpdateMessage, this);
-        this.scrollOptions  = {
-        this.setNews();
         this.scrollOptions = options = {
             useTransition: true,
             hScrollbar: false,
@@ -65,15 +61,6 @@ RAD.view("view.news_list", RAD.Blanks.ScrollableView.extend({
     },
     updateList: function(){
         this.render();
-    },
-    showUpdateMessage: function(model, collection, options){
-        var updateMessage = this.el.querySelector('.update-message');
-        if(this.bufferNews.length){
-            updateMessage.classList.add('show');
-            updateMessage.setAttribute('data-count', this.bufferNews.length);
-        }else {
-            updateMessage.classList.remove('show');
-        }
     },
     changeSubMenu: function(e){
         var curTar = e.currentTarget,
@@ -161,7 +148,7 @@ RAD.view("view.news_list", RAD.Blanks.ScrollableView.extend({
         this.startCoord = {};
         var tr = this.el.style.transform,
             value = tr.split('(')[1];
-            value = parseInt(value.split(')')[0]);
+        value = parseInt(value.split(')')[0]);
         this.el.style.transition  = 'all 0.3s ease-in-out';
         this.el.removeAttribute('style');
         if(value >= this.halfWidth){
@@ -177,7 +164,7 @@ RAD.view("view.news_list", RAD.Blanks.ScrollableView.extend({
             diff = this.startCoord.left + (newX - firstX);
 
         if(diff<0){
-           this.moveLeft(diff);
+            this.moveLeft(diff);
         }else{
             this.moveRight(diff);
         }
@@ -219,6 +206,16 @@ RAD.view("view.news_list", RAD.Blanks.ScrollableView.extend({
         spinner.style.display = '';
         this.news.setNews({addBuffer: true});
         this.setNews();
+    },
+    showUpdateMessage: function(model, collection, options){
+        var updateMessage = this.el.querySelector('.update-message');
+        if(!updateMessage) return;
+        if(this.bufferNews.length){
+            updateMessage.classList.add('show');
+            updateMessage.setAttribute('data-count', this.bufferNews.length);
+        }else {
+            updateMessage.classList.remove('show');
+        }
     },
     showErrorMessage: function(){
         var errorDiv = this.el.querySelector('.message');

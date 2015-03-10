@@ -26,20 +26,6 @@ RAD.service("service.check_news", RAD.Blanks.Service.extend({
             RAD.models.News.setNews({});
         }, this.requestTime);
         RAD.models.News.setNews({});
-        var self = this,
-            newNews,
-            opt = {
-                success: function(data){
-                    newNews = RAD.models.News.getLastNews(data);
-                    RAD.models.BufferNews.add(newNews, {silent: true});
-                    RAD.models.BufferNews.trigger('add');
-                },
-                reset: false
-            };
-        this.trackId = window.setTimeout(function(){
-            self.startTracking();
-            RAD.models.News.setNews(opt);
-        }, this.requestTime)
     },
 
     stopTracking: function(){
