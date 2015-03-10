@@ -17,6 +17,7 @@
         {{# }) }}
     </ul>
     <div class="message">No Internet!</div>
+    <div class="update-message" data-count="1"></div>
 </div>
 <div class="wrapper">
     <div class="back"></div>
@@ -31,7 +32,7 @@
             <ul style="min-height: 1000px">
                 {{# _.each(this.news.toJSON(), function(item, index, items){ }}
                     <li>
-                        <img class="small-img" src="{{ RAD.utils.getImageLink(item.image) }}"/>
+                        <img class="small-img" src="{{ item.image }}"/>
                         <div class="news-title">{{ item.title }}</div>
                     </li>
                 {{# }) }}

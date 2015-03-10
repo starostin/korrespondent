@@ -3,21 +3,50 @@ RAD.model('OneNews', Backbone.Model.extend({
 
     }
 }), false);
+RAD.model('OneBufferNews', Backbone.Model.extend({
+    initialize: function(data){
+
+    }
+}), false);
+RAD.model('BufferNews', Backbone.Collection.extend({
+    model: RAD.models.OneBufferNews
+}), true);
 RAD.model('News', Backbone.Collection.extend({
     model: RAD.models.OneNews,
     initialize: function(){
-        var selected = RAD.models.Settings.get('selectedSubCategory'),
-            items = JSON.parse(window.localStorage.getItem(selected)) || [];
+        var settings = RAD.models.Settings,
+            val = settings.get('selectedSubCategory'),
+            lang = settings.get('lang'),
+            identifier = lang + val,
+            items = JSON.parse(window.localStorage.getItem(identifier)) || [];
+
         this.reset(items);
     },
-    setNews: function(val, lang){
-        this.fetch({
+    getLastNews: function(data){
+        var news = RAD.models.BufferNews.length ? RAD.models.BufferNews : this,
+            maxDate = _.max(news.toJSON(), function(item){
+                return +new Date(item.pubDate)
+            }),
+            newNews = _.filter(data.toJSON(), function(item){
+                console.log('---------------------item date--------------', item.pubDate)
+                console.log('---------------------max date--------------', maxDate.pubDate)
+                return +new Date(item.pubDate) > +new Date(maxDate.pubDate);
+            });
+        return newNews;
+    },
+    setNews: function(opt){
+        var settings = RAD.models.Settings,
+            val = settings.get('selectedSubCategory'),
+            lang = settings.get('lang'),
+            identifier = lang + val;
+        var options = {
             url: 'http://k.img.com.ua/rss/' + RAD.newsUrls[lang] + '/' + RAD.newsUrls[val] + '.xml',
             dataType: 'xml',
+            silent: true,
+            reset: true,
             success: function(data){
-                var ident = lang+val,
-                    oldNews = JSON.parse(window.localStorage.getItem(ident)) || [];
-                window.localStorage.setItem(ident, JSON.stringify(oldNews.concat(data.toJSON())));
+                var oldNews = JSON.parse(window.localStorage.getItem(val)) || [];
+                window.localStorage.setItem(val, JSON.stringify(oldNews.concat(data.toJSON())));
             },
             reset: true
         })
@@ -32,7 +61,7 @@ RAD.model('News', Backbone.Collection.extend({
                     description: $this.find("description").text(),
                     fullText: $this.find("fulltext").text(),
                     author: $this.find("author").text(),
-                    image:  $this.find("image").text(),
+                    image:  RAD.utils.getImageLink($this.find("image").text()),
                     pubDate: $this.find("pubDate").text(),
                     guid: $this.find("guid").text(),
                     category: $this.find("category").text(),

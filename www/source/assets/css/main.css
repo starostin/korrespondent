@@ -52,6 +52,28 @@
 .sub-menu.open{
     transform: translateY(100%);
 }
+.update-message:before{
+    content: attr(data-count) ' новых новостей';
+    line-height: 80px;
+    color: white;
+}
+.update-message{
+    opacity: 0.6;
+    background: black;
+    font-size: 20px;
+    color: white;
+    line-height: 80px;
+    height: 80px;
+    position: absolute;
+    width: 100%;
+    z-index: 3;
+    bottom: 0;
+    transform: translateY(-100%);
+    transition: all 0.3s ease-in-out;
+}
+.update-message.show{
+    transform: translateY(100%);
+}
 .sub-menu-item{
     height: 30px;
     line-height: 30px;
