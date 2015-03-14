@@ -1,5 +1,5 @@
 RAD.service("service.check_news", RAD.Blanks.Service.extend({
-    requestTime: 120 * 1000,
+    requestTime: 60 * 1000,
     onInitialize: function(){
         this.settings = RAD.models.Settings;
         this.settings.on('change:selectedSubCategory', this.resetTracking, this);

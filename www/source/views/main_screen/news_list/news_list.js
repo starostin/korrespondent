@@ -19,7 +19,8 @@ RAD.view("view.news_list", RAD.Blanks.ScrollableView.extend({
         this.bufferNews = RAD.models.BufferNews;
         this.settings.on('change:selectedSubCategory', this.setNews, this);
         this.settings.on('change:lang', this.setNews, this);
-        this.news.on('reset', this.updateList, this);
+        this.news.on('reset', this.render, this);
+        this.news.on('add', this.addNews, this);
         this.bufferNews.on('all', this.showUpdateMessage, this);
         this.scrollOptions = options = {
             useTransition: true,
@@ -59,9 +60,6 @@ RAD.view("view.news_list", RAD.Blanks.ScrollableView.extend({
             console.log('view.news_list does not have method '+ method)
         }
     },
-    updateList: function(){
-        this.render();
-    },
     changeSubMenu: function(e){
         var curTar = e.currentTarget,
             newId = +curTar.getAttribute('data-id'),
@@ -76,12 +74,25 @@ RAD.view("view.news_list", RAD.Blanks.ScrollableView.extend({
         var self = this,
             subMenu = this.el.querySelector('.sub-menu'),
             newsId = this.settings.get('selectedSubCategory'),
-            lang = this.settings.get('lang');
+            lang = this.settings.get('lang'),
+            identifier = lang + newsId,
+            oldNews = JSON.parse(window.localStorage.getItem(identifier)) || [];
         this.bufferNews.reset();
+        this.news.reset(oldNews);
         if(subMenu.classList.contains('open')){
             subMenu.classList.remove('open');
         }
-
+    },
+    addNews: function(model, collection, opt){
+        var li = document.createElement('li'),
+            list = this.el.querySelector('.list'),
+            firstLi = list.querySelector('li');
+        li.innerHTML = '<li> <img class="small-img" src="' + model.get('image') + '"/> <div class="news-title">' + model.get('title') + '</div> </li>';
+        if(firstLi){
+            list.insertBefore(li, firstLi);
+        }else{
+            list.appendChild(li)
+        }
     },
     toggleSubMenu: function(e){
         var subMenu = this.el.querySelector('.sub-menu');
@@ -204,8 +215,15 @@ RAD.view("view.news_list", RAD.Blanks.ScrollableView.extend({
             spinner = pullDiv.querySelector('.loader');
         arrow.style.display = 'none';
         spinner.style.display = '';
-        this.news.setNews({addBuffer: true});
-        this.setNews();
+        this.bufferNews.reset();
+        this.news.setNews({addBuffer: true, complete: function(){
+            spinner.style.display = 'none';
+            pullDiv.classList.remove('update');
+            self.mScroll.refresh();
+            arrow.style.display = '';
+        }});
+
+        //this.setNews();
     },
     showUpdateMessage: function(model, collection, options){
         var updateMessage = this.el.querySelector('.update-message');

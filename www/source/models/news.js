@@ -54,17 +54,41 @@ RAD.model('News', Backbone.Collection.extend({
                     RAD.models.News.reset(oldNews.concat(data));
                     window.localStorage.setItem(identifier, JSON.stringify(oldNews.concat(data)));
                 }else if(opt.addBuffer){
-                    RAD.models.News.reset(oldNews.concat(data));
+                    RAD.models.News.add(data);
+                    RAD.models.News.add([{
+                        author: "1480",
+                        category: "Новини Формули-1",
+                        comments: "http://ua.korrespondent.net/sport/formula/3490829-pilot-Williams-pislia-kvalifikatsii-hran-pri-avstralii-potrapyv-u-likarnui#comment_header_layer",
+                        description: "лікарню",
+                        guid: +new Date(),
+                        image: "http://kor.ill.in.ua/m/190x120/1594745.jpg",
+                        link: "http://ua.korrespondent.net/sport/formula/3490829-pilot-Williams-pislia-kvalifikatsii-hran-pri-avstralii-potrapyv-u-likarnui",
+                        pubDate: "Sat, 14 Mar 2015 14:01:00 +0200",
+                        source: "f1news.ruf1news.ru",
+                        title: "Пілот Williams після кваліфікації Гран-прі Австралії потрапив у лікарню"
+                    },
+                        {
+                            author: "1480",
+                            category: "Новини Формули-1",
+                            comments: "http://ua.korrespondent.net/sport/formula/3490829-pilot-Williams-pislia-kvalifikatsii-hran-pri-avstralii-potrapyv-u-likarnui#comment_header_layer",
+                            description: "лікарню",
+                            guid: +new Date(),
+                            image: "http://kor.ill.in.ua/m/190x120/1594745.jpg",
+                            link: "http://ua.korrespondent.net/sport/formula/3490829-pilot-Williams-pislia-kvalifikatsii-hran-pri-avstralii-potrapyv-u-likarnui",
+                            pubDate: "Sat, 14 Mar 2015 14:01:00 +0200",
+                            source: "f1news.ruf1news.ru",
+                            title: "Пілот Williams після кваліфікації Гран-прі Австралії потрапив у лікарню"
+                        }]);
                     window.localStorage.setItem(identifier, JSON.stringify(oldNews.concat(data)));
                 }else{
-                    self.reset(oldNews);
+                    //self.reset(oldNews);
                     var newNews = RAD.models.News.getLastNews(data);
                     RAD.models.BufferNews.add(newNews, {silent: true});
                     RAD.models.BufferNews.trigger('add');
                 }
             }
         };
-//        $.extend(options, opt);
+        $.extend(options, opt);
         $.ajax(options);
     },
     parseXml: function(xml){
