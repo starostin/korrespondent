@@ -4,7 +4,7 @@
     bottom: 0;
     width: 100%;
 }
-.back{
+.background{
     position: absolute;
     width: 100%;
     height: 100%;
@@ -81,21 +81,13 @@
     width: 100%;
     border-bottom: 1px solid black;
 }
-.lang{
+.header-btn {
     display: inline-block;
     height: 100%;
     line-height: 50px;
     float: left;
     width: 10%;
     background: green;
-}
-.sidebar-button{
-    width: 10%;
-    height: 100%;
-    background: yellow;
-    display: inline-block;
-    line-height: 50px;
-    float: left;
 }
 .news-topic{
     background: gray;
@@ -105,13 +97,13 @@
     min-width: 150px;
     max-width: 250px;
 }
-.main-list{
+.news-list-view{
     transition: all 0.3s ease-in-out;
     transform: translateX(0);
-    z-index: 5;
+    z-index: 200;
 }
 
-.main-list.open {
+.news-list-view.open {
     transform: translateX(90%);
 }
 .arrow{
@@ -153,29 +145,43 @@ ul {
     width: 100px;
     float: left;
 }
-.news-title{
-
-}
 .sidebar-menu {
     position: absolute;
     width: 100%;
     top: 0;
     left: 0;
-    z-index: 1;
+    z-index: 100;
 }
-.menu-list li{
+
+/*--------------------------------------SIDEBAR MENU---------------------------------*/
+.sidebar-menu-view{
+    background: blue;
+}
+.sidebar-menu-view li{
     height: 50px;
     width: 100%;
     background: #ECFF22;
     border: 1px solid black;
 }
-.menu-list li.active{
+.sidebar-menu-view li.active{
     opacity: 0.5;
 }
-.menu-list li.selected{
+.sidebar-menu-view li.selected{
     background: grey;
 }
 
+
+/*--------------------------------------ONE NEWS---------------------------------*/
+.one-news-view{
+    transition: all 0.3s ease-in-out;
+    transform: translateX(100%);
+    z-index: 300;
+    background: white;
+}
+
+.one-news-view.open {
+    transform: translateX(0);
+}
 
 
 /*--------------------------------------SPINNER START-----------------------------*/

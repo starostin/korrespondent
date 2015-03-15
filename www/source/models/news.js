@@ -47,6 +47,7 @@ RAD.model('News', Backbone.Collection.extend({
         var options = {
             url: 'http://k.img.com.ua/rss/' + RAD.newsUrls[lang] + '/' + RAD.newsUrls[val] + '.xml',
             type: 'GET',
+            timeout: 10000,
             dataType: 'xml',
             success: function(data){
                 data = self.parseXml(data);

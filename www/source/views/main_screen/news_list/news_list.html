@@ -1,7 +1,7 @@
 {{# console.log('RENDER') }}
 <div class="header-wrapper">
     <div class="header">
-        <div class="sidebar-button"></div>
+        <div class="sidebar-button header-btn"></div>
         <div class="news-topic">{{ _.findWhere(this.selected.get('subMenus'), {selected: true}).title }}
             {{# if(this.selected.get('subMenus').length > 1) { }}
             <span>&#65516</span>
@@ -20,7 +20,7 @@
     <div class="update-message" data-count="1"></div>
 </div>
 <div class="wrapper">
-    <div class="back"></div>
+    <div class="background"></div>
 
     <div class="scroll-view news-list">
 
@@ -30,10 +30,10 @@
                 <div class="loader" style="display: none">Loading...</div>
             </div>
             <ul style="min-height: 1000px" class="list">
-                {{# _.each(this.news.toJSON(), function(item, index, items){ }}
-                <li>
-                    <img class="small-img" src="{{ item.image }}"/>
-                    <div class="news-title">{{ item.title }}</div>
+                {{# _.each(this.news.models, function(item, index, items){ }}
+                <li class="one-news" data-cid="{{ item.cid }}">
+                    <img class="small-img" src="{{ item.get('image') }}"/>
+                    <div class="news-title">{{ item.get('title') }}</div>
                 </li>
                 {{# }) }}
             </ul>

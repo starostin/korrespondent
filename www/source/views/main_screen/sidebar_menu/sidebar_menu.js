@@ -7,7 +7,7 @@ RAD.view("view.sidebar_menu", RAD.views.SlipExt.extend({
         'tap .lang': 'changeLanguage'
     },
     slip_el_name: 'ul',
-    className: 'menu-list',
+    className: 'sidebar-menu-view',
     onInitialize: function(){
         this.settings = RAD.models.Settings;
         this.sidebar = RAD.models.Sidebar;
