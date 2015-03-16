@@ -111,6 +111,7 @@ RAD.view("view.news_list", RAD.views.ScrollSwipeExt.extend({
         }
 
         arrow.style.transform = 'rotate(' + deg + 'deg)';
+        arrow.style.webkitTransform = 'rotate(' + deg + 'deg)';
         if(deg <= -180 && !pullDiv.classList.contains('update')){
             this.mScroll.minScrollY = 0;
             pullDiv.classList.add('update');

@@ -1,4 +1,4 @@
-RAD.views.ScrollSwipeExt = RAD.Blanks.ScrollableView.extend({
+RAD.views.ScrollSwipeExt = RAD.Blanks.View.extend({
     events: {
         'touchstart .scroll-view': 'onTouchStart',
         'touchmove .scroll-view': 'onTouchMove',
@@ -72,6 +72,7 @@ RAD.views.ScrollSwipeExt = RAD.Blanks.ScrollableView.extend({
             value = tr.split('(')[1];
         value = parseInt(value.split(')')[0]);
         this.el.style.transition  = 'all 0.3s ease-in-out';
+        this.el.style.webkitTransition  = 'all 0.3s ease-in-out';
         this.el.removeAttribute('style');
         this.finishSwipe(value, this.halfWidth);
     },
@@ -97,12 +98,14 @@ RAD.views.ScrollSwipeExt = RAD.Blanks.ScrollableView.extend({
             diff = 0
         }
         this.el.style.transform = 'translateX(' + (diff)+ 'px)';
+        this.el.style.webkitTransform = 'translateX(' + (diff)+ 'px)';
     },
     moveRight: function(diff){
         if(this.rightLineWidth && diff > this.rightLineWidth){
             diff = this.rightLineWidth;
         }
         this.el.style.transform = 'translateX(' + (diff)+ 'px)';
+        this.el.style.webkitTransform = 'translateX(' + (diff)+ 'px)';
     },
     isVertDirection: function(xArr, yArr){
         var xSum = 0, ySum = 0;
