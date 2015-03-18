@@ -90,35 +90,45 @@ RAD.view("view.news_list", RAD.views.ScrollSwipeExt.extend({
     },
     toggleSidebar: function(){
         this.el.classList.toggle('open');
-//        this.mScroll.preventScroll = this.el.classList.contains('open');
     },
     openNewsList: function(){
         if(!this.el.classList.contains('open')) return;
         this.toggleSidebar();
     },
-    onScrollMove: function(e){
-        if(this.directionDefined && !this.directionVert){
-            this.mScroll.preventScroll = true;
+
+    onMoveVertically: function(e){
+        var scrollView = this.el.querySelector('.native-scroll'),
+            scrollPos = scrollView.scrollTop,
+            scrollCoord = scrollView.getBoundingClientRect();
+
+        if(scrollPos === 0 && !this.firstY){
+            this.firstY = e.originalEvent.changedTouches[0].clientY;
         }
-        if(this.mScroll.y<-50){
+        if(scrollCoord.top <50){
+            this.finished = true;
+//            this.$el.find('.swipe-view').trigger('touchend');
+//            this.$el.find('.swipe-view').trigger('touchstart');
+            scrollView.classList.remove('stop-scrolling');
             return;
         }
-        var pullDiv = this.el.querySelector('.pull-down'),
-            arrow = pullDiv.querySelector('.arrow-img'),
-            deg = Math.abs(this.rotateCoef * this.mScroll.y)-180;
-        if(this.mScroll.y>0){
-            deg = -180;
+        if(scrollPos >0){
+            return;
         }
 
-        arrow.style.transform = 'rotate(' + deg + 'deg)';
-        arrow.style.webkitTransform = 'rotate(' + deg + 'deg)';
-        if(deg <= -180 && !pullDiv.classList.contains('update')){
-            this.mScroll.minScrollY = 0;
-            pullDiv.classList.add('update');
-        }else if(!pullDiv.classList.contains('update')){
-            this.mScroll.minScrollY = -50;
-            pullDiv.classList.remove('update');
-        }
+        var newY = e.originalEvent.changedTouches[0].clientY,
+            diff =(newY - this.firstY);
+        scrollView.classList.add('pull-active');
+        scrollView.style.transition  = 'none';
+        scrollView.classList.add('stop-scrolling');
+        scrollView.style.transform = 'translateY(' + (diff*0.4)+ 'px)';
+    },
+    onTouchEnd: function(){
+        console.log('-------------------------END------------------')
+        this.firstY = null;
+        var scrollView = this.el.querySelector('.native-scroll');
+        scrollView.style.transition  = 'all 0.2s ease-in-out';
+        scrollView.style.transform = 'translateY(0)';
+        scrollView.classList.remove('stop-scrolling');
     },
     finishSwipe: function(val, half){
         if(val >= half){
