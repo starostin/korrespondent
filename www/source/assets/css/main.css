@@ -4,6 +4,10 @@
     bottom: 0;
     width: 100%;
 }
+.stop-scrolling {
+    height: 100%;
+    overflow: hidden;
+}
 .background{
     position: absolute;
     width: 100%;
