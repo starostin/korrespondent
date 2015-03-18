@@ -36,7 +36,9 @@
     z-index: 3;
     bottom: 0;
     transform: translateY(-100%);
+    -webkit-transform: translateY(-100%);
     transition: all 0.3s ease-in-out;
+    -webkit-transition: all 0.3s ease-in-out;
 }
 .message{
     background: black;
@@ -48,13 +50,17 @@
     z-index: 3;
     bottom: 0;
     transform: translateY(-100%);
+    -webkit-transform: translateY(-100%);
     transition: all 1s ease-in-out;
+    -webkit-transition: all 1s ease-in-out;
 }
 .message.show{
     transform: translateY(100%);
+    -webkit-transform: translateY(100%);
 }
 .sub-menu.open{
     transform: translateY(100%);
+    -webkit-transform: translateY(100%);
 }
 .update-message:before{
     content: attr(data-count) ' новых новостей';
@@ -73,10 +79,13 @@
     z-index: 3;
     bottom: 0;
     transform: translateY(-100%);
+    -webkit-transform: translateY(-100%);
     transition: all 0.3s ease-in-out;
+    -webkit-transition: all 0.3s ease-in-out;
 }
 .update-message.show{
     transform: translateY(100%);
+    -webkit-transform: translateY(100%);
 }
 .sub-menu-item{
     height: 30px;
@@ -103,16 +112,20 @@
 }
 .news-list-view{
     transition: all 0.3s ease-in-out;
+    -webkit-transition: all 0.3s ease-in-out;
     transform: translateX(0);
+    -webkit-transform: translateX(0);
     z-index: 200;
 }
 
 .news-list-view.open {
     transform: translateX(90%);
+    -webkit-transform: translateX(90%);
 }
 .arrow{
     position: relative;
     transform-origin: center center;
+    -webkit-origin: center center;
 }
 .arrow-img{
     position: relative;
@@ -178,13 +191,16 @@ ul {
 /*--------------------------------------ONE NEWS---------------------------------*/
 .one-news-view{
     transition: all 0.3s ease-in-out;
+    -webkit-transition: all 0.3s ease-in-out;
     transform: translateX(100%);
+    -webkit-transform: translateX(100%);
     z-index: 300;
     background: white;
 }
 
 .one-news-view.open {
     transform: translateX(0);
+    -webkit-transform: translateX(0);
 }
 
 
