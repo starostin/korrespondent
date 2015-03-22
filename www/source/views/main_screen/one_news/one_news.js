@@ -1,9 +1,9 @@
-RAD.view("view.one_news", RAD.views.ScrollSwipeExt.extend({
+RAD.view("view.one_news", RAD.views.SwipeExt.extend({
     url: 'source/views/main_screen/one_news/one_news.html',
     className: 'one-news-view',
     events: function(){
-        return $.extend(RAD.views.ScrollSwipeExt.prototype.events, {
-            'tap .back': 'removeCurrentNews'
+        return $.extend(RAD.views.SwipeExt.prototype.events, {
+            'click .back': 'removeCurrentNews'
         })
     },
     onInitialize: function(){

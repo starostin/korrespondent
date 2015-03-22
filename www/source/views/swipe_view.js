@@ -1,54 +1,22 @@
-RAD.views.ScrollSwipeExt =  RAD.Blanks.View.extend({
+RAD.views.SwipeExt =  RAD.Blanks.View.extend({
     events: {
         'touchstart .swipe-view': 'touchStart',
         'touchmove .swipe-view': 'touchMove',
         'touchend .swipe-view': 'touchEnd',
         'touchcancel .swipe-view': 'touchCancel'
     },
-    oninit: function(){
-        var self = this;
-        this.scrollOptions = {
-            useTransition: true,
-            hScrollbar: false,
-            vScrollbar: false,
-            onScrollStart: function(){
-                self.onScrollStart();
-            },
-            onRefresh: function(){
-                self.onScrollRefresh();
-            },
-            onScrollMove: function(e){
-                //console.log(e)
-                self.onScrollMove(e);
-            },
-            onScrollEnd: function(){
-                self.onScrollEnd();
-            }
-        }
-    },
-    onStartAttach: function(){
+    onattach: function(){
         var viewCoord  = this.el.getBoundingClientRect();
         this.halfWidth = viewCoord.width * 0.5;
-    },
-    onScrollStart: function(){
-
-    },
-    onScrollRefresh: function(){
-
-    },
-    onScrollMove: function(){
-
-    },
-    onScrollEnd: function(){
-
+        this.nativeScroll = this.el.querySelector('.native-scroll');
     },
     coordinates: {
         x: [],
         y: []
     },
-    touchStart: function(){
-        this.coordinates.x = [];
-        this.coordinates.y = [];
+    touchStart: function(e){
+        this.coordinates.x = [e.originalEvent.changedTouches[0].clientX];
+        this.coordinates.y = [e.originalEvent.changedTouches[0].clientY];
         this.directionDefined = false;
         this.startCoord = this.el.getBoundingClientRect();
         if(this.onTouchStart){
@@ -56,7 +24,14 @@ RAD.views.ScrollSwipeExt =  RAD.Blanks.View.extend({
         }
     },
     touchMove: function(e){
-        if(this.coordinates.x.length<5){
+        if(this.coordinates.x.length<5 && !this.directionDefined){
+            if(Math.abs(this.coordinates.x[this.coordinates.x.length-1] - e.originalEvent.changedTouches[0].clientX) >=10){
+                this.directionVert = false;
+                this.directionDefined = true;
+            }else if(Math.abs(this.coordinates.y[this.coordinates.y.length-1] - e.originalEvent.changedTouches[0].clientY) >=10){
+                this.directionVert = true;
+                this.directionDefined = true;
+            }
             this.coordinates.x.push(e.originalEvent.changedTouches[0].clientX);
             this.coordinates.y.push(e.originalEvent.changedTouches[0].clientY);
         }else if(!this.directionDefined){
@@ -69,7 +44,7 @@ RAD.views.ScrollSwipeExt =  RAD.Blanks.View.extend({
         }
     },
     touchEnd: function(){
-        if(typeof this.onTouchEnd){
+        if(this.onTouchEnd){
             this.onTouchEnd()
         }
         if(!this.directionDefined || this.directionVert){
@@ -82,12 +57,28 @@ RAD.views.ScrollSwipeExt =  RAD.Blanks.View.extend({
         this.el.style.transition  = 'all 0.3s ease-in-out';
         this.el.style.webkitTransition  = 'all 0.3s ease-in-out';
         this.el.removeAttribute('style');
+        this.enableScroll();
         this.finishSwipe(value, this.halfWidth);
-        this.el.querySelector('.native-scroll').classList.remove('stop-scrolling');
+    },
+    disableScroll: function(){
+        if(this.mScroll){
+            this.mScroll._options.stopScroll = true;
+        }else if(this.nativeScroll){
+            console.log('-=-=-=-=SSS-=-==-', this.nativeScroll)
+            this.nativeScroll.classList.add('stop-scrolling');
+        }
+    },
+    enableScroll: function(){
+        if(this.mScroll){
+            this.mScroll._options.stopScroll = false;
+        }else if(this.nativeScroll){
+            this.nativeScroll.classList.remove('stop-scrolling');
+        }
     },
     onMoveHorizontally: function(e){
-        this.el.querySelector('.native-scroll').classList.add('stop-scrolling');
+        this.disableScroll();
         this.el.style.transition  = 'none';
+        this.el.style.webkitTransition  = 'none';
         var firstX = this.coordinates.x[this.coordinates.x.length-1],
             newX = e.originalEvent.changedTouches[0].clientX,
             diff = this.startCoord.left + (newX - firstX);

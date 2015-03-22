@@ -42,12 +42,12 @@
                         var ServiceLocator = _require(3).serviceLocator;
                         var execute = _require(4).execute;
                         var defaultOptions = {
-                                defaultBackstack: false,
-                                backstackType: 'custom',
-                                defaultAnimation: 'slide',
-                                animationTimeout: 3000,
-                                debug: false
-                            };
+                            defaultBackstack: false,
+                            backstackType: 'custom',
+                            defaultAnimation: 'slide',
+                            animationTimeout: 3000,
+                            debug: false
+                        };
                         function closest(element, className) {
                             var result;
                             if (element.classList && element.classList.contains(className)) {
@@ -58,8 +58,8 @@
                             return result;
                         }
                         function preventBodyTouch(e) {
-                            var tracker = this.scrollTracker, top = tracker.scrollView ? tracker.scrollView.scrollTop : 0, onTopBound = e.changedTouches[0].screenY > tracker.startIOSTouch && top <= 0, onBottomBound = e.changedTouches[0].screenY < tracker.startIOSTouch && top >= tracker.scrollEnd;
-                            if ((!tracker.scrollView || tracker.scrollRequest) && (onTopBound || onBottomBound)) {
+                            var tracker = this.scrollTracker;
+                            if (!tracker.scrollView || tracker.scrollRequest && (e.touches[0].screenY > tracker.startIOSTouch && tracker.scrollView.scrollTop === 0 || tracker.scrollView.scrollTop >= tracker.scrollEnd && e.touches[0].screenY < tracker.startIOSTouch)) {
                                 e.preventDefault();
                             }
                             tracker = null;
@@ -71,7 +71,7 @@
                             if (!!tracker.scrollView && tracker.scrollView.firstElementChild) {
                                 tracker.startIOSTouch = e.touches[0].screenY;
                                 tracker.scrollRequest = true;
-                                tracker.scrollEnd = Math.abs(tracker.scrollView.offsetHeight - tracker.scrollView.firstElementChild.offsetHeight);
+                                tracker.scrollEnd = tracker.scrollView.firstElementChild.offsetHeight - tracker.scrollView.offsetHeight;
                             }
                             tracker = null;
                         }
@@ -81,9 +81,11 @@
                             if (options.scrollBounce === undefined) {
                                 options.scrollBounce = true;
                             }
-                            if (options.templateSettings !== undefined) {
-                                _.templateSettings = options.templateSettings;
-                            }
+                            _.templateSettings = options.templateSettings || {
+                                evaluate: /\{\{#([\s\S]+?)\}\}/g,
+                                interpolate: /\{\{[^#\{]([\s\S]+?)[^\}]\}\}/g,
+                                escape: /\{\{\{([\s\S]+?)\}\}\}/g
+                            };
                             if (isIOS) {
                                 if (options.scrollBounce) {
                                     window.addEventListener('touchstart', startBodyTouch, false);
@@ -108,8 +110,6 @@
                                 if (options) {
                                     self.options = options;
                                 }
-                                pubsub.printLog(!!self.options.debug);
-                                serviceLocator.printLog(!!self.options.debug);
                                 if (self.options.plugins && isArray(self.options.plugins)) {
                                     self.registerAll(self.options.plugins);
                                 }
@@ -176,7 +176,7 @@
                                         if (typeof view.destroy === 'function') {
                                             view.destroy();
                                         } else {
-                                            pubsub.unregister(view, true);
+                                            pubsub.unsubscribe(view);
                                         }
                                         serviceLocator.removeInstance(viewID);
                                         execute(callback, null, context);
@@ -216,11 +216,6 @@
                             self.getLocator = serviceLocator.getLocator;
                             return self;
                         }
-                        _.templateSettings = {
-                            evaluate: /\{\{#([\s\S]+?)\}\}/g,
-                            interpolate: /\{\{[^#\{]([\s\S]+?)[^\}]\}\}/g,
-                            escape: /\{\{\{([\s\S]+?)\}\}\}/g
-                        };
                         exports.core = Core;
                     },
                     function (module, exports) {
@@ -228,7 +223,7 @@
                             var channels = {}, sticky = {}, debug = false, separator = '.';
                             function log() {
                                 if (debug) {
-                                    window.console.log(arguments);
+                                    console.log.apply(null, arguments);
                                 }
                             }
                             function isObject(testObj) {
@@ -309,14 +304,6 @@
                                             fn.apply(cntx, sticky[currentChannel]);
                                         }
                                     }
-                                    for (var key in sticky) {
-                                        if (sticky.hasOwnProperty(key)) {
-                                            index = key.indexOf(channel);
-                                            if (index == 0 && key.indexOf(channel + separator) === 0) {
-                                                fn.apply(cntx, sticky[key]);
-                                            }
-                                        }
-                                    }
                                     return this;
                                 },
                                 unsubscribe: function (channel, fn, context) {
@@ -366,152 +353,64 @@
                     },
                     function (module, exports) {
                         var execute = _require(4).execute;
-                        var ScriptLoader = function () {
-                                var env, head, pending = {}, pollCount = 0, queue = {
-                                        css: [],
-                                        js: []
-                                    }, styleSheets = document.styleSheets;
-                                function createNode(name, attrs) {
-                                    var node = document.createElement(name), attr;
-                                    for (attr in attrs) {
-                                        if (attrs.hasOwnProperty(attr)) {
-                                            node.setAttribute(attr, attrs[attr]);
-                                        }
-                                    }
-                                    return node;
+                        function ScriptLoader() {
+                            var loader = this, isLoaded = false;
+                            function loadScript(url, checkCallback) {
+                                if (!url || typeof url != 'string') {
+                                    window.console.log('Can\'t load script, URL is incorrect:' + url);
+                                    return;
                                 }
-                                function finish(type) {
-                                    var p = pending[type], callback, urls;
-                                    if (p) {
-                                        callback = p.callback;
-                                        urls = p.urls;
-                                        urls.shift();
-                                        pollCount = 0;
-                                        if (!urls.length) {
-                                            callback && callback.call(p.context, p.obj);
-                                            pending[type] = null;
-                                            queue[type].length && load(type);
+                                var script = document.createElement('script');
+                                script.type = 'text/javascript';
+                                script.async = true;
+                                if (script.readyState) {
+                                    script.onreadystatechange = function () {
+                                        if (script.readyState === 'loaded' || script.readyState === 'complete') {
+                                            script.onreadystatechange = null;
+                                            checkCallback();
                                         }
-                                    }
+                                    };
+                                } else {
+                                    script.onload = checkCallback;
+                                    script.onerror = checkCallback;
                                 }
-                                function getEnv() {
-                                    var ua = navigator.userAgent;
-                                    env = { async: document.createElement('script').async === true };
-                                    (env.webkit = /AppleWebKit\//.test(ua)) || (env.ie = /MSIE|Trident/.test(ua)) || (env.opera = /Opera/.test(ua)) || (env.gecko = /Gecko\//.test(ua)) || (env.unknown = true);
-                                }
-                                function load(type, urls, callback, obj, context) {
-                                    var _finish = function () {
-                                            finish(type);
-                                        }, isCSS = type === 'css', nodes = [], i, len, node, p, pendingUrls, url;
-                                    env || getEnv();
-                                    if (urls) {
-                                        urls = typeof urls === 'string' ? [urls] : urls.concat();
-                                        if (isCSS || env.async || env.gecko || env.opera) {
-                                            queue[type].push({
-                                                urls: urls,
-                                                callback: callback,
-                                                obj: obj,
-                                                context: context
-                                            });
-                                        } else {
-                                            for (i = 0, len = urls.length; i < len; ++i) {
-                                                queue[type].push({
-                                                    urls: [urls[i]],
-                                                    callback: i === len - 1 ? callback : null,
-                                                    obj: obj,
-                                                    context: context
-                                                });
-                                            }
-                                        }
-                                    }
-                                    if (pending[type] || !(p = pending[type] = queue[type].shift())) {
-                                        return;
-                                    }
-                                    head || (head = document.head || document.getElementsByTagName('head')[0]);
-                                    pendingUrls = p.urls.concat();
-                                    for (i = 0, len = pendingUrls.length; i < len; ++i) {
-                                        url = pendingUrls[i];
-                                        if (isCSS) {
-                                            node = env.gecko ? createNode('style') : createNode('link', {
-                                                href: url,
-                                                rel: 'stylesheet'
-                                            });
-                                        } else {
-                                            node = createNode('script', { src: url });
-                                            node.async = false;
-                                        }
-                                        node.className = 'lazyload';
-                                        node.setAttribute('charset', 'utf-8');
-                                        if (env.ie && !isCSS && 'onreadystatechange' in node && !('draggable' in node)) {
-                                            node.onreadystatechange = function () {
-                                                if (/loaded|complete/.test(node.readyState)) {
-                                                    node.onreadystatechange = null;
-                                                    _finish();
-                                                }
-                                            };
-                                        } else if (isCSS && (env.gecko || env.webkit)) {
-                                            if (env.webkit) {
-                                                p.urls[i] = node.href;
-                                                pollWebKit();
-                                            } else {
-                                                node.innerHTML = '@import "' + url + '";';
-                                                pollGecko(node);
-                                            }
-                                        } else {
-                                            node.onload = node.onerror = _finish;
-                                        }
-                                        nodes.push(node);
-                                    }
-                                    for (i = 0, len = nodes.length; i < len; ++i) {
-                                        head.appendChild(nodes[i]);
+                                script.src = url;
+                                document.head.appendChild(script);
+                            }
+                            function loadArray(urls, callback, context) {
+                                var i, l = urls.length, counter = 0;
+                                loader.arr = null;
+                                loader.callback = null;
+                                loader.context = null;
+                                function check() {
+                                    counter += 1;
+                                    if (counter === l) {
+                                        execute(callback, null, context);
                                     }
                                 }
-                                function pollGecko(node) {
-                                    var hasRules;
-                                    try {
-                                        hasRules = !!node.sheet.cssRules;
-                                    } catch (ex) {
-                                        pollCount += 1;
-                                        if (pollCount < 200) {
-                                            setTimeout(function () {
-                                                pollGecko(node);
-                                            }, 50);
-                                        } else {
-                                            hasRules && finish('css');
-                                        }
-                                        return;
-                                    }
-                                    finish('css');
+                                for (i = 0; i < l; i += 1) {
+                                    loadScript(urls[i], check);
                                 }
-                                function pollWebKit() {
-                                    var css = pending.css, i;
-                                    if (css) {
-                                        i = styleSheets.length;
-                                        while (--i >= 0) {
-                                            if (styleSheets[i].href === css.urls[0]) {
-                                                finish('css');
-                                                break;
-                                            }
-                                        }
-                                        pollCount += 1;
-                                        if (css) {
-                                            if (pollCount < 200) {
-                                                setTimeout(pollWebKit, 50);
-                                            } else {
-                                                finish('css');
-                                            }
-                                        }
-                                    }
+                            }
+                            function onLoad() {
+                                isLoaded = true;
+                                loader.loadScripts = loadArray;
+                                if (loader.arr && loader.callback) {
+                                    loader.loadScripts(loader.arr, loader.callback, loader.context);
                                 }
-                                return {
-                                    css: function (urls, callback, obj, context) {
-                                        load('css', urls, callback, obj, context);
-                                    },
-                                    loadScripts: function (urls, callback, obj, context) {
-                                        load('js', urls, callback, obj, context);
-                                    }
-                                };
-                            }();
+                            }
+                            loader.loadScripts = function (urls, callback, context) {
+                                loader.arr = urls;
+                                loader.callback = callback;
+                                loader.context = context;
+                            };
+                            if (window.attachEvent) {
+                                window.attachEvent('onload', onLoad);
+                            } else {
+                                window.addEventListener('load', onLoad, false);
+                            }
+                            return loader;
+                        }
                         exports.scriptLoader = ScriptLoader;
                     },
                     function (module, exports) {
@@ -820,7 +719,7 @@
                             namespace('RAD.plugins', {});
                             namespace('RAD.models', {});
                             namespace('RAD.utils', {});
-                            namespace('RAD.scriptLoader', ScriptLoader);
+                            namespace('RAD.scriptLoader', new ScriptLoader());
                         }
                         exports.core = new Core(window.jQuery, document, window);
                         exports.model = modelMethod;
@@ -862,32 +761,32 @@
         },
         function (module, exports) {
             var cl = function () {
-                    var self = function () {
-                    };
-                    function isFn(fn) {
-                        return typeof fn === 'function';
-                    }
-                    self.extend = function (proto) {
-                        var key, k = function (magic) {
-                                if (magic !== isFn && isFn(this.initialize)) {
-                                    this.initialize.apply(this, arguments);
-                                }
-                            };
-                        k.prototype = new this(isFn);
-                        for (key in proto) {
-                            (function (fn, sfn) {
-                                k.prototype[key] = !isFn(fn) || !isFn(sfn) ? fn : function () {
-                                    this._super = sfn;
-                                    return fn.apply(this, arguments);
-                                };
-                            }(proto[key], k.prototype[key]));
+                var self = function () {
+                };
+                function isFn(fn) {
+                    return typeof fn === 'function';
+                }
+                self.extend = function (proto) {
+                    var key, k = function (magic) {
+                        if (magic !== isFn && isFn(this.initialize)) {
+                            this.initialize.apply(this, arguments);
                         }
-                        k.prototype.constructor = k;
-                        k.extend = this.extend || this.create;
-                        return k;
                     };
-                    return self;
-                }();
+                    k.prototype = new this(isFn);
+                    for (key in proto) {
+                        (function (fn, sfn) {
+                            k.prototype[key] = !isFn(fn) || !isFn(sfn) ? fn : function () {
+                                this._super = sfn;
+                                return fn.apply(this, arguments);
+                            };
+                        }(proto[key], k.prototype[key]));
+                    }
+                    k.prototype.constructor = k;
+                    k.extend = this.extend || this.create;
+                    return k;
+                };
+                return self;
+            }();
             exports.namespace = 'RAD.Class';
             exports.module = cl;
             exports.type = 'namespace';
@@ -938,21 +837,21 @@
         function (module, exports) {
             var radClass = _require(2).module;
             var blankPlugin = radClass.extend({
-                    initialize: function () {
-                        this.subscribe(this.radID, this.onReceiveMsg, this);
-                        this.onInitialize();
-                    },
-                    destroy: function () {
-                        this.onDestroy();
-                        this.unsubscribe(this);
-                    },
-                    onInitialize: function () {
-                    },
-                    onReceiveMsg: function () {
-                    },
-                    onDestroy: function () {
-                    }
-                });
+                initialize: function () {
+                    this.subscribe(this.radID, this.onReceiveMsg, this);
+                    this.onInitialize();
+                },
+                destroy: function () {
+                    this.onDestroy();
+                    this.unsubscribe(this);
+                },
+                onInitialize: function () {
+                },
+                onReceiveMsg: function () {
+                },
+                onDestroy: function () {
+                }
+            });
             exports.namespace = 'RAD.Blanks.Plugin';
             exports.module = blankPlugin;
             exports.type = 'namespace';
@@ -960,61 +859,51 @@
         function (module, exports) {
             var view = _require(7).module;
             var scrollable = view.extend({
-                    className: 'scroll-view',
-                    refreshScrollListener: function (e) {
-                        if (this.mScroll) {
-                            this.mScroll.refresh();
-                        }
+                className: 'scroll-view',
+                onrender: function () {
+                    this.refreshScroll();
+                },
+                onattach: function () {
+                    var self = this;
+                    this.attachScroll();
+                    this.el.addEventListener('scrollRefresh', function (e) {
+                        self.mScroll.refresh();
                         e.stopPropagation();
-                    },
-                    onrender: function () {
-                        this.refreshScroll();
-                    },
-                    onattach: function () {
-                        var self = this;
-                        this.attachScroll();
-                        this._tmpWrapper = function (e) {
-                            self.refreshScrollListener(e);
-                        };
-                        this.el.addEventListener('scrollRefresh', this._tmpWrapper);
-                    },
-                    ondetach: function () {
-                        if (this._tmpWrapper) {
-                            this.el.removeEventListener('scrollRefresh', this._tmpWrapper);
-                        }
-                        this.detachScroll();
-                    },
-                    refreshScroll: function () {
-                        var wrapper;
-                        if (!this.mScroll) {
-                            return;
-                        }
-                        wrapper = this.el.querySelector('.scroll-view') || this.el;
-                        if (this.mScroll.wrapper === wrapper && this.mScroll.scroller === wrapper.children[0]) {
-                            this.mScroll.refresh();
-                        } else {
-                            this.detachScroll();
-                            this.attachScroll();
-                        }
-                    },
-                    attachScroll: function () {
-                        var wrapper = this.el.querySelector('.scroll-view') || this.el,
-                            options = this.scrollOptions ? this.scrollOptions : {};
-                        options.onBeforeScrollStart = function (e) {
-                            var regExp = /^(INPUT|TEXTAREA|BUTTON|SELECT)$/;
-                            if (!regExp.test(e.target.tagName)) {
-                                e.preventDefault();
-                            }
-                        };
-                        this.mScroll = new window.iScroll(wrapper, options);
-                    },
-                    detachScroll: function () {
-                        if (this.mScroll) {
-                            this.mScroll.destroy();
-                        }
-                        this.mScroll = null;
+                    });
+                },
+                ondetach: function () {
+                    this.el.removeEventListener('scrollRefresh');
+                    this.detachScroll();
+                },
+                refreshScroll: function () {
+                    var wrapper;
+                    if (!this.mScroll) {
+                        return;
                     }
-                });
+                    wrapper = this.el.querySelector('.scroll-view') || this.el;
+                    if (this.mScroll.wrapper === wrapper && this.mScroll.scroller === wrapper.children[0]) {
+                        this.mScroll.refresh();
+                    } else {
+                        this.detachScroll();
+                        this.attachScroll();
+                    }
+                },
+                attachScroll: function () {
+                    var wrapper = this.el.querySelector('.scroll-view') || this.el, options = this.scrollOptions ? this.scrollOptions : {};
+                    options.onBeforeScrollStart = function (e) {
+                        var regExp = /^(INPUT|TEXTAREA|BUTTON|SELECT)$/;
+                        if (!regExp.test(e.target.tagName)) {
+                            e.preventDefault();
+                        }
+                    };
+                    this.mScroll = new window.iScroll(wrapper, options);
+                    this.mScroll = new ScrollView(scrollContainer, this.scrollOptions);
+                },
+                detachScroll: function () {
+                    this.mScroll.destroy();
+                    this.mScroll = null;
+                }
+            });
             exports.namespace = 'RAD.Blanks.ScrollableView';
             exports.module = scrollable;
             exports.type = 'namespace';
@@ -1022,21 +911,21 @@
         function (module, exports) {
             var radClass = _require(2).module;
             var service = radClass.extend({
-                    initialize: function () {
-                        this.subscribe(this.radID, this.onReceiveMsg, this);
-                        this.onInitialize();
-                    },
-                    destroy: function () {
-                        this.onDestroy();
-                        this.unsubscribe(this);
-                    },
-                    onInitialize: function () {
-                    },
-                    onReceiveMsg: function () {
-                    },
-                    onDestroy: function () {
-                    }
-                });
+                initialize: function () {
+                    this.subscribe(this.radID, this.onReceiveMsg, this);
+                    this.onInitialize();
+                },
+                destroy: function () {
+                    this.onDestroy();
+                    this.unsubscribe(this);
+                },
+                onInitialize: function () {
+                },
+                onReceiveMsg: function () {
+                },
+                onDestroy: function () {
+                }
+            });
             exports.namespace = 'RAD.Blanks.Service';
             exports.module = service;
             exports.type = 'namespace';
@@ -1044,221 +933,202 @@
         function (module, exports) {
             var deferred = _require(3).module;
             var view = Backbone.View.extend({
-                    className: 'backbone-view',
-                    attributes: { 'data-role': 'view' },
-                    listen: [
-                        'add',
-                        'remove',
-                        'fetch',
-                        'sort',
-                        'change',
-                        'reset'
-                    ],
-                    getChildren: function () {
-                        if (!this.children) {
-                            this.children = [];
-                        }
-                        return this.children;
-                    },
-                    initialize: function () {
-                        var self = this;
-                        self.loader = deferred();
-                        self.renderRequest = true;
-                        self.viewID = this.radID;
-                        self.finish = function () {
-                            RAD.core.stop(self.viewID);
-                        };
-                        self.getChildren();
-                        var modelBindingCallback = function () {
+                className: 'backbone-view',
+                attributes: { 'data-role': 'view' },
+                listen: [
+                    'add',
+                    'remove',
+                    'fetch',
+                    'sort',
+                    'change',
+                    'reset'
+                ],
+                getChildren: function () {
+                    if (!this.children) {
+                        this.children = [];
+                    }
+                    return this.children;
+                },
+                initialize: function () {
+                    var self = this;
+                    self.loader = deferred();
+                    self.renderRequest = true;
+                    self.viewID = this.radID;
+                    self.finish = function () {
+                        RAD.core.stop(self.viewID);
+                    };
+                    self.getChildren();
+                    if (window.JST && window.JST[self.url]) {
+                        self.template = window.JST[self.url];
+                        self.bindModel(self.model);
+                        self.loader.resolve();
+                    } else {
+                        self.ajax = $.get(self.url, function (data) {
+                            if (self.ajax) {
+                                self.template = _.template(data);
                                 self.bindModel(self.model);
-                            }, needBindModel = false;
-                        if (typeof self.template === 'function') {
-                            self.bindModel(self.model);
-                            self.loader.resolve();
-                        } else if (window.JST && window.JST[self.url]) {
-                            self.template = window.JST[self.url];
-                            needBindModel = true;
-                            self.bindModel(self.model);
-                            self.loader.resolve();
-                        } else {
-                            self.ajax = $.get(self.url, function (data) {
-                                if (self.ajax) {
-                                    self.template = _.template(data);
-                                    self.bindModel(self.model);
-                                    self.loader.resolve();
-                                }
-                                self.ajax = null;
-                            }, 'text');
-                        }
-                        self.subscribe(self.radID, self.receiveMsg, self);
-                        self.oninit();
-                        self.onInitialize();
-                        if (needBindModel)
-                            modelBindingCallback();
-                        return self;
-                    },
-                    setExtras: function (extras) {
-                        if (extras !== this.extras) {
-                            this.onNewExtras(extras);
-                            this.extras = extras;
-                        }
-                    },
-                    bindModel: function (model) {
-                        var self = this, i;
-                        if (model) {
-                            self.model = model;
-                            for (i = this.listen.length - 1; i > -1; i -= 1) {
-                                self.listenTo(model, self.listen[i], self.render);
+                                self.loader.resolve();
                             }
-                            if (self.template && !self.renderRequest) {
-                                model.trigger('change');
+                            self.ajax = null;
+                        }, 'text');
+                    }
+                    self.subscribe(self.radID, self.receiveMsg, self);
+                    self.oninit();
+                    self.onInitialize();
+                    return self;
+                },
+                setExtras: function (extras) {
+                    if (extras !== this.extras) {
+                        this.onNewExtras(extras);
+                        this.extras = extras;
+                    }
+                },
+                bindModel: function (model) {
+                    var self = this, i;
+                    if (model) {
+                        self.model = model;
+                        for (i = this.listen.length - 1; i > -1; i -= 1) {
+                            self.listenTo(model, self.listen[i], self.render);
+                        }
+                        if (self.template && !self.renderRequest) {
+                            model.trigger('change');
+                        }
+                    }
+                },
+                unbindModel: function (forceRender) {
+                    if (this.model) {
+                        this.stopListening(this.model);
+                        this.model = null;
+                        if (forceRender) {
+                            this.render();
+                        }
+                    }
+                },
+                changeModel: function (newModel) {
+                    var self = this;
+                    self.unbindModel();
+                    self.bindModel(newModel);
+                },
+                insertSubview: function (data, callback) {
+                    var content = RAD.core.getView(data.content, data.extras), container = this.el.querySelector(data.container_id);
+                    if (data && data.backstack) {
+                        RAD.core.publish('router.beginTransition', data);
+                    }
+                    content.appendIn(container, function () {
+                        container.setAttribute('view', data.content);
+                        if (typeof data.callback === 'function') {
+                            if (typeof data.context === 'object') {
+                                data.callback.call(data.context);
+                            } else {
+                                data.callback();
                             }
                         }
-                    },
-                    unbindModel: function (forceRender) {
-                        if (this.model) {
-                            this.stopListening(this.model);
-                            this.model = null;
-                            if (forceRender) {
-                                this.render();
-                            }
+                        if (typeof callback === 'function') {
+                            callback();
                         }
-                    },
-                    changeModel: function (newModel) {
-                        var self = this;
-                        self.unbindModel();
-                        self.bindModel(newModel);
-                    },
-                    insertSubview: function (data, callback) {
-                        var content = RAD.core.getView(data.content, data.extras), container = this.el.querySelector(data.container_id);
-                        if (data && data.backstack) {
-                            RAD.core.publish('router.beginTransition', data);
-                        }
-                        content.appendIn(container, function () {
-                            var fakeContainer = document.querySelector('[view="' + data.content + '"]');
-                            if (fakeContainer) {
-                                fakeContainer.removeAttribute('view');
-                            }
-                            container.setAttribute('view', data.content);
-                            if (typeof data.callback === 'function') {
-                                if (typeof data.context === 'object') {
-                                    data.callback.call(data.context);
-                                } else {
-                                    data.callback();
-                                }
-                            }
+                    });
+                },
+                render: function (callback) {
+                    var virtualEl = document.createElement('div'), virtualTemplates, self = this, json = self.model ? self.model.toJSON() : undefined, children = self.getChildren(), counter = children.length, childView, index, length;
+                    function check() {
+                        counter -= 1;
+                        if (counter <= 0) {
+                            self.onrender();
+                            self.onEndRender();
+                            self.dispatchScrollRefresh();
+                            self.renderRequest = false;
                             if (typeof callback === 'function') {
                                 callback();
                             }
-                        });
-                    },
-                    render: function (callback) {
-                        var virtualEl = document.createElement('div'), virtualTemplates, self = this, json, children = self.getChildren(), counter, childView, index, length;
-                        function check() {
-                            counter -= 1;
-                            if (counter <= 0) {
-                                self.onrender();
-                                self.onEndRender();
-                                self.dispatchScrollRefresh();
-                                self.renderRequest = false;
-                                if (typeof callback === 'function') {
-                                    callback();
-                                }
-                            }
                         }
-                        function prepareInnerTemplates() {
-                            var templates, i, length;
-                            if (self.innerTemplates === false) {
+                    }
+                    function prepareInnerTemplates() {
+                        var templates, i, length;
+                        if (self.innerTemplates === false) {
+                            return;
+                        }
+                        templates = self.el.querySelectorAll('[data-template]');
+                        if (templates.length) {
+                            self.innerTemplates = [];
+                            for (i = 0, length = templates.length; i < length; i++) {
+                                self.innerTemplates[i] = templates[i];
+                            }
+                        } else {
+                            self.innerTemplates = false;
+                        }
+                    }
+                    self.onStartRender();
+                    for (index = 0, length = children.length; index < length; index += 1) {
+                        childView = RAD.core.getView(children[index].content, children[index].extras);
+                        if (childView) {
+                            childView.detach();
+                        } else {
+                            window.console.log('Child view [' + children[index].content + '] is not registered. Please check parent view [' + self.radID + '] ');
+                            return;
+                        }
+                    }
+                    try {
+                        if (self.innerTemplates && !self.renderRequest) {
+                            virtualEl.innerHTML = self.template({
+                                model: json,
+                                view: self
+                            });
+                            virtualTemplates = virtualEl.querySelectorAll('[data-template]');
+                            for (index = 0, length = self.innerTemplates.length; index < length; index++) {
+                                self.innerTemplates[index].parentNode.replaceChild(virtualTemplates[index], self.innerTemplates[index]);
+                                self.innerTemplates[index] = virtualTemplates[index];
+                            }
+                        } else {
+                            self.el.innerHTML = self.template({
+                                model: json,
+                                view: self
+                            });
+                            prepareInnerTemplates();
+                        }
+                    } catch (e) {
+                        window.console.log(e.message + '. Caused during rendering: ' + self.radID);
+                        return;
+                    }
+                    if (children.length > 0) {
+                        for (index = 0, length = children.length; index < length; index += 1) {
+                            childView = RAD.core.getView(children[index].content, children[index].extras);
+                            if (childView) {
+                                this.insertSubview(children[index], check);
+                            } else {
+                                window.console.log('Cannot insert child view [' + children[index].content + ']. It is not registered. Please check parent view [' + self.radID + '] ');
                                 return;
                             }
-                            templates = self.el.querySelectorAll('[data-template]');
-                            if (templates.length) {
-                                self.innerTemplates = [];
-                                for (i = 0, length = templates.length; i < length; i++) {
-                                    self.innerTemplates[i] = templates[i];
-                                }
-                            } else {
-                                self.innerTemplates = false;
-                            }
                         }
-                        self.onStartRender();
-                        counter = children.length;
-                        for (index = 0, length = children.length; index < length; index += 1) {
-                            if (children[index].content) {
-                                childView = RAD.core.getView(children[index].content, children[index].extras);
-                                if (childView) {
-                                    childView.detach();
-                                } else {
-                                    window.console.log('Child view [' + children[index].content + '] is not registered. Please check parent view [' + self.radID + '] ');
-                                    return;
-                                }
-                            }
-                        }
-                        json = self.model ? self.model.toJSON() : undefined;
-                        try {
-                            if (self.innerTemplates && !self.renderRequest) {
-                                virtualEl.innerHTML = self.template({
-                                    model: json,
-                                    view: self
-                                });
-                                virtualTemplates = virtualEl.querySelectorAll('[data-template]');
-                                for (index = 0, length = self.innerTemplates.length; index < length; index++) {
-                                    self.innerTemplates[index].parentNode.replaceChild(virtualTemplates[index], self.innerTemplates[index]);
-                                    self.innerTemplates[index] = virtualTemplates[index];
-                                }
-                            } else {
-                                self.el.innerHTML = self.template({
-                                    model: json,
-                                    view: self
-                                });
-                                prepareInnerTemplates();
-                            }
-                        } catch (e) {
-                            window.console.log(e.message + '. Caused during rendering: ' + self.radID + ':' + e.stack);
-                            return;
-                        }
-                        if (children.length > 0) {
-                            for (index = 0, length = children.length; index < length; index += 1) {
-                                if (children[index].content) {
-                                    childView = RAD.core.getView(children[index].content, children[index].extras);
-                                    if (childView) {
-                                        this.insertSubview(children[index], check);
-                                    } else {
-                                        window.console.log('Cannot insert child view [' + children[index].content + ']. It is not registered. Please check parent view [' + self.radID + '] ');
-                                        return;
-                                    }
-                                }
-                            }
-                        } else {
-                            check();
-                        }
-                        return self;
-                    },
-                    appendIn: function (container, callback) {
-                        var self = this;
-                        if (!container) {
-                            window.console.log('Cannot insert view [' + self.radID + ']. Target container does not exist');
-                            return;
-                        }
-                        container.appendChild(this.el);
-                        if (this.renderRequest) {
-                            this.loader.doneFirstTask(function () {
-                                self.render(callback);
-                            });
-                        } else {
-                            callback();
-                        }
-                    },
-                    dispatchScrollRefresh: function (target) {
-                        var el = target || this.el, event = document.createEvent('Event');
-                        if (el.parentNode) {
-                            event.initEvent('scrollRefresh', true, true);
-                            el.parentNode.dispatchEvent(event);
-                        }
-                    },
-                    receiveMsg: function msgFunc(msg, data) {
-                        var self = this, parts = msg.split('.');
-                        switch (parts[parts.length - 1]) {
+                    } else {
+                        check();
+                    }
+                    return self;
+                },
+                appendIn: function (container, callback) {
+                    var self = this;
+                    if (!container) {
+                        window.console.log('Cannot insert view [' + self.radID + ']. Target container does not exist');
+                        return;
+                    }
+                    container.appendChild(this.el);
+                    if (this.renderRequest) {
+                        this.loader.doneFirstTask(function () {
+                            self.render(callback);
+                        });
+                    } else {
+                        callback();
+                    }
+                },
+                dispatchScrollRefresh: function (target) {
+                    var el = target || this.el, event = document.createEvent('Event');
+                    if (el.parentNode) {
+                        event.initEvent('scrollRefresh', true, true);
+                        el.parentNode.dispatchEvent(event);
+                    }
+                },
+                receiveMsg: function msgFunc(msg, data) {
+                    var self = this, parts = msg.split('.');
+                    switch (parts[2]) {
                         case 'attach_start':
                             self.loader.done(function () {
                                 self.onBeforeAttach();
@@ -1282,67 +1152,67 @@
                         default:
                             self.onReceiveMsg(msg, data);
                             break;
-                        }
-                        return self;
-                    },
-                    detach: function () {
-                        if (this.$el) {
-                            this.$el.detach();
-                        }
-                    },
-                    destroy: function () {
-                        var property, self = this;
-                        if (self.ajax) {
-                            self.ajax.abort();
-                            self.ajax = null;
-                        }
-                        self.onDestroy();
-                        self.ondestroy();
-                        self.unbindModel();
-                        self.off(null, null, self);
-                        self.unsubscribe(self);
-                        self.undelegateEvents();
-                        self.$el.removeData().off();
-                        self.$el.parent().removeAttr('view');
-                        self.remove();
-                        for (property in self) {
-                            if (self.hasOwnProperty(property)) {
-                                delete self[property];
-                            }
-                        }
-                        return this;
-                    },
-                    oninit: function () {
-                    },
-                    onattach: function () {
-                    },
-                    ondetach: function () {
-                    },
-                    onrender: function () {
-                    },
-                    ondestroy: function () {
-                    },
-                    onInitialize: function () {
-                    },
-                    onNewExtras: function () {
-                    },
-                    onReceiveMsg: function () {
-                    },
-                    onStartRender: function () {
-                    },
-                    onEndRender: function () {
-                    },
-                    onBeforeAttach: function () {
-                    },
-                    onStartAttach: function () {
-                    },
-                    onEndAttach: function () {
-                    },
-                    onEndDetach: function () {
-                    },
-                    onDestroy: function () {
                     }
-                });
+                    return self;
+                },
+                detach: function () {
+                    if (this.$el) {
+                        this.$el.detach();
+                    }
+                },
+                destroy: function () {
+                    var property, self = this;
+                    if (self.ajax) {
+                        self.ajax.abort();
+                        self.ajax = null;
+                    }
+                    self.onDestroy();
+                    self.ondestroy();
+                    self.unbindModel();
+                    self.off(null, null, self);
+                    self.unsubscribe(self);
+                    self.undelegateEvents();
+                    self.$el.removeData().off();
+                    self.$el.parent().removeAttr('view');
+                    self.remove();
+                    for (property in self) {
+                        if (self.hasOwnProperty(property)) {
+                            delete self[property];
+                        }
+                    }
+                    return this;
+                },
+                oninit: function () {
+                },
+                onattach: function () {
+                },
+                ondetach: function () {
+                },
+                onrender: function () {
+                },
+                ondestroy: function () {
+                },
+                onInitialize: function () {
+                },
+                onNewExtras: function () {
+                },
+                onReceiveMsg: function () {
+                },
+                onStartRender: function () {
+                },
+                onEndRender: function () {
+                },
+                onBeforeAttach: function () {
+                },
+                onStartAttach: function () {
+                },
+                onEndAttach: function () {
+                },
+                onEndDetach: function () {
+                },
+                onDestroy: function () {
+                }
+            });
             exports.namespace = 'RAD.Blanks.View';
             exports.module = view;
             exports.type = 'namespace';
@@ -1350,15 +1220,15 @@
         function (module, exports) {
             var blankPlugin = _require(4).module, animateTransition = _require(13).module;
             var animateTransitionPlugin = blankPlugin.extend({
-                    onInitialize: function () {
-                        this.subscribe('animateTransition', this.applyTransition, this);
-                    },
-                    applyTransition: function (channel, data) {
-                        if (data) {
-                            animateTransition(data);
-                        }
+                onInitialize: function () {
+                    this.subscribe('animateTransition', this.applyTransition, this);
+                },
+                applyTransition: function (channel, data) {
+                    if (data) {
+                        animateTransition(data);
                     }
-                });
+                }
+            });
             exports.namespace = 'plugin.animateTransition';
             exports.module = animateTransitionPlugin;
             exports.type = 'plugin';
@@ -1366,14 +1236,14 @@
         function (module, exports) {
             var blankPlugin = _require(4).module, gesture = _require(15).module;
             var GesturePlugin = blankPlugin.extend({
-                    onInitialize: function () {
-                        this.gesture = new gesture(document.body);
-                    },
-                    onDestroy: function () {
-                        this.gesture.destroy();
-                        this.gesture = null;
-                    }
-                });
+                onInitialize: function () {
+                    this.gesture = new gesture(document.body);
+                },
+                onDestroy: function () {
+                    this.gesture.destroy();
+                    this.gesture = null;
+                }
+            });
             exports.namespace = 'plugin.gesture';
             exports.module = GesturePlugin;
             exports.type = 'plugin';
@@ -1424,28 +1294,28 @@
                         }
                     }
                     switch (gravity) {
-                    case 'center':
-                        popupX = (winW - popupW) / 2;
-                        popupY = (winH - popupH) / 2;
-                        break;
-                    case 'top':
-                        popupX = targetX - popupW / 2 + targetW / 2;
-                        popupY = targetY - popupH + nullTargetOffsetY;
-                        break;
-                    case 'bottom':
-                        popupX = targetX - popupW / 2 + targetW / 2;
-                        popupY = targetY + targetH - nullTargetOffsetY;
-                        break;
-                    case 'left':
-                        popupY = targetY - popupH / 2 + targetH / 2;
-                        popupX = targetX - popupW + nullTargetOffsetX;
-                        break;
-                    case 'right':
-                        popupY = targetY - popupH / 2 + targetH / 2;
-                        popupX = targetX + targetW - nullTargetOffsetX;
-                        break;
-                    default:
-                        break;
+                        case 'center':
+                            popupX = (winW - popupW) / 2;
+                            popupY = (winH - popupH) / 2;
+                            break;
+                        case 'top':
+                            popupX = targetX - popupW / 2 + targetW / 2;
+                            popupY = targetY - popupH + nullTargetOffsetY;
+                            break;
+                        case 'bottom':
+                            popupX = targetX - popupW / 2 + targetW / 2;
+                            popupY = targetY + targetH - nullTargetOffsetY;
+                            break;
+                        case 'left':
+                            popupY = targetY - popupH / 2 + targetH / 2;
+                            popupX = targetX - popupW + nullTargetOffsetX;
+                            break;
+                        case 'right':
+                            popupY = targetY - popupH / 2 + targetH / 2;
+                            popupX = targetX + targetW - nullTargetOffsetX;
+                            break;
+                        default:
+                            break;
                     }
                     popup.style.left = Math.round(popupX + window.pageXOffset) + 'px';
                     popup.style.top = Math.round(popupY + window.pageYOffset) + 'px';
@@ -1531,24 +1401,16 @@
                     oldView = core.getView(oldViewId);
                     newViewId = data.content;
                     newView = core.getView(newViewId, core.extractExtras(data));
-                    if (newViewId && !newView) {
-                        window.console.log('View not found:' + newViewId);
-                    }
                     detachedViews = getSubviewsID(oldView);
                     attachedViews = getSubviewsID(newView);
                     detachedViews.push(oldViewId);
                     attachedViews.push(newViewId);
                     if (oldViewId === newViewId) {
                         window.console.log('You try to navigate the same view:' + newViewId);
-                        if (data && data.callback)
-                            data.callback(data, newView ? newView.el : null, oldView ? oldView.el : null, container);
+                        data.callback(data, newView ? newView.el : null, oldView ? oldView.el : null, container);
                         return;
                     }
                     attachViews = function () {
-                        var fakeContainer = document.querySelector('[view="' + newViewId + '"]');
-                        if (fakeContainer) {
-                            fakeContainer.removeAttribute('view');
-                        }
                         publishToGroup('attach_start', attachedViews);
                         container.setAttribute('view', newViewId);
                         core.publish('animateTransition', {
@@ -1643,17 +1505,11 @@
                     });
                 }
                 function showWindow(data) {
-                    var container = document.createElement('div'), className = data.className || 'modal-container', modals = document.body.children, i, l;
+                    var container = document.createElement('div'), className = data.className || 'modal-container';
                     if (data.position) {
                         className += ' pos-' + data.position;
                     } else {
                         className += ' pos-center-center';
-                    }
-                    for (i = 0, l = modals.length; i < l; i += 1) {
-                        if (modals[i].getAttribute('view') === data.content) {
-                            window.console.log('You try to navigate the same view:' + data.content);
-                            return;
-                        }
                     }
                     if (data.outsideClose) {
                         container.listener = function (e) {
@@ -1693,33 +1549,33 @@
                 function onNavigationEvent(channel, data) {
                     var parts = channel.split('.');
                     switch (parts[1]) {
-                    case 'show':
-                        if (data.backstack || defaultBackstack) {
-                            core.publish('router.beginTransition', data);
-                        }
-                        navigateView(data);
-                        break;
-                    case 'back':
-                        data.direction = data.direction !== undefined ? data.direction : true;
-                        navigateView(data);
-                        break;
-                    case 'dialog':
-                        if (parts[2] === 'show') {
-                            showWindow(data);
-                        }
-                        if (parts[2] === 'close') {
-                            closeWindow(data);
-                        }
-                        break;
-                    case 'toast':
-                    case 'popup':
-                        if (parts[2] === 'show') {
-                            showSingle(data);
-                        }
-                        if (parts[2] === 'close') {
-                            closeSingle(data);
-                        }
-                        break;
+                        case 'show':
+                            if (data.backstack || defaultBackstack) {
+                                core.publish('router.beginTransition', data);
+                            }
+                            navigateView(data);
+                            break;
+                        case 'back':
+                            data.direction = data.direction !== undefined ? data.direction : true;
+                            navigateView(data);
+                            break;
+                        case 'dialog':
+                            if (parts[2] === 'show') {
+                                showWindow(data);
+                            }
+                            if (parts[2] === 'close') {
+                                closeWindow(data);
+                            }
+                            break;
+                        case 'toast':
+                        case 'popup':
+                            if (parts[2] === 'show') {
+                                showSingle(data);
+                            }
+                            if (parts[2] === 'close') {
+                                closeSingle(data);
+                            }
+                            break;
                     }
                 }
                 core.subscribe('navigation', onNavigationEvent, self);
@@ -1735,16 +1591,16 @@
         function (module, exports) {
             var blankPlugin = _require(4).module, pointer = _require(16).module;
             var PointerPlugin = blankPlugin.extend({
-                    onInitialize: function () {
-                        if (!window.PointerEvent) {
-                            this.gesture = new pointer(document.body);
-                        }
-                    },
-                    onDestroy: function () {
-                        this.gesture.destroy();
-                        this.gesture = null;
+                onInitialize: function () {
+                    if (!window.PointerEvent) {
+                        this.gesture = new pointer(document.body);
                     }
-                });
+                },
+                onDestroy: function () {
+                    this.gesture.destroy();
+                    this.gesture = null;
+                }
+            });
             exports.namespace = 'plugin.pointer';
             exports.module = PointerPlugin;
             exports.type = 'plugin';
@@ -1752,190 +1608,183 @@
         function (module, exports) {
             var blankPlugin = _require(4).module, backStack = _require(14).module;
             var router = blankPlugin.extend({
-                    onInitialize: function () {
-                        this.backStack = new backStack(RAD.core, this.radID);
-                    },
-                    onDestroy: function () {
-                        this.backStack.destroy();
-                        this.backStack = null;
-                    }
-                });
+                onInitialize: function () {
+                    this.backStack = new backStack(RAD.core, this.radID);
+                },
+                onDestroy: function () {
+                    this.backStack.destroy();
+                    this.backStack = null;
+                }
+            });
             exports.namespace = 'plugin.router';
             exports.module = router;
             exports.type = 'plugin';
         },
         function (module, exports) {
             var animateTransition = function () {
-                    'use strict';
-                    var prefixes = [
-                            'webkit',
-                            'moz',
-                            'MS',
-                            'o',
-                            ''
-                        ], overlay = document.createElement('div');
-                    overlay.className = 'transition-overlay';
-                    function showOverlay() {
-                        document.body.appendChild(overlay);
+                'use strict';
+                var prefixes = [
+                    'webkit',
+                    'moz',
+                    'MS',
+                    'o',
+                    ''
+                ], overlay = document.createElement('div');
+                overlay.className = 'transition-overlay';
+                function showOverlay() {
+                    document.body.appendChild(overlay);
+                }
+                function hideOverlay() {
+                    if (overlay.parentNode) {
+                        document.body.removeChild(overlay);
                     }
-                    function hideOverlay() {
-                        if (overlay.parentNode) {
-                            document.body.removeChild(overlay);
+                }
+                function getElement(selector) {
+                    if (!selector) {
+                        return null;
+                    }
+                    return selector.tagName ? selector : document.querySelector(selector);
+                }
+                function addPrefixedEvent(element, eventName, callback) {
+                    for (var i = 0; i < prefixes.length; i++) {
+                        if (!prefixes[i]) {
+                            eventName = eventName.toLowerCase();
                         }
+                        element.addEventListener(prefixes[i] + eventName, callback, false);
                     }
-                    function getElement(selector) {
-                        if (!selector) {
-                            return null;
+                }
+                function removePrefixedEvent(element, eventName, callback) {
+                    for (var i = 0; i < prefixes.length; i++) {
+                        if (!prefixes[i]) {
+                            eventName = eventName.toLowerCase();
                         }
-                        return selector.tagName ? selector : document.querySelector(selector);
+                        element.removeEventListener(prefixes[i] + eventName, callback, false);
                     }
-                    function addPrefixedEvent(element, eventName, callback) {
-                        for (var i = 0; i < prefixes.length; i++) {
-                            if (!prefixes[i]) {
-                                eventName = eventName.toLowerCase();
-                            }
-                            element.addEventListener(prefixes[i] + eventName, callback, false);
+                }
+                function hasClass(obj, cname) {
+                    return obj.className ? obj.className.match(new RegExp('(\\s|^)' + cname + '(\\s|$)')) : false;
+                }
+                function addClass(obj, cname) {
+                    if (obj && !hasClass(obj, cname)) {
+                        obj.className += ' ' + cname;
+                    }
+                }
+                function removeClass(obj, cname) {
+                    if (obj && hasClass(obj, cname)) {
+                        obj.className = obj.className.replace(new RegExp('(\\s|^)' + cname + '(?=\\s|$)'), '');
+                    }
+                }
+                function getFakeEventObj(name) {
+                    return {
+                        type: 'fake',
+                        animationName: name || 'none',
+                        stopPropagation: function () {
                         }
+                    };
+                }
+                function pagesTransition(options) {
+                    var container, pageIn, pageOut, animationName, pageInClassName, pageOutClassName, transitionTypeName, beforeTransition, onTransitionStart, onTransitionEnd, timer, timeOut = 3500;
+                    options = options || {};
+                    container = getElement(options.container) || document.body;
+                    pageIn = getElement(options.pageIn);
+                    pageOut = getElement(options.pageOut);
+                    animationName = options.animation || 'none';
+                    beforeTransition = options.beforeTransition || function () {
+                    };
+                    onTransitionStart = options.onTransitionStart || function () {
+                    };
+                    onTransitionEnd = options.onTransitionEnd || function () {
+                    };
+                    pageInClassName = 'transition-view-to-show';
+                    pageOutClassName = 'transition-view-to-hide';
+                    transitionTypeName = 'transition-' + animationName;
+                    if (pageIn === pageOut) {
+                        return;
                     }
-                    function removePrefixedEvent(element, eventName, callback) {
-                        for (var i = 0; i < prefixes.length; i++) {
-                            if (!prefixes[i]) {
-                                eventName = eventName.toLowerCase();
-                            }
-                            element.removeEventListener(prefixes[i] + eventName, callback, false);
-                        }
+                    if (pageIn && pageIn.busy || pageOut && pageOut.busy) {
+                        window.console.log('You try apply new animation cannot be applied to the same element until previous animation is not finished.');
                     }
-                    function hasClass(obj, cname) {
-                        return obj.className ? obj.className.match(new RegExp('(\\s|^)' + cname + '(\\s|$)')) : false;
+                    if (beforeTransition && beforeTransition(pageIn, pageOut, container) === false) {
+                        return;
                     }
-                    function addClass(obj, cname) {
-                        if (obj && !hasClass(obj, cname)) {
-                            obj.className += ' ' + cname;
-                        }
-                    }
-                    function removeClass(obj, cname) {
-                        if (obj && hasClass(obj, cname)) {
-                            obj.className = obj.className.replace(new RegExp('(\\s|^)' + cname + '(?=\\s|$)'), '');
-                        }
-                    }
-                    function getFakeEventObj(name) {
-                        return {
-                            type: 'fake',
-                            animationName: name || 'none',
-                            stopPropagation: function () {
-                            }
-                        };
-                    }
-                    function pagesTransition(options) {
-                        var container, pageIn, pageOut, animationName, pageInClassName, pageOutClassName, transitionTypeName, beforeTransition, onTransitionStart, onTransitionEnd, timer, timeOut = 3500;
-                        options = options || {};
-                        container = getElement(options.container) || document.body;
-                        pageIn = getElement(options.pageIn);
-                        pageOut = getElement(options.pageOut);
-                        animationName = options.animation || 'none';
-                        beforeTransition = options.beforeTransition || function () {
-                        };
-                        onTransitionStart = options.onTransitionStart || function () {
-                        };
-                        onTransitionEnd = options.onTransitionEnd || function () {
-                        };
-                        pageInClassName = animationName + '-transition-view-to-show';
-                        pageOutClassName = animationName + '-transition-view-to-hide';
-                        transitionTypeName = 'transition-' + animationName;
-                        if (pageIn === pageOut) {
+                    function onAnimationStart(e) {
+                        if (e.animationName !== animationName) {
                             return;
                         }
-                        if (pageIn && pageIn.busy || pageOut && pageOut.busy) {
-                            window.console.log('You try apply new animation cannot be applied to the same element until previous animation is not finished.');
-                        }
-                        if (beforeTransition && beforeTransition(pageIn, pageOut, container) === false) {
+                        onTransitionStart(pageIn, pageOut, container, e);
+                        removePrefixedEvent(container, 'AnimationStart', onAnimationStart);
+                    }
+                    addPrefixedEvent(container, 'AnimationStart', onAnimationStart);
+                    function onAnimationEnd(e) {
+                        if (e.animationName !== animationName) {
                             return;
                         }
-                        function onAnimationStart(e) {
-                            if (e.animationName !== animationName) {
-                                return;
-                            }
-                            onTransitionStart(pageIn, pageOut, container, e);
-                            removePrefixedEvent(container, 'AnimationStart', onAnimationStart);
-                        }
-                        addPrefixedEvent(container, 'AnimationStart', onAnimationStart);
-                        function onAnimationEnd(e) {
-                            if (e.animationName !== animationName) {
-                                return;
-                            }
-                            e.stopPropagation();
-                            if (pageIn) {
-                                pageIn.busy = false;
-                            }
-                            if (pageOut) {
-                                pageOut.busy = false;
-                                if (pageOut.parentNode === container) {
-                                    container.removeChild(pageOut);
-                                }
-                                removeClass(pageOut, pageOutClassName);
-                            }
-                            onTransitionEnd(pageIn, pageOut, container, e);
-                            removeClass(container, transitionTypeName);
-                            removeClass(pageIn, pageInClassName);
-                            if (timer) {
-                                clearTimeout(timer);
-                            }
-                            hideOverlay();
-                            removePrefixedEvent(container, 'AnimationEnd', onAnimationEnd);
-                        }
-                        addPrefixedEvent(container, 'AnimationEnd', onAnimationEnd);
-                        if (animationName === 'none') {
-                            if (pageIn) {
-                                container.appendChild(pageIn);
-                            }
-                            onTransitionStart(pageIn, pageOut, container, getFakeEventObj());
-                            if (pageOut) {
-                                try {
-                                    container.removeChild(pageOut);
-                                } catch (err) {
-                                    window.console.log('You try apply new animation without subject');
-                                }
-                                onTransitionEnd(pageIn, pageOut, container, getFakeEventObj());
-                            } else {
-                                onTransitionEnd(pageIn, pageOut, container, getFakeEventObj());
-                            }
-                            return;
-                        }
+                        e.stopPropagation();
                         if (pageIn) {
-                            pageIn.busy = true;
-                            addClass(pageIn, pageInClassName);
-                            container.appendChild(pageIn);
+                            pageIn.busy = false;
                         }
                         if (pageOut) {
-                            pageOut.busy = true;
-                            addClass(pageOut, pageOutClassName);
-                            pageOut.offsetHeight;
+                            pageOut.busy = false;
+                            container.removeChild(pageOut);
+                            removeClass(pageOut, pageOutClassName);
                         }
-                        showOverlay();
-                        timer = window.setTimeout(function () {
-                            onAnimationEnd(getFakeEventObj(animationName));
-                        }, timeOut);
-                        addClass(container, transitionTypeName);
+                        onTransitionEnd(pageIn, pageOut, container, e);
+                        removeClass(container, transitionTypeName);
+                        removeClass(pageIn, pageInClassName);
+                        if (timer) {
+                            clearTimeout(timer);
+                        }
+                        hideOverlay();
+                        removePrefixedEvent(container, 'AnimationEnd', onAnimationEnd);
                     }
-                    return pagesTransition;
-                }();
-            if (typeof exports !== 'undefined') {
-                exports.module = animateTransition;
-            }
+                    addPrefixedEvent(container, 'AnimationEnd', onAnimationEnd);
+                    if (animationName === 'none') {
+                        if (pageIn) {
+                            container.appendChild(pageIn);
+                        }
+                        onTransitionStart(pageIn, pageOut, container, getFakeEventObj());
+                        if (pageOut) {
+                            window.setTimeout(function () {
+                                container.removeChild(pageOut);
+                                onTransitionEnd(pageIn, pageOut, container, getFakeEventObj());
+                            }, 50);
+                        } else {
+                            onTransitionEnd(pageIn, pageOut, container, getFakeEventObj());
+                        }
+                        return;
+                    }
+                    if (pageIn) {
+                        pageIn.busy = true;
+                        addClass(pageIn, pageInClassName);
+                        container.appendChild(pageIn);
+                    }
+                    if (pageOut) {
+                        pageOut.busy = true;
+                        addClass(pageOut, pageOutClassName);
+                    }
+                    showOverlay();
+                    timer = window.setTimeout(function () {
+                        onAnimationEnd(getFakeEventObj(animationName));
+                    }, timeOut);
+                    addClass(container, transitionTypeName);
+                }
+                return pagesTransition;
+            }();
+            exports.module = animateTransition;
         },
         function (module, exports) {
             function BackStack(core, id) {
                 var self = {}, router, stubStack = [], toForward = false, START_URL = 'index.html', ID_SEPARATOR = '%%%', routerType = function (type) {
-                        var newAPI = typeof history.pushState === 'function', result = newAPI ? 'native' : 'hashbang', types = [
-                                'native',
-                                'hashbang',
-                                'custom'
-                            ];
-                        if (type && types.indexOf(type) > 0) {
-                            result = type;
-                        }
-                        return result;
-                    }(core.options.backstackType);
+                    var newAPI = typeof history.pushState === 'function', result = newAPI ? 'native' : 'hashbang', types = [
+                        'native',
+                        'hashbang',
+                        'custom'
+                    ];
+                    if (type && types.indexOf(type) > 0) {
+                        result = type;
+                    }
+                    return result;
+                }(core.options.backstackType);
                 function getRootView(el) {
                     var result, nodes, i, l, id;
                     nodes = el.childNodes;
@@ -2058,27 +1907,27 @@
                     navigate: function (newUrl) {
                         var self = this;
                         switch (routerType) {
-                        case 'native':
-                            history.pushState({
-                                url: newUrl,
-                                id: self.currentID
-                            }, null, null);
-                            break;
-                        case 'hashbang':
-                            toForward = true;
-                            window.location.href = START_URL + '#!' + newUrl + ID_SEPARATOR + self.currentID;
-                            break;
-                        case 'custom':
-                            if (stubStack.last) {
-                                stubStack.push(stubStack.last);
-                            }
-                            stubStack.last = {
-                                state: {
+                            case 'native':
+                                history.pushState({
                                     url: newUrl,
                                     id: self.currentID
+                                }, null, null);
+                                break;
+                            case 'hashbang':
+                                toForward = true;
+                                window.location.href = START_URL + '#!' + newUrl + ID_SEPARATOR + self.currentID;
+                                break;
+                            case 'custom':
+                                if (stubStack.last) {
+                                    stubStack.push(stubStack.last);
                                 }
-                            };
-                            break;
+                                stubStack.last = {
+                                    state: {
+                                        url: newUrl,
+                                        id: self.currentID
+                                    }
+                                };
+                                break;
                         }
                         self.lastURL = newUrl;
                         self.currentURL = newUrl;
@@ -2092,24 +1941,24 @@
                         }
                         this.navigate(packURL(rootModule, timestamp, animation));
                     },
-                    onNewTransition: function (data) {
+                    onNewTransition: function () {
                         this.toBack = true;
                         this.isBlocked = false;
-                        this.pushToStackRequest = data.container_id + data.content;
+                        this.pushToStackRequest = true;
                     },
                     back: function () {
                         this.toBack = true;
                         switch (routerType) {
-                        case 'native':
-                        case 'hashbang':
-                            history.back();
-                            break;
-                        case 'custom':
-                            var state = stubStack.pop();
-                            if (state) {
-                                router.onPopState(state);
-                            }
-                            break;
+                            case 'native':
+                            case 'hashbang':
+                                history.back();
+                                break;
+                            case 'custom':
+                                var state = stubStack.pop();
+                                if (state) {
+                                    router.onPopState(state);
+                                }
+                                break;
                         }
                     },
                     clearAndBlock: function () {
@@ -2183,103 +2032,103 @@
                 function onMessage(channel, data) {
                     var parts = channel.split('.');
                     switch (parts[1]) {
-                    case 'beginTransition':
-                        router.onNewTransition(data);
-                        break;
-                    case 'endTransition':
-                        if (router.pushToStackRequest === data.container_id + data.content) {
-                            router.saveScoopeAsURL(data);
-                        }
-                        break;
-                    case 'back':
-                        router.back();
-                        break;
-                    case 'clear':
-                        router.clearAndBlock();
-                        break;
+                        case 'beginTransition':
+                            router.onNewTransition();
+                            break;
+                        case 'endTransition':
+                            if (router.pushToStackRequest) {
+                                router.saveScoopeAsURL(data);
+                            }
+                            break;
+                        case 'back':
+                            router.back();
+                            break;
+                        case 'clear':
+                            router.clearAndBlock();
+                            break;
                     }
                 }
                 core.subscribe('router', onMessage, self);
                 switch (routerType) {
-                case 'native':
-                    core.window.onpopstate = function (event) {
-                        router.onPopState(event);
-                    };
-                    break;
-                case 'hashbang':
-                    $(window).bind('hashchange', function () {
-                        var tmp = window.location.href.substring(window.location.href.lastIndexOf('#!') + 2), strings = tmp.split(ID_SEPARATOR), href = strings[0], id = parseInt(strings[1], 10);
-                        if (!toForward) {
-                            router.onPopState({
-                                state: {
-                                    id: id,
-                                    url: href
-                                }
-                            });
-                        }
-                        toForward = false;
-                    });
-                    break;
-                case 'custom':
-                    break;
+                    case 'native':
+                        core.window.onpopstate = function (event) {
+                            router.onPopState(event);
+                        };
+                        break;
+                    case 'hashbang':
+                        $(window).bind('hashchange', function () {
+                            var tmp = window.location.href.substring(window.location.href.lastIndexOf('#!') + 2), strings = tmp.split(ID_SEPARATOR), href = strings[0], id = parseInt(strings[1], 10);
+                            if (!toForward) {
+                                router.onPopState({
+                                    state: {
+                                        id: id,
+                                        url: href
+                                    }
+                                });
+                            }
+                            toForward = false;
+                        });
+                        break;
+                    case 'custom':
+                        break;
                 }
                 self.destroy = function () {
                     core.unsubscribe(self);
                 };
                 return self;
             }
-            if (typeof exports !== 'undefined') {
-                exports.module = BackStack;
-            }
+            exports.module = BackStack;
         },
         function (module, exports) {
             function GestureTracker(element) {
                 var attr;
+
                 this._el = element;
+
                 for (attr in this.TRACK_EVENTS) {
                     if (this.TRACK_EVENTS.hasOwnProperty(attr)) {
                         this._el.addEventListener(this.TRACK_EVENTS[attr], this, false);
                     }
                 }
+
                 this.destroy = function () {
                     for (attr in this.TRACK_EVENTS) {
                         if (this.TRACK_EVENTS.hasOwnProperty(attr)) {
                             this._el.removeEventListener(this.TRACK_EVENTS[attr], this);
                         }
                     }
+
                     this._el = null;
                 };
             }
+
             GestureTracker.prototype = {
-                HOLD_TIMEOUT: 350,
                 TRACK_EVENTS: {
-                    up: 'pointerup',
-                    down: 'pointerdown',
-                    move: 'pointermove',
-                    over: 'pointerover',
-                    chancel: 'pointercancel'
+                    up: "pointerup",
+                    down: "pointerdown",
+                    move: "pointermove",
+                    over: "pointerover",
+                    chancel: "pointercancel"
                 },
+
                 tracks: {},
+
                 handleEvent: function (e) {
                     switch (e.type) {
-                    case this.TRACK_EVENTS.down:
-                        this._pointerDown(e);
-                        break;
-                    case this.TRACK_EVENTS.move:
-                        this._pointerMove(e);
-                        break;
-                    case this.TRACK_EVENTS.chancel:
-                    case this.TRACK_EVENTS.up:
-                        this._pointerUp(e);
-                        break;
+                        case this.TRACK_EVENTS.down:
+                            this._pointerDown(e);
+                            break;
+                        case this.TRACK_EVENTS.move:
+                            this._pointerMove(e);
+                            break;
+                        case this.TRACK_EVENTS.chancel:
+                        case this.TRACK_EVENTS.up:
+                            this._pointerUp(e);
+                            break;
                     }
                 },
+
                 _pointerDown: function (e) {
-                    var gesture = this;
-                    clearTimeout(this._holdID);
-                    this._holdID = setTimeout(function () {
-                        gesture._fireEvent('hold', e);
-                    }, this.HOLD_TIMEOUT);
                     this.tracks[e.pointerId] = {
                         start: {
                             clientX: e.clientX,
@@ -2303,53 +2152,63 @@
                         }
                     };
                 },
+
                 _pointerMove: function (e) {
-                    if (this.tracks && this.tracks[e.pointerId] && e.timeStamp - this.tracks[e.pointerId].last.timeStamp > 10) {
-                        clearTimeout(this._holdID);
+                    if (e.timeStamp - this.tracks[e.pointerId].last.timeStamp > 10) {
                         this.tracks[e.pointerId].pre.clientX = this.tracks[e.pointerId].last.clientX;
                         this.tracks[e.pointerId].pre.clientY = this.tracks[e.pointerId].last.clientY;
                         this.tracks[e.pointerId].pre.timeStamp = this.tracks[e.pointerId].last.timeStamp;
+
                         this.tracks[e.pointerId].last.clientX = e.clientX;
                         this.tracks[e.pointerId].last.clientY = e.clientY;
                         this.tracks[e.pointerId].last.timeStamp = e.timeStamp;
                     }
                 },
+
                 _pointerUp: function (e) {
-                    clearTimeout(this._holdID);
-                    if (!this.tracks || !this.tracks[e.pointerId]) {
-                        return;
-                    }
                     this.tracks[e.pointerId].end.clientX = e.clientX;
                     this.tracks[e.pointerId].end.clientY = e.clientY;
                     this.tracks[e.pointerId].end.timeStamp = e.timeStamp;
+
                     this._checkGesture(e);
                     this.tracks[e.pointerId] = null;
                 },
+
                 _checkGesture: function (e) {
                     var isMoved, isFling, pointerId = e.pointerId, pointer = this.tracks[pointerId];
+
                     function distance(x1, x2, y1, y2) {
-                        return Math.pow((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1), 0.5);
+                        return Math.pow(((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)), 0.5);
                     }
-                    isMoved = Math.abs(distance(pointer.start.clientX, pointer.end.clientX, pointer.start.clientY, pointer.end.clientY)) > 20;
-                    isFling = Math.abs(distance(pointer.end.clientX, pointer.pre.clientX, pointer.end.clientY, pointer.pre.clientY)) > 0 && pointer.end.timeStamp - pointer.start.timeStamp > 300;
-                    if (isFling) {
-                        this._fireEvent('fling', e, {
-                            start: pointer.start,
-                            end: pointer.end,
-                            speedX: (pointer.end.clientX - pointer.pre.clientX) / (pointer.end.timeStamp - pointer.pre.timeStamp),
-                            speedY: (pointer.end.clientY - pointer.pre.clientY) / (pointer.end.timeStamp - pointer.pre.timeStamp)
-                        });
-                    } else if (!isMoved) {
-                        if (pointer.end.timeStamp - pointer.start.timeStamp > 300) {
-                            this._fireEvent('longtap', e);
-                        } else {
-                            this._fireEvent('tap', e);
+
+                    isMoved = Math.abs(distance(pointer.start.clientX, pointer.end.clientX, pointer.start.clientY, pointer.end.clientY)) > 10;
+                    isFling = Math.abs(distance(pointer.end.clientX, pointer.pre.clientX, pointer.end.clientY, pointer.pre.clientY)) > 0;
+
+                    if (Object.keys(this.tracks).length === 1) {
+                        if (isFling) {
+                            this._fireEvent('fling', e, {
+                                start: pointer.start,
+                                end: pointer.end,
+                                speedX: (pointer.end.clientX - pointer.pre.clientX) / (pointer.end.timeStamp - pointer.pre.timeStamp),
+                                speedY: (pointer.end.clientY - pointer.pre.clientY) / (pointer.end.timeStamp - pointer.pre.timeStamp)
+                            });
+                        } else if (!isMoved) {
+                            if (pointer.end.timeStamp - pointer.start.timeStamp > 300) {
+                                this._fireEvent('longtap', e);
+                            } else {
+                                this._fireEvent('tap', e);
+                            }
                         }
                     }
                 },
+
                 _fireEvent: function (type, e, addiction) {
                     var attr, customEvent = document.createEvent('MouseEvents');
-                    customEvent.initMouseEvent(type, true, true, window, 1, e.screenX, e.screenY, e.clientX, e.clientY, e.ctrlKey, e.altKey, e.shiftKey, e.metaKey, e.button, e.relatedTarget);
+                    customEvent.initMouseEvent(type, true, true, window, 1, e.screenX, e.screenY,
+                        e.clientX, e.clientY, e.ctrlKey, e.altKey, e.shiftKey, e.metaKey, e.button,
+                        e.relatedTarget);
+
+                    // event attributes
                     customEvent.pointerId = this.touchID;
                     customEvent.pointerType = e.pointerType;
                     if (addiction) {
@@ -2359,72 +2218,41 @@
                             }
                         }
                     }
+
                     e.target.dispatchEvent(customEvent);
                 }
             };
-            if (typeof exports !== 'undefined') {
-                exports.module = GestureTracker;
-            }
+
+            exports.module = GestureTracker;
         },
         function (module, exports) {
             var STRINGS = {
-                    pointerDown: 'pointerdown',
-                    pointerMove: 'pointermove',
-                    pointerUp: 'pointerup',
-                    pointerCancel: 'pointercancel',
-                    pointerOut: 'pointerout',
-                    touchstart: 'touchstart',
-                    touchmove: 'touchmove',
-                    touchend: 'touchend',
-                    touchleave: 'touchleave',
-                    touchcancel: 'touchcancel',
-                    mousedown: 'mousedown',
-                    mousemove: 'mousemove',
-                    mouseup: 'mouseup',
-                    mouseover: 'mouseover',
-                    mouseout: 'mouseout'
-                };
-            if (window.MSPointerEvent && !window.PointerEvent) {
-                STRINGS.pointerDown = 'MSPointerDown';
-                STRINGS.pointerMove = 'MSPointerMove';
-                STRINGS.pointerUp = 'MSPointerUp';
-                STRINGS.pointerCancel = 'MSPointerCancel';
-                STRINGS.pointerOut = 'MSPointerOut';
-            }
+                touchstart: 'touchstart',
+                touchmove: 'touchmove',
+                touchend: 'touchend',
+                touchleave: 'touchleave',
+                touchcancel: '.touchcancel',
+                mousedown: 'mousedown',
+                mousemove: 'mousemove',
+                mouseup: 'mouseup',
+                mouseover: 'mouseover',
+                mouseout: 'mouseout'
+            };
             function PointerTracker(element) {
                 this._el = element;
                 this.isDown = false;
                 this.chancelId = false;
-                if (!window.navigator.msPointerEnabled) {
-                    if (!this.isTouched) {
-                        this._el.addEventListener(STRINGS.mousedown, this, false);
-                        this._el.addEventListener(STRINGS.mouseup, this, false);
-                        this._el.addEventListener(STRINGS.mousemove, this, false);
-                        this._el.addEventListener(STRINGS.mouseout, this, false);
-                        this._el.addEventListener(STRINGS.mouseover, this, false);
-                    } else {
-                        this._el.addEventListener(STRINGS.touchstart, this, false);
-                        this._el.addEventListener(STRINGS.touchend, this, false);
-                        this._el.addEventListener(STRINGS.touchmove, this, false);
-                        this._el.addEventListener(STRINGS.touchcancel, this, false);
-                    }
+                if (!this.isTouched) {
+                    this._el.addEventListener(STRINGS.mousedown, this, false);
+                    this._el.addEventListener(STRINGS.mouseup, this, false);
+                    this._el.addEventListener(STRINGS.mousemove, this, false);
+                    this._el.addEventListener(STRINGS.mouseout, this, false);
+                    this._el.addEventListener(STRINGS.mouseover, this, false);
                 } else {
-                    var self = this, eventHandlerIE = function (e) {
-                            self.handleEventIE(e);
-                        }, eventHandler = function (e) {
-                            self.handleEvent(e);
-                        };
-                    if (window.navigator.pointerEnabled) {
-                        this._el.addEventListener(STRINGS.pointerDown, eventHandlerIE, true);
-                        this._el.addEventListener(STRINGS.pointerMove, eventHandlerIE, true);
-                        this._el.addEventListener(STRINGS.pointerUp, eventHandlerIE, true);
-                    } else {
-                        this._el.addEventListener(STRINGS.pointerDown, eventHandler, true);
-                        this._el.addEventListener(STRINGS.pointerMove, eventHandler, true);
-                        this._el.addEventListener(STRINGS.pointerUp, eventHandler, true);
-                    }
-                    this._el.addEventListener(STRINGS.pointerCancel, eventHandler, false);
-                    this._el.addEventListener(STRINGS.pointerOut, eventHandler, false);
+                    this._el.addEventListener(STRINGS.touchstart, this, false);
+                    this._el.addEventListener(STRINGS.touchend, this, false);
+                    this._el.addEventListener(STRINGS.touchmove, this, false);
+                    this._el.addEventListener(STRINGS.touchcancel, this, false);
                 }
                 this.destroy = function () {
                     if (!this.isTouched) {
@@ -2450,83 +2278,56 @@
                     over: 'pointerover',
                     chancel: 'pointercancel'
                 },
-                isTouched: 'ontouchstart' in window || window.navigator.msPointerEnabled,
-                handleEventIE: function (e) {
-                    if (!e.isPrimary) {
-                        e.stopImmediatePropagation();
-                        e.stopPropagation();
-                        e.preventDefault();
-                    } else {
-                        switch (e.type) {
-                        case STRINGS.pointerDown:
-                            this.isDown = true;
-                            break;
-                        case STRINGS.pointerUp:
-                        case STRINGS.pointerCancel:
-                        case STRINGS.pointerOut:
-                            this.isDown = false;
-                        }
-                    }
-                },
+                isTouched: 'ontouchstart' in window,
                 handleEvent: function (e) {
                     if (this.chancelId !== null) {
                         clearTimeout(this.chancelId);
                     }
                     switch (e.type) {
-                    case STRINGS.touchmove:
-                    case STRINGS.mousemove:
-                    case STRINGS.pointerMove:
-                        if (this.isDown) {
-                            this._fireEvent(this.EVENTS.move, e);
-                        }
-                        break;
-                    case STRINGS.touchstart:
-                    case STRINGS.mousedown:
-                    case STRINGS.pointerDown:
-                        this.isDown = true;
-                        this.chancelId = false;
-                        this._fireEvent(this.EVENTS.down, e);
-                        break;
-                    case STRINGS.touchend:
-                    case STRINGS.pointerUp:
-                    case STRINGS.touchleave:
-                    case STRINGS.touchcancel:
-                    case STRINGS.pointerCancel:
-                    case STRINGS.pointerOut:
-                    case STRINGS.mouseup:
-                        if (this.isDown) {
-                            this.isDown = !this._fireEvent(this.EVENTS.up, e);
-                        }
-                        break;
-                    case STRINGS.mouseover:
-                        if (this.isDown) {
-                            this._fireEvent(this.EVENTS.over, e);
-                        }
-                        break;
-                    case STRINGS.mouseout:
-                        var pointerTracker = this;
-                        if (this.isDown) {
-                            this.chancelId = setTimeout(function () {
-                                pointerTracker.isDown = false;
-                                pointerTracker._fireEvent(pointerTracker.EVENTS.chancel, e);
-                                pointerTracker.chancelId = null;
-                            }, 10);
-                        }
-                        break;
+                        case STRINGS.touchmove:
+                        case STRINGS.mousemove:
+                            if (this.isDown) {
+                                this._fireEvent(this.EVENTS.move, e);
+                            }
+                            break;
+                        case STRINGS.touchstart:
+                        case STRINGS.mousedown:
+                            this.isDown = true;
+                            this.chancelId = false;
+                            this._fireEvent(this.EVENTS.down, e);
+                            break;
+                        case STRINGS.touchend:
+                        case STRINGS.touchleave:
+                        case STRINGS.touchcancel:
+                        case STRINGS.mouseup:
+                            if (this.isDown) {
+                                this.isDown = false;
+                                this._fireEvent(this.EVENTS.up, e);
+                            }
+                            break;
+                        case STRINGS.mouseover:
+                            if (this.isDown) {
+                                this._fireEvent(this.EVENTS.over, e);
+                            }
+                            break;
+                        case STRINGS.mouseout:
+                            var pointerTracker = this;
+                            if (this.isDown) {
+                                this.chancelId = setTimeout(function () {
+                                    pointerTracker.isDown = false;
+                                    pointerTracker._fireEvent(pointerTracker.EVENTS.chancel, e);
+                                    pointerTracker.chancelId = null;
+                                }, 10);
+                            }
+                            break;
                     }
                 },
                 _fireEvent: function (type, e) {
                     var touchEvent = e, i, l, customEvent;
                     if (this.isTouched) {
-                        if (window.navigator.msPointerEnabled) {
-                            if (!e.isPrimary) {
-                                return false;
-                            }
-                            touchEvent = e;
-                            this.touchID = e.pointerId;
-                        } else if (e.type === STRINGS.touchstart) {
+                        if (e.type === STRINGS.touchstart) {
                             if (e.touches.length > 1) {
-                                return false;
+                                return;
                             }
                             touchEvent = e.touches[0];
                             this.touchID = e.touches[0].identifier;
@@ -2538,7 +2339,7 @@
                                 }
                             }
                             if (touchEvent.identifier !== this.touchID) {
-                                return false;
+                                return;
                             }
                         }
                     } else {
@@ -2560,20 +2361,11 @@
                     }
                     customEvent.pointerId = this.touchID;
                     customEvent.pointerType = this.isTouched ? 'touch' : 'mouse';
-                    customEvent.isPrimary = true;
-                    if (customEvent.__defineGetter__) {
-                        customEvent.__defineGetter__('timeStamp', function () {
-                            return e.timeStamp;
-                        });
-                    }
                     e.target.dispatchEvent(customEvent);
-                    return true;
                 }
             };
-            if (typeof exports !== 'undefined') {
-                exports.module = PointerTracker;
-            }
+            exports.module = PointerTracker;
         }
     ];
-    return _require(1);
+    _require(1);
 }());
