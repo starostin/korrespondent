@@ -8,11 +8,14 @@ RAD.views.SwipeExt =  RAD.Blanks.View.extend({
     onattach: function(){
         var viewCoord  = this.el.getBoundingClientRect();
         this.halfWidth = viewCoord.width * 0.5;
-        this.nativeScroll = this.el.querySelector('.native-scroll');
+
     },
     coordinates: {
         x: [],
         y: []
+    },
+    onrender: function(){
+        this.nativeScroll = this.el.querySelector('.native-scroll');
     },
     touchStart: function(e){
         this.coordinates.x = [e.originalEvent.changedTouches[0].clientX];
@@ -62,15 +65,14 @@ RAD.views.SwipeExt =  RAD.Blanks.View.extend({
     },
     disableScroll: function(){
         if(this.mScroll){
-            this.mScroll._options.stopScroll = true;
+            this.mScroll.disable();
         }else if(this.nativeScroll){
-            console.log('-=-=-=-=SSS-=-==-', this.nativeScroll)
             this.nativeScroll.classList.add('stop-scrolling');
         }
     },
     enableScroll: function(){
         if(this.mScroll){
-            this.mScroll._options.stopScroll = false;
+            this.mScroll.enable();
         }else if(this.nativeScroll){
             this.nativeScroll.classList.remove('stop-scrolling');
         }

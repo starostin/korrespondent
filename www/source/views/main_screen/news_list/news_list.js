@@ -15,6 +15,7 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
         this.attachScroll();
     },
     onInitialize: function(){
+        var self = this;
         this.rotateCoef = 180/50;
         this.sidebar = RAD.models.Sidebar;
         this.settings = RAD.models.Settings;
@@ -26,7 +27,15 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
         this.news.on('add', this.addNews, this);
         this.bufferNews.on('all', this.showUpdateMessage, this);
         this.scrollOptions = {
-            boundsY: true
+            bounds: false,
+            marginTop: -50,
+            onScroll: function (shiftX, shiftY) {
+//                self.onScroll(shiftX, shiftY);
+            },
+            onScrollBefore: function (shiftX, shiftY) {
+//                self.onScrollBefore(shiftX, shiftY);
+                return true;
+            }
         }
     },
     onStartAttach: function(){
@@ -37,7 +46,6 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
     attachScroll: function(){
         var scrollContainer = this.el.querySelector('.scroll-view');
         this.mScroll = new ScrollView(scrollContainer, this.scrollOptions);
-        console.log(this.mScroll)
     },
     detachScroll: function(){
         if(this.mScroll){
@@ -90,8 +98,10 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
         var li = document.createElement('li'),
             list = this.el.querySelector('.list'),
             firstLi = list.querySelector('li');
-        li.innerHTML = '<li class="one-news" data-cid="' + model.cid + '"> <img class="small-img" src="' + model.get('image') + '"/> ' +
-            '<div class="news-title">' + model.get('title') + '</div> </li>';
+        li.className = 'one-news';
+        li.setAttribute('data-cid', model.cid);
+        li.innerHTML = '<img class="small-img" src="' + model.get('image') + '"/> ' +
+            '<div class="news-title">' + model.get('title') + '</div>';
         if(firstLi){
             list.insertBefore(li, firstLi);
         }else{
@@ -104,7 +114,7 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
     },
     toggleSidebar: function(){
         this.el.classList.toggle('open');
-        this.mScroll._options.stopScroll = this.el.classList.contains('open');
+        this.el.classList.contains('open') ? this.mScroll.disable() : this.mScroll.enable();
     },
     openNewsList: function(){
         if(!this.el.classList.contains('open')) return;
@@ -112,38 +122,51 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
     },
 
     onMoveVertically: function(e){
-        //var scrollView = this.el.querySelector('.native-scroll'),
-        //    scrollList = this.el.querySelector('.news-list'),
-        //    preventScroll = this.el.querySelector('.prevent-scroll'),
-        //    scrollPos = scrollView.scrollTop,
-        //    scrollCoord = scrollView.getBoundingClientRect();
-        //
-        //if(scrollPos === 0 && !this.firstY){
-        //    this.firstY = e.originalEvent.changedTouches[0].clientY;
-        //}
-        //if(scrollCoord.top <50){
-        //    preventScroll.style.zIndex = 0;
-        //    scrollView.classList.remove('stop-scrolling');
-        //    return;
-        //}
-        //if(scrollPos > 0){
-        //    return;
-        //}
-        //preventScroll.style.zIndex = 1000;
-        //var newY = e.originalEvent.changedTouches[0].clientY,
-        //    diff =(newY - this.firstY);
-        //scrollView.classList.add('pull-active');
-        //scrollView.style.transition  = 'none';
-        ////scrollView.classList.add('stop-scrolling');
-        //scrollView.style.transform = 'translateY(' + (diff*0.4)+ 'px)';
+        var scrollView = this.el.querySelector('.list'),
+            firstLi = scrollView.querySelector('li'),
+            firstLiCoord = firstLi.getBoundingClientRect();
+
+        if(firstLiCoord.top <50 ||  this.mScroll._disable){
+            return;
+        }
+        var firstY = this.coordinates.y[this.coordinates.y.length-1],
+            newY = e.originalEvent.changedTouches[0].clientY,
+            diff =(newY - firstY);
+        scrollView.classList.add('pull-active');
+        scrollView.style.transition  = 'none';
+        this.mScroll._options.stopScroll = true;
+        scrollView.style.transform = 'translateY(' + (diff*0.4)+ 'px)';
+
+        var pullDiv = this.el.querySelector('.pull-down'),
+            arrow = pullDiv.querySelector('.arrow-img'),
+            deg = Math.abs(this.rotateCoef * diff)-180;
+//
+        arrow.style.transform = 'rotate(' + deg + 'deg)';
+        if(diff >=50 && !pullDiv.classList.contains('update')){
+            pullDiv.classList.add('update');
+        }else if(!pullDiv.classList.contains('update')){
+            pullDiv.classList.remove('update');
+        }
     },
     onTouchEnd: function(){
-        //console.log('-------------------------END------------------')
-        //this.firstY = null;
-        //var scrollView = this.el.querySelector('.native-scroll');
-        //scrollView.style.transition  = 'all 0.2s ease-in-out';
-        //scrollView.style.transform = 'translateY(0)';
-        ////scrollView.classList.remove('stop-scrolling');
+        var pullDiv = this.el.querySelector('.pull-down'),
+            arrow = pullDiv.querySelector('.arrow-img'),
+            isUpdate = pullDiv.classList.contains('update'),
+            spinner = pullDiv.querySelector('.loader');
+        var scrollView = this.el.querySelector('.list');
+        scrollView.style.transition  = 'all 0.2s ease-in-out';
+        scrollView.style.transform = 'translateY(50px)';
+        if(isUpdate && spinner.style.display === 'none'){
+            this.getNews();
+        }else{
+           this.finishScroll()
+        }
+    },
+    finishScroll: function(){
+        var scrollView = this.el.querySelector('.list');
+        this.mScroll._options.stopScroll = false;
+        scrollView.style.transition  = 'all 0.2s ease-in-out';
+        scrollView.style.transform = 'translateY(0)';
     },
     finishSwipe: function(val, half){
         if(val >= half){
@@ -165,6 +188,7 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
         this.news.setNews({
             addBuffer: true,
             complete: function(){
+                self.finishScroll();
                 spinner.style.display = 'none';
                 pullDiv.classList.remove('update');
                 self.mScroll.refresh();
@@ -192,13 +216,13 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
             errorDiv.classList.remove('show');
         }, 2000)
     },
-    onScrollEnd: function(){
-        var pullDiv = this.el.querySelector('.pull-down'),
-            arrow = pullDiv.querySelector('.arrow-img'),
-            isUpdate = pullDiv.classList.contains('update'),
-            spinner = pullDiv.querySelector('.loader');
-        if(isUpdate && spinner.style.display === 'none'){
-            this.getNews();
-        }
-    }
+//    onScrollEnd: function(){
+//        var pullDiv = this.el.querySelector('.pull-down'),
+//            arrow = pullDiv.querySelector('.arrow-img'),
+//            isUpdate = pullDiv.classList.contains('update'),
+//            spinner = pullDiv.querySelector('.loader');
+//        if(isUpdate && spinner.style.display === 'none'){
+//            this.getNews();
+//        }
+//    }
 }));

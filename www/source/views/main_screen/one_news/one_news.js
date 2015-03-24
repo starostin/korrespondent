@@ -18,7 +18,8 @@ RAD.view("view.one_news", RAD.views.SwipeExt.extend({
         if(val < half){
             this.el.classList.add('open');
         }else{
-            this.el.classList.remove('open')
+            this.el.classList.remove('open');
+            this.removeCurrentNews();
         }
     },
     showNews: function(model, val, option){

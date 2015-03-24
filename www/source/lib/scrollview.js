@@ -60,7 +60,6 @@ window.performance.now = (function () {
 
 function ScrollView(element, options) {
     var scrollView = this, validPosition, tmpVar, event;
-
     function mix(obj, mixin) {
         var attr;
         for (attr in mixin) {
@@ -70,130 +69,124 @@ function ScrollView(element, options) {
         }
         return obj;
     }
-
-    // initialize inner variables on creation
-    this._transitionArray = ["translate(", 0, "px, ", 0, "px) translateZ(0) scale(1)"];
-    this._animParams = null; //move or not in current time scrolling view
-    this._RafID = null; // ID of request animation frame
-    this._lastPointerPosition = {X: 0, Y: 0}; // position of touch pointer, when is touched
-    this._shift = {X: 0, Y: 0}; //shift for next RAF tick
-    this._motionType = this._lastMotionType = this._STRINGS.stop;
-    this._isMoved = false;
-    this._isChanceled = false;
-    this._tmp = {shiftX: 0, shiftY: 0, now: 0, easing: 0};
-
-    // initialize public variables on creation
-    this._pos = {X: 0, Y: 0};
-    this._wrapper = element;
-    this._el = element.firstElementChild;
-
     // options for current instance of scrollview
     this._options = mix({
         preventMove: true,
         resizeEvent: true,
-        'scrollX': true,
-        'scrollY': true,
-        'boundsX': false,
-        'boundsY': false,
-        onScroll: function (shiftX, shiftY) {
+        scroll: true,
+        bounds: true,
+        direction: 'vertical',
+        marginMIN: 0,
+        marginMAX: 0,
+        onScroll: function (shift) {
         },
-        onScrollBefore: function (shiftX, shiftY) {
+        onScrollBefore: function (shift) {
             return true;
         },
         onScrollAfter: function () {
         },
-        onScrollChancel: function () {
-        },
         onScrollTypeChange: function (type) {
-        },
+        }
     }, options);
+
+    // initialize inner variables on creation
+    if (this._options.direction === 'vertical') {
+        this._transitionArray = ["translate3d(0, ", 0, "px, 0)"];
+        this._coordName = 'screenY';
+        this._speedName = 'speedY';
+    } else {
+        this._transitionArray = ["translate3d(", 0, "px, 0, 0)"];
+        this._coordName = 'screenX';
+        this._speedName = 'speedX';
+    }
+    this._animParams = null; //move or not in current time scrolling view
+    this._RafID = null; // ID of request animation frame
+    this._lastPointerPosition = 0; // position of touch pointer, when is touched
+    this._shift = 0; //shift for next RAF tick
+    this._motionType = this._lastMotionType = this._STRINGS.stop;
+    this._isMoved = false;
+    this._tmp = {shift: 0, now: 0, easing: 0, velocity: 0};
+    this._pos = 0;
+    this._root = element;
+    this._wrapper = element.querySelector('.scroll');
 
     // prepare environment
     validPosition = ['fixed', 'relative', 'absolute'];
     tmpVar = validPosition.indexOf(window.getComputedStyle(element, null).position);
-    this._wrapper.style.position = (tmpVar === -1) ? 'relative' : validPosition[tmpVar];
-    this._wrapper.style.overflow = 'hidden';
+    if (tmpVar === -1) {
+        tmpVar = validPosition.indexOf(element.style.position);
+    }
+    this._root.style.position = (tmpVar === -1) ? 'relative' : validPosition[tmpVar];
+    this._root.style.overflow = 'hidden';
 
-    this._el.style.margin = 0;
-    this._el.style.position = 'absolute';
-    this._el.style[this._transitionName] = 'transform 0ms';
+    this._wrapper.style.margin = 0;
+    this._wrapper.style.marginTop = (this._options.marginTop || 0) + 'px';
+    this._wrapper.style.width = '100%';
+    this._wrapper.style.position = 'absolute';
+    this._wrapper.style[this._transitionName] = 'transform 0ms';
 
     for (event in this.TRACKING_EVENTS) {
         if (this.TRACKING_EVENTS.hasOwnProperty(event)) {
-            this._wrapper.addEventListener(this.TRACKING_EVENTS[event], this, false);
+            this._root.addEventListener(this.TRACKING_EVENTS[event], this, false);
         }
     }
 
     if (this._options.resizeEvent) {
-        window.addEventListener('resize', this, false);
+        window.addEventListener(this.TRACKING_EVENTS.resize, this, false);
     }
 
     // animation step function
     this._animationStep = function (timestamp) {
+
+        if (!scrollView._options.scroll) {
+            return;
+        }
+
         scrollView._calculateShift(timestamp);
+        scrollView._pos -= scrollView._shift;
 
-        // callback onScrollBefore and permissions
-        if (((scrollView._shift.X !== 0) || (scrollView._shift.Y !== 0)) && (!scrollView._isMoved)) {
-            if (!scrollView._options.onScrollBefore(scrollView._shift.X, scrollView._shift.Y)) {
-                scrollView._shift.X = 0;
-                scrollView._shift.Y = 0;
+        // check bounds
+        if ((scrollView._motionType !== scrollView._STRINGS.tweak) || (scrollView._motionType !== scrollView._STRINGS.stop)) {
+            if (scrollView._pos < scrollView._min - scrollView._margine) {
+                scrollView._pos = scrollView._min - scrollView._margine;
+                scrollView._motionType = scrollView._STRINGS.checkTweak;
+            }
+            if (scrollView._pos > scrollView._margine + scrollView._max) {
+                scrollView._pos = scrollView._margine + scrollView._max;
+                scrollView._motionType = scrollView._STRINGS.checkTweak;
+            }
+        }
+
+        if (scrollView._shift !== 0) { // callbacks
+            if ((!scrollView._isMoved) && !scrollView._options.onScrollBefore(scrollView._shift)) {
                 scrollView._motionType = scrollView._STRINGS.stop;
+            } else {
+                scrollView._isMoved = true;
+                scrollView._options.onScroll(scrollView._shift, scrollView._pos);
+
+                // call onScrollTypeChange callback if type of motion was changed
+                if ((scrollView._lastMotionType !== scrollView._motionType) && (scrollView._motionType !== scrollView._STRINGS.checkTweak) && (scrollView._motionType !== scrollView._STRINGS.stop)) {
+                    scrollView._options.onScrollTypeChange(scrollView._motionType);
+                    scrollView._lastMotionType = scrollView._motionType;
+                }
             }
         }
-
-        // check permissions of scrolling
-        scrollView._shift.X = scrollView._options.scrollX ? scrollView._shift.X : 0;
-        scrollView._shift.Y = scrollView._options.scrollY ? scrollView._shift.Y : 0;
-
-        // apply changes of coords
-        scrollView._pos.X -= scrollView._shift.X;
-        scrollView._pos.Y -= scrollView._shift.Y;
-
-        scrollView._checkBounds();
-
-        // apply changes of coords
-        scrollView._transitionArray[1] = scrollView._pos.X;
-        scrollView._transitionArray[3] = scrollView._pos.Y;
-
-        // ================== check onScrollChancel, onScroll, onScrollTypeChange, onScrollAfter callbacks ======
-        if (scrollView._isChanceled) {
-            scrollView._options.onScrollChancel();
-            scrollView._isChanceled = false;
-        }
-
-        // call onScroll callback if position was changed
-        if ((scrollView._shift.X !== 0) || (scrollView._shift.Y !== 0)) {
-            scrollView._isMoved = true;
-            scrollView._isChanceled = false;
-            scrollView._options.onScroll(scrollView._shift.X, scrollView._shift.Y);
-
-            // call onScrollTypeChange callback if type of motion was changed
-            if ((scrollView._lastMotionType !== scrollView._motionType) && (scrollView._motionType !== scrollView._STRINGS.checkTweak) && (scrollView._motionType !== scrollView._STRINGS.stop)) {
-                scrollView._options.onScrollTypeChange(scrollView._motionType);
-                scrollView._lastMotionType = scrollView._motionType;
-            }
-        }
-
-        if ((scrollView._motionType === scrollView._STRINGS.stop) && scrollView._isMoved) {
-            scrollView._options.onScrollAfter();
-        }
-        // =========================================================================================================
+        scrollView._transitionArray[1] = scrollView._pos;
 
         // endpoint round or post next loop
         if (scrollView._motionType === scrollView._STRINGS.stop) {
             scrollView._transitionArray[1] = Math.round(scrollView._transitionArray[1]);
-            scrollView._transitionArray[3] = Math.round(scrollView._transitionArray[3]);
+            if (scrollView._isMoved) {
+                scrollView._options.onScrollAfter();
+            }
             scrollView._isMoved = false;
-        } else { // post next step if widget on touch
+        } else {
             scrollView._RafID = window.requestAnimationFrame(scrollView._animationStep);
         }
 
-        // apply shifts
-        scrollView._el.style[scrollView._transformName] = scrollView._transitionArray.join("");
+        scrollView._wrapper.style[scrollView._transformName] = scrollView._transitionArray.join("");
 
-        // clear shifts
-        scrollView._shift.X = 0;
-        scrollView._shift.Y = 0;
+        scrollView._shift = 0;
     };
 
     // start
@@ -203,15 +196,12 @@ function ScrollView(element, options) {
 ScrollView.prototype = {
 
     TRACKING_EVENTS: {
+        resize: 'resize',
         up: 'pointerup',
         move: 'pointermove',
         down: 'pointerdown',
         chancel: 'pointercancel',
         fling: 'fling'
-    },
-
-    _sign: function (x) {
-        return typeof x === 'number' ? x ? x < 0 ? -1 : 1 : x === x ? 0 : NaN : NaN;
     },
 
     _STRINGS: {
@@ -220,168 +210,103 @@ ScrollView.prototype = {
         stop: 'stop',
         scroll: 'scroll',
         fling: 'fling',
-        move: 'move',
-        vertical: 'vertical',
-        pointerdown: 'pointerdown',
-        pointermove: 'pointermove',
-        pointerup: 'pointerup'
+        move: 'move'
     },
 
     _transitionName: addVendorPrefix("transition"),
 
     _transformName: addVendorPrefix("transform"),
 
-    _decreaseVelocity: function (v, a, dellta) {
-        var result = v + a * dellta;
-        return (this._sign(result) !== this._sign(v)) ? 0 : result;
-    },
-
     _calculateShift: function (now) {
-        this._tmp.shiftX = 0;
-        this._tmp.shiftY = 0;
-        this._tmp.now = 0;
-        this._tmp.easing = 0;
-
         // if it first time of RAF loop - save timestamp for calculations
         if (this._animParams.startTime === null) {
             this._animParams.startTime = now;
             this._animParams.lastTime = now;
         }
 
-        // different types of moves
+        // check different types of motion
         switch (this._motionType) {
             case this._STRINGS.move:
-                this._shift.X /= ((this._pos.X < this._Xmin) || (this._pos.X > this._Xmax)) ? 3 : 1;
-                this._shift.Y /= ((this._pos.Y < this._Ymin) || (this._pos.Y > this._Ymax)) ? 3 : 1;
+                this._shift /= ((this._pos < this._min) || (this._pos > this._max)) ? 3 : 1;
                 break;
             case this._STRINGS.fling:
-                // setup shift value
-                this._shift.X = this._animParams.velocityX * (now - this._animParams.lastTime);
-                this._shift.Y = this._animParams.velocityY * (now - this._animParams.lastTime);
+                if(this._disable) return;
+                // setup shift value & decrease velocity
+                this._shift = this._animParams.velocity * (now - this._animParams.lastTime);
+                this._tmp.velocity = this._animParams.velocity + this._animParams.a * (now - this._animParams.startTime);
 
-                // decrease velocity
-                this._animParams.velocityX = this._decreaseVelocity(this._animParams.velocityX, this._animParams.ax, now - this._animParams.startTime);
-                this._animParams.velocityY = this._decreaseVelocity(this._animParams.velocityY, this._animParams.ay, now - this._animParams.startTime);
+                // check changing of velocity sign
+                if (this._tmp.velocity / this._animParams.velocity > 0) {
+                    this._animParams.velocity = this._tmp.velocity;
 
-                // decrease velocity when scroller out of borders
-                if ((this._pos.X < this._Xmin) && (this._animParams.velocityX > 0)) {
-                    this._animParams.velocityX += (-this._animParams.velocityX * 0.6);
-                    if (Math.abs(this._shift.X) < 0.1) {
-                        this._animParams.velocityX = 0;
+                    // decrease velocity when scroller out of borders
+                    if (((this._pos < this._min) && (this._animParams.velocity > 0)) || ((this._pos > this._max) && (this._animParams.velocity < 0))) {
+                        this._animParams.velocity += -this._animParams.velocity * 0.6;
+                        if (Math.abs(this._shift) < 0.1) {
+                            this._motionType = this._STRINGS.checkTweak;
+                        }
                     }
-                }
-                if ((this._pos.X > this._Xmax) && (this._animParams.velocityX < 0)) {
-                    this._animParams.velocityX += (-this._animParams.velocityX * 0.6);
-                    if (Math.abs(this._shift.X) < 0.1) {
-                        this._animParams.velocityX = 0;
-                    }
-                }
-                if ((this._pos.Y < this._Ymin) && (this._animParams.velocityY > 0)) {
-                    this._animParams.velocityY += (-this._animParams.velocityY * 0.6);
-                    if (Math.abs(this._shift.Y) < 0.1) {
-                        this._animParams.velocityY = 0;
-                    }
-                }
-                if ((this._pos.Y > this._Ymax) && (this._animParams.velocityY < 0)) {
-                    this._animParams.velocityY += (-this._animParams.velocityY * 0.6);
-                    if (Math.abs(this._shift.Y) < 0.1) {
-                        this._animParams.velocityY = 0;
-                    }
-                }
-
-                // stop fling when velocities == 0
-                if ((this._animParams.velocityX === 0) && (this._animParams.velocityY === 0)) {
+                } else {
                     this._motionType = this._STRINGS.checkTweak;
                 }
                 break;
             case this._STRINGS.tweak:
             case this._STRINGS.scroll:
-                // setup shift value
-                if (this._animParams.duration === 0) { // 0 delay case
-                    this._shift.X = this._animParams.shiftX;
-                    this._shift.Y = this._animParams.shiftY;
-                } else {
-                    this._tmp.now = (now - this._animParams.startTime) / this._animParams.duration;
-                    this._tmp.easing = this.easeFunc(this._tmp.now);
-                    this._tmp.shiftX = this._animParams.shiftX * this._tmp.easing;
-                    this._tmp.shiftY = this._animParams.shiftY * this._tmp.easing;
+                if(this._disable) return;
+                this._tmp.now = Math.ceil(1000 * (now - this._animParams.startTime) / this._animParams.duration) / 1000;
+                this._tmp.easing = this.easeFunc(this._tmp.now);
+                this._tmp.shift = Math.ceil(1000 * this._animParams.shift * this._tmp.easing) / 1000;
 
-                    this._shift.X = this._tmp.shiftX - this._animParams.lastShiftX;
-                    this._shift.Y = this._tmp.shiftY - this._animParams.lastShiftY;
+                if (this._animParams.duration !== 0) {
+                    this._shift = this._tmp.shift - this._animParams.lastShift;
+                } else {
+                    this._shift = this._animParams.shift;
+                    this._tmp.now = 1;
                 }
 
-                if ((this._tmp.now >= 1) || (this._animParams.duration === 0)) {
+                if (this._tmp.now >= 1) {
                     if (this._motionType === this._STRINGS.tweak) {
-                        this._shift.X = this._animParams.shiftX - this._animParams.lastShiftX;
-                        this._shift.Y = this._animParams.shiftY - this._animParams.lastShiftY;
-
+                        this._shift = this._animParams.shift - this._animParams.lastShift;
                         this._motionType = this._STRINGS.stop;
                     } else {
                         this._motionType = this._STRINGS.checkTweak;
                     }
                 }
 
-                this._animParams.lastShiftX = this._tmp.shiftX;
-                this._animParams.lastShiftY = this._tmp.shiftY;
+                this._animParams.lastShift = this._tmp.shift;
                 break;
             case this._STRINGS.checkTweak:
-                this._tmp.shiftX = (this._pos.X > this._Xmax) ? this._Xmax - this._pos.X : (this._pos.X < this._Xmin) ? this._Xmin - this._pos.X : 0;
-                this._tmp.shiftY = (this._pos.Y > this._Ymax) ? this._Ymax - this._pos.Y : (this._pos.Y < this._Ymin) ? this._Ymin - this._pos.Y : 0;
+                this._tmp.shift = (this._pos > this._max) ? this._max - this._pos : (this._pos < this._min) ? this._min - this._pos : 0;
+
+                if (this._options.tweak && this._tmp.shift === 0) {
+                    if (this._pos < this._max && this._pos > this._min) {
+                        this._tmp.shift = this._pos - Math.ceil(1000 * Math.round(this._pos / this._options.tweak) * this._options.tweak) / 1000;
+                        this._tmp.shift = -this._tmp.shift;
+                    }
+                }
+
                 this._animParams = {
-                    shiftX: -this._tmp.shiftX,
-                    shiftY: -this._tmp.shiftY,
-                    lastShiftX: 0,
-                    lastShiftY: 0,
+                    shift: -this._tmp.shift,
+                    lastShift: 0,
                     duration: 250,
                     startTime: now,
                     lastTime: null
                 };
 
-                this._motionType = (this._tmp.shiftX !== 0 || this._tmp.shiftY !== 0) ? this._STRINGS.tweak : this._STRINGS.stop;
+                this._motionType = (this._tmp.shift !== 0) ? this._STRINGS.tweak : this._STRINGS.stop;
                 break;
         }
+
         this._animParams.lastTime = now;
-    },
-
-    _checkBounds: function () {
-        var tmpVar = 0;
-
-        //check X bounds
-        if (this._pos.X < this._Xmin - this._margine.X) {
-            this._pos.X = this._Xmin - this._margine.X;
-            tmpVar += 1;
-        }
-        if (this._pos.X > this._Xmax + this._margine.X) {
-            this._pos.X = this._Xmax + this._margine.X;
-            tmpVar += 1;
-        }
-
-        //check Y bounds
-        if (this._pos.Y < this._Ymin - this._margine.Y) {
-            this._pos.Y = this._Ymin - this._margine.Y;
-            tmpVar += 1;
-        }
-        if (this._pos.Y > this._Ymax + this._margine.Y) {
-            this._pos.Y = this._Ymax + this._margine.Y;
-            tmpVar += 1;
-        }
-
-        if ((tmpVar >= 3) && (this._motionType !== this._STRINGS.stop)) {
-            this._motionType = this._STRINGS.checkTweak;
-        }
+        this._shift = (!isNaN(this._shift)) ? this._shift : 0;
     },
 
     _eventPointerDown: function (e) {
         // stop any animations
         window.cancelAnimationFrame(this._RafID);
 
-        if (this._motionType !== this._STRINGS.stop) {
-            this._isChanceled = true;
-        }
-
         //save current position for next loop of RAF
-        this._lastPointerPosition.X = e.screenX;
-        this._lastPointerPosition.Y = e.screenY;
+        this._lastPointerPosition = e[this._coordName];
 
         //start looping by RAF
         this._animParams = {};
@@ -390,10 +315,8 @@ ScrollView.prototype = {
     },
 
     _eventPointerMove: function (e) {
-        this._shift.X += this._lastPointerPosition.X - e.screenX;
-        this._shift.Y += this._lastPointerPosition.Y - e.screenY;
-        this._lastPointerPosition.X = e.screenX;
-        this._lastPointerPosition.Y = e.screenY;
+        this._shift += this._lastPointerPosition - e[this._coordName];
+        this._lastPointerPosition = e[this._coordName];
     },
 
     _eventPointerUp: function (e) {
@@ -404,16 +327,15 @@ ScrollView.prototype = {
     },
 
     _eventFling: function (e) {
-        var Vx = -e.speedX,
-            Vy = -e.speedY;
+        var V = this._options.scroll ? -e[this._speedName] : 0;
 
-        Vx = this._options.scrollX ? Vx : 0;
-        Vy = this._options.scrollY ? Vy : 0;
+        if (V === 0) {
+            return;
+        }
+
         this._animParams = {
-            velocityX: Vx,
-            velocityY: Vy,
-            ax: -this._sign(Vx) * 0.00009,
-            ay: -this._sign(Vy) * 0.00009,
+            velocity: V,
+            a: -(V < 0 ? -1 : 1) * 0.00009,
             startTime: null,
             lastTime: null
         };
@@ -431,77 +353,74 @@ ScrollView.prototype = {
         var e;
         for (e in this.TRACKING_EVENTS) {
             if (this.TRACKING_EVENTS.hasOwnProperty(e)) {
-                this._wrapper.removeEventListener(this.TRACKING_EVENTS[e], this);
+                this._root.removeEventListener(this.TRACKING_EVENTS[e], this);
             }
         }
-        window.removeEventListener('resize', this);
+        window.removeEventListener(this.TRACKING_EVENTS.resize, this);
 
         window.cancelAnimationFrame(this._RafID);
+        this._root = null;
         this._wrapper = null;
-        this._el = null;
         this._options = null;
     },
 
     refresh: function () {
-        this._rootWidth = this._wrapper.offsetWidth;
-        this._rootHeight = this._wrapper.offsetHeight;
-        this._Xmin = this._rootWidth - this._el.clientWidth;
-        this._Ymin = this._rootHeight - this._el.clientHeight;
-        this._Xmax = 0;
-        this._Ymax = 0;
+        var rootWidth = this._root.offsetWidth, rootHeight = this._root.offsetHeight;
 
-        this._margine = {};
-        this._margine.X = (this._options.boundsX) ? Math.round(this._rootWidth / 3) : 0;
-        this._margine.Y = (this._options.boundsY) ? Math.round(this._rootHeight / 3) : 0;
+        window.cancelAnimationFrame(this._RafID);
+        this._motionType = this._STRINGS.stop;
 
+        if (this._options.direction === 'vertical') {
+            this._min = (rootHeight <= this._wrapper.clientHeight) ? rootHeight - this._wrapper.clientHeight - this._options.marginMAX : 0;
+            this._margine = (this._options.bounds) ? Math.round(rootHeight / 3) : 0;
+        } else {
+            this._min = (rootWidth <= this._wrapper.offsetWidth) ? rootWidth - this._wrapper.clientWidth - this._options.marginMAX : 0;
+            this._margine = (this._options.bounds) ? Math.round(rootWidth / 3) : 0;
+        }
+        this._max = this._options.marginMIN;
+
+        // prepare and start tweak
         this._motionType = this._STRINGS.checkTweak;
         this._animParams = {};
         this._RafID = window.requestAnimationFrame(this._animationStep);
     },
+    disable: function(){
+        this._disable = true
+    },
+    enable: function(){
+        this._disable = false
+    },
 
-    scroll: function (shiftX, shiftY, duration) {
-        var durationX = 0, durationY = 0, newShiftX, newShiftY;
+    scroll: function (shift, duration) {
+        var newDuration = duration, newShift, newPos;
 
-        // check horizontal bounds
-        if (shiftX !== 0) {
-            if (this._pos.X + shiftX < this._Xmin) {
-                newShiftX = this._Xmin - this._pos.X;
-                durationX = Math.abs(Math.round(duration * newShiftX / shiftX));
-                shiftX = newShiftX;
+        window.cancelAnimationFrame(this._RafID);
+        this._motionType = this._STRINGS.stop;
 
-            } else if (this._pos.X - shiftX < this._Xmax) {
-                newShiftX = -this._pos.X;
-                durationX = Math.abs(Math.round(duration * newShiftX / shiftX));
-                shiftX = newShiftX;
+        // check bounds
+        if (shift !== 0) {
+            newPos = this._pos + shift;
+            if (newPos < this._min) {
+                newShift = this._min - this._pos;
+                newDuration = Math.abs(Math.round(duration * newShift / shift));
+                shift = newShift;
+
+            }
+            if (newPos > this._max) {
+                newShift = this._max - this._pos;
+                newDuration = Math.abs(Math.round(duration * newShift / shift));
+                shift = newShift;
             }
         }
 
-        // check vertical bounds
-        if (shiftY !== 0) {
-            if (this._pos.Y + shiftY < this._Ymin) {
-                newShiftY = this._Ymin - this._pos.Y;
-                durationY = Math.abs(Math.round(duration * newShiftY / shiftY));
-                shiftY = newShiftY;
-
-            } else if (this._pos.Y - shiftY < this._Ymax) {
-                newShiftY = -this._pos.Y;
-                durationY = Math.abs(Math.round(duration * newShiftY / shiftY));
-                shiftY = newShiftY;
-            }
-        }
-
-        duration = Math.max(durationX, durationY);
-        shiftX = this._options.scrollX ? shiftX : 0;
-        shiftY = this._options.scrollY ? shiftY : 0;
+        shift = this._options.scroll ? shift : 0;
 
         //start looping by RAF
         this._motionType = this._STRINGS.scroll;
         this._animParams = {
-            shiftX: -shiftX,
-            shiftY: -shiftY,
-            lastShiftX: 0,
-            lastShiftY: 0,
-            duration: duration,
+            shift: -shift,
+            lastShift: 0,
+            duration: newDuration,
             startTime: null,
             lastTime: null
         };
@@ -512,26 +431,27 @@ ScrollView.prototype = {
         var self = this;
 
         switch (e.type) {
-            case this._STRINGS.pointerdown:
-                if(this._options.stopScroll) return;
+            case this.TRACKING_EVENTS.down:
+                if(this._disable) return;
                 this._eventPointerDown(e);
                 break;
-            case this._STRINGS.pointermove:
-                if(this._options.stopScroll) return;
+            case this.TRACKING_EVENTS.move:
+                if(this._disable) return;
                 this._eventPointerMove(e);
                 if (this._options.preventMove && !this.preventDefaultTags.test(e.target)) {
                     e.preventDefault();
                 }
                 break;
-            case this._STRINGS.pointerup:
-                if(this._options.stopScroll) return;
+            case this.TRACKING_EVENTS.chancel:
+            case this.TRACKING_EVENTS.up:
+                if(this._disable) return;
                 this._eventPointerUp(e);
                 break;
-            case this._STRINGS.fling:
-                if(this._options.stopScroll) return;
+            case this.TRACKING_EVENTS.fling:
+                if(this._disable) return;
                 this._eventFling(e);
                 break;
-            case 'resize':
+            case this.TRACKING_EVENTS.resize:
                 clearTimeout(this._resizeID);
                 this._resizeID = setTimeout(function () {
                     self.refresh();
@@ -540,7 +460,3 @@ ScrollView.prototype = {
         }
     }
 };
-
-if (typeof exports !== "undefined") {
-    exports.module = ScrollView;
-}
