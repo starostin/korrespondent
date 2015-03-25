@@ -164,17 +164,16 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
     },
     finishScroll: function(){
         var scrollView = this.el.querySelector('.list');
-        this.mScroll._options.stopScroll = false;
         scrollView.style.transition  = 'all 0.2s ease-in-out';
         scrollView.style.transform = 'translateY(0)';
     },
     finishSwipe: function(val, half){
         if(val >= half){
             this.el.classList.add('open');
-           this.mScroll._options.stopScroll = true;
+            this.mScroll.disable();
         }else{
             this.el.classList.remove('open');
-            this.mScroll._options.stopScroll = false;
+            this.mScroll.enable();
         }
     },
     getNews: function(){
