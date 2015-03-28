@@ -48,7 +48,7 @@
             }
         }
         korDB.transaction(function(t) {
-            var queryStr = "INSERT INTO news (" + columnsStr + ") VALUES (" + valStr + ")";
+            var queryStr = "INSERT OR REPLACE INTO news (" + columnsStr + ") VALUES (" + valStr + ")";
             t.executeSql(queryStr, dataArr);
         }, function(e){
             console.log(e)
