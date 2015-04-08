@@ -10,10 +10,6 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
             'click .news-list': 'openNewsList'
         })
     },
-    onEndRender: function(){
-        this.detachScroll();
-        this.attachScroll();
-    },
     onInitialize: function(){
         var self = this;
         this.rotateCoef = 180/50;
@@ -21,37 +17,15 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
         this.settings = RAD.models.Settings;
         this.news = RAD.models.News;
         this.bufferNews = RAD.models.BufferNews;
-        this.settings.on('change:selectedSubCategory', this.setNews, this);
-        this.settings.on('change:lang', this.setNews, this);
+//        this.settings.on('change:selectedSubCategory', this.setNews, this);
+//        this.settings.on('change:lang', this.setNews, this);
         this.news.on('reset', this.render, this);
         this.news.on('add', this.addNews, this);
         this.bufferNews.on('all', this.showUpdateMessage, this);
-        this.scrollOptions = {
-            bounds: false,
-            marginTop: -50,
-            onScroll: function (shiftX, shiftY) {
-//                self.onScroll(shiftX, shiftY);
-            },
-            onScrollBefore: function (shiftX, shiftY) {
-//                self.onScrollBefore(shiftX, shiftY);
-                return true;
-            }
-        }
     },
     onStartAttach: function(){
         var viewCoord  = this.el.getBoundingClientRect();
         this.rightLineWidth = viewCoord.width * 0.9;
-        this.mScroll.refresh();
-    },
-    attachScroll: function(){
-        var scrollContainer = this.el.querySelector('.scroll-view');
-        this.mScroll = new ScrollView(scrollContainer, this.scrollOptions);
-    },
-    detachScroll: function(){
-        if(this.mScroll){
-            this.mScroll.destroy();
-            this.mScroll = null;
-        }
     },
     onStartRender: function(){
         this.selected = this.sidebar.findWhere({selected: true});
@@ -85,11 +59,14 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
         var self = this,
             subMenu = this.el.querySelector('.sub-menu'),
             newsId = this.settings.get('selectedSubCategory'),
-            lang = this.settings.get('lang'),
-            identifier = lang + newsId,
-            oldNews = JSON.parse(window.localStorage.getItem(identifier)) || [];
-        this.bufferNews.reset();
-        this.news.reset(oldNews);
+            lang = this.settings.get('lang');
+//            oldNews = JSON.parse(window.localStorage.getItem(identifier)) || [];
+
+        RAD.utils.sql.getRows('SELECT * FROM news WHERE lang = "' + lang + '" AND newsId = "' + newsId + '"').then(function(oldNews){
+            self.bufferNews.reset();
+            self.news.reset(oldNews);
+        });
+
         if(subMenu.classList.contains('open')){
             subMenu.classList.remove('open');
         }
@@ -114,7 +91,7 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
     },
     toggleSidebar: function(){
         this.el.classList.toggle('open');
-        this.el.classList.contains('open') ? this.mScroll.disable() : this.mScroll.enable();
+        this.el.classList.contains('open') ? this.nativeScroll.classList.add('stop-scrolling') : this.nativeScroll.classList.remove('stop-scrolling');
     },
     openNewsList: function(){
         if(!this.el.classList.contains('open')) return;
@@ -122,25 +99,28 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
     },
 
     onMoveVertically: function(e){
-        var scrollView = this.el.querySelector('.list'),
-            firstLi = scrollView.querySelector('li'),
-            firstLiCoord = firstLi.getBoundingClientRect();
+        var pullDiv = this.el.querySelector('.pull-down'),
+            arrow = pullDiv.querySelector('.arrow-img'),
+            deg = 0;
 
-        if(firstLiCoord.top <50 ||  this.mScroll._disable){
+        if(this.nativeScroll.scrollTop > 0 || this.el.classList.contains('open')){
             return;
         }
+
         var firstY = this.coordinates.y[this.coordinates.y.length-1],
             newY = e.originalEvent.changedTouches[0].clientY,
             diff =(newY - firstY);
-        scrollView.classList.add('pull-active');
-        scrollView.style.transition  = 'none';
-        this.mScroll._options.stopScroll = true;
-        scrollView.style.transform = 'translateY(' + (diff*0.4)+ 'px)';
+        if(diff>0){
+            this.nativeScroll.classList.add('stop-scrolling');
+        }else{
+            this.nativeScroll.classList.remove('stop-scrolling');
+            return;
+        }
+        this.nativeScroll.style.transition  = 'none';
+        this.nativeScroll.style.transform = 'translateY(' + (diff*0.4)+ 'px)';
 
-        var pullDiv = this.el.querySelector('.pull-down'),
-            arrow = pullDiv.querySelector('.arrow-img'),
-            deg = Math.abs(this.rotateCoef * diff)-180;
-//
+        deg = Math.abs(this.rotateCoef * diff)-180;
+
         arrow.style.transform = 'rotate(' + deg + 'deg)';
         if(diff >=50 && !pullDiv.classList.contains('update')){
             pullDiv.classList.add('update');
@@ -154,13 +134,16 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
             isUpdate = pullDiv.classList.contains('update'),
             spinner = pullDiv.querySelector('.loader');
         var scrollView = this.el.querySelector('.list');
-        scrollView.style.transition  = 'all 0.2s ease-in-out';
-        scrollView.style.transform = 'translateY(50px)';
-        if(isUpdate && spinner.style.display === 'none'){
-            this.getNews();
-        }else{
-           this.finishScroll()
+        if(!this.el.classList.contains('open')){
+            this.nativeScroll.classList.remove('stop-scrolling');
         }
+        this.nativeScroll.style.transition  = 'all 0.2s ease-in-out';
+        this.nativeScroll.style.transform = 'translateY(0)';
+//        if(isUpdate && spinner.style.display === 'none'){
+//            this.getNews();
+//        }else{
+//           this.finishScroll()
+//        }
     },
     finishScroll: function(){
         var scrollView = this.el.querySelector('.list');
@@ -168,34 +151,30 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
         scrollView.style.transform = 'translateY(0)';
     },
     finishSwipe: function(val, half){
-        if(val >= half){
-            this.el.classList.add('open');
-            this.mScroll.disable();
-        }else{
-            this.el.classList.remove('open');
-            this.mScroll.enable();
-        }
+        val >= half ? this.el.classList.add('open') : this.el.classList.remove('open');
+        val >= half ? this.nativeScroll.classList.add('stop-scrolling') : this.nativeScroll.classList.remove('stop-scrolling');
     },
     getNews: function(){
         var self = this,
             pullDiv = this.el.querySelector('.pull-down'),
             arrow = pullDiv.querySelector('.arrow-img'),
+            newsId = this.settings.get('selectedSubCategory'),
+            lang = this.settings.get('lang'),
             spinner = pullDiv.querySelector('.loader');
         arrow.style.display = 'none';
         spinner.style.display = '';
         this.bufferNews.reset();
-        this.news.setNews({
-            addBuffer: true,
-            complete: function(){
-                self.finishScroll();
-                spinner.style.display = 'none';
-                pullDiv.classList.remove('update');
-                self.mScroll.refresh();
-                arrow.style.display = '';
-            },
-            error: function(){
-                self.showErrorMessage();
-            }
+        RAD.utils.sql.getRows('SELECT * FROM news WHERE lang = "' + lang + '" AND newsId = "' + newsId + '" AND buffer="true"').then(function(bufferNews){
+            _.each(bufferNews, function(item){
+                item.buffer = '';
+            });
+            RAD.models.News.add(bufferNews);
+            RAD.utils.sql.insertRows(bufferNews);
+            self.finishScroll();
+            spinner.style.display = 'none';
+            pullDiv.classList.remove('update');
+            self.mScroll.refresh();
+            arrow.style.display = '';
         });
     },
     showUpdateMessage: function(model, collection, options){

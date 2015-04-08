@@ -17,15 +17,7 @@ RAD.model('News', Backbone.Collection.extend({
     comparator: function(item){
         return -(+new Date(item.get('pubDate')));
     },
-    initialize: function(){
-        var settings = RAD.models.Settings,
-            val = settings.get('selectedSubCategory'),
-            lang = settings.get('lang'),
-            identifier = lang + val,
-            items = JSON.parse(window.localStorage.getItem(identifier)) || [];
-
-        this.reset(items);
-    },
+    initialize: function(){},
     getLastNews: function(data){
         var news = RAD.models.BufferNews.length ? RAD.models.BufferNews : this,
             maxDate = _.max(news.toJSON(), function(item){
@@ -39,58 +31,36 @@ RAD.model('News', Backbone.Collection.extend({
         var self = this,
             settings = RAD.models.Settings,
             val = settings.get('selectedSubCategory'),
-            lang = settings.get('lang'),
-            identifier = lang + val,
-            oldNews = JSON.parse(window.localStorage.getItem(identifier)) || [];
+            lang = settings.get('lang');
 
-
-        var options = {
-            url: 'http://k.img.com.ua/rss/' + RAD.newsUrls[lang] + '/' + RAD.newsUrls[val] + '.xml',
-            type: 'GET',
-            timeout: 10000,
-            dataType: 'xml',
-            success: function(data){
-                data = self.parseXml(data);
-                if(!oldNews.length){
-                    RAD.models.News.reset(oldNews.concat(data));
-                    window.localStorage.setItem(identifier, JSON.stringify(oldNews.concat(data)));
-                }else if(opt.addBuffer){
-                    RAD.models.News.add(data);
-                    RAD.models.News.add([{
-                        author: "1480",
-                        category: "Новини Формули-1",
-                        comments: "http://ua.korrespondent.net/sport/formula/3490829-pilot-Williams-pislia-kvalifikatsii-hran-pri-avstralii-potrapyv-u-likarnui#comment_header_layer",
-                        description: "лікарню",
-                        guid: +new Date(),
-                        image: "http://kor.ill.in.ua/m/190x120/1594745.jpg",
-                        link: "http://ua.korrespondent.net/sport/formula/3490829-pilot-Williams-pislia-kvalifikatsii-hran-pri-avstralii-potrapyv-u-likarnui",
-                        pubDate: "Sat, 14 Mar 2015 14:01:00 +0200",
-                        source: "f1news.ruf1news.ru",
-                        title: "Пілот Williams після кваліфікації Гран-прі Австралії потрапив у лікарню"
-                    },
-                        {
-                            author: "1480",
-                            category: "Новини Формули-1",
-                            comments: "http://ua.korrespondent.net/sport/formula/3490829-pilot-Williams-pislia-kvalifikatsii-hran-pri-avstralii-potrapyv-u-likarnui#comment_header_layer",
-                            description: "лікарню",
-                            guid: +new Date(),
-                            image: "http://kor.ill.in.ua/m/190x120/1594745.jpg",
-                            link: "http://ua.korrespondent.net/sport/formula/3490829-pilot-Williams-pislia-kvalifikatsii-hran-pri-avstralii-potrapyv-u-likarnui",
-                            pubDate: "Sat, 14 Mar 2015 14:01:00 +0200",
-                            source: "f1news.ruf1news.ru",
-                            title: "Пілот Williams після кваліфікації Гран-прі Австралії потрапив у лікарню"
-                        }]);
-                    window.localStorage.setItem(identifier, JSON.stringify(oldNews.concat(data)));
-                }else{
-                    //self.reset(oldNews);
-                    var newNews = RAD.models.News.getLastNews(data);
-                    RAD.models.BufferNews.add(newNews, {silent: true});
-                    RAD.models.BufferNews.trigger('add');
-                }
-            }
-        };
-        $.extend(options, opt);
-        $.ajax(options);
+            RAD.utils.sql.getRows('SELECT * FROM news WHERE lang = "' + lang + '" AND newsId = "' + val + '"').then(function(oldNews){
+                var options = {
+                    url: 'http://k.img.com.ua/rss/' + RAD.newsUrls[lang] + '/' + RAD.newsUrls[val] + '.xml',
+                    type: 'GET',
+                    timeout: 10000,
+                    dataType: 'xml',
+                    success: function(data){
+                        data = self.parseXml(data);
+                        if(!oldNews.length){
+                            RAD.utils.sql.insertRows(data).then(function(){
+                                RAD.models.News.reset(oldNews.concat(data));
+                            });
+                        }else{
+                            var newNews = RAD.models.News.getLastNews(data);
+                            console.log('----------------BUFFER-----------------', newNews);
+                            _.each(newNews, function(item){
+                                item.buffer = true;
+                            });
+                            RAD.models.BufferNews.add(newNews, {silent: true});
+                            RAD.utils.sql.insertRows(newNews).then(function(){
+                                RAD.models.BufferNews.trigger('add');
+                            });
+                        }
+                    }
+                };
+                $.extend(options, opt);
+                $.ajax(options);
+            });
     },
     parseXml: function(xml){
         var newsArr = [];

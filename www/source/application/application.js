@@ -10,8 +10,14 @@ RAD.application(function (core) {
             content: "view.main_screen",
             animation: 'none'
         };
-        core.startService();
-        core.publish('navigation.show', options);
+        var settings = RAD.models.Settings,
+            val = settings.get('selectedSubCategory'),
+            lang = settings.get('lang');
+        RAD.utils.sql.getRows('SELECT * FROM news WHERE lang = "' + lang + '" AND newsId = "' + val + '"').then(function(news){
+            RAD.models.News.reset(news);
+            core.startService();
+            core.publish('navigation.show', options);
+        })
     };
 
     return app;

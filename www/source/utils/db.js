@@ -1,6 +1,6 @@
 (function(scope, win){
     var columns = {
-        guid: 'INTEGER PRIMARY KEY UNIQUE',
+        guid: 'INTEGER UNIQUE',
         author: "VARCHAR(100)",
         category: "TEXT",
         comments: "TEXT",
@@ -10,6 +10,7 @@
         pubDate: "VARCHAR(50)",
         source: "TEXT",
         title: "TEXT",
+        buffer: "BOOLEAN",
         newsId: "INTEGER",
         lang: "VARCHAR(5)"
     };
@@ -27,45 +28,59 @@
                     query += ', ';
                 }
             }
-            console.log(query);
             t.executeSql("CREATE TABLE IF NOT EXISTS news (" + query + ")");
         }, function(e){
             console.log(e)
         });
-    scope.insertRow = function(data){
+    scope.insertRows = function(data){
         var keys = Object.keys(columns).sort(),
             columnsStr = keys.join(', '),
-            dataArr = [],
+            promisesArr = [],
             valStr = '';
 
-        for(var i=0; i<keys.length; i++){
-            dataArr.push(data[keys[i]] || '')
-        }
         for(var i=0; i<keys.length; i++){
             valStr += '?';
             if(i !== keys.length-1){
                 valStr += ', '
             }
         }
-        korDB.transaction(function(t) {
-            var queryStr = "INSERT OR REPLACE INTO news (" + columnsStr + ") VALUES (" + valStr + ")";
-            t.executeSql(queryStr, dataArr);
-        }, function(e){
-            console.log(e)
-        });
+        for(var j=0; j<data.length; j++)(function(j){
+            data[j].lang = RAD.models.Settings.get('lang');
+            data[j].newsId = +RAD.models.Settings.get('selectedSubCategory');
+            promisesArr.push(
+                new Promise(function(resolve, reject){
+                korDB.transaction(function(t) {
+                    var dataArr = [];
+                    for(var k=0; k<keys.length; k++){
+                        dataArr.push(data[j][keys[k]] || '')
+                    }
+                    var queryStr = "INSERT OR REPLACE INTO news (" + columnsStr + ") VALUES (" + valStr + ")";
+                    t.executeSql(queryStr, dataArr, function(e, rs){
+                        resolve(e, rs)
+                    });
+                }, function(e){
+                    reject(e)
+                });
+            }))
+        })(j)
+       return Promise.all(promisesArr);
     };
-    scope.getRows = function(query, callback){
+    scope.getRows = function(query){
+        console.log(query)
         var result = [];
-        korDB.transaction(function(t) {
-            t.executeSql(query, [], function(e, rs){
-                for(var i=0; i<rs.rows.length; i++) {
-                    var row = rs.rows.item(i);
-                    result.push(row);
-                }
-                console.log(result);
+        return new Promise(function(resolve, reject){
+            korDB.transaction(function(t) {
+                t.executeSql(query, [], function(e, rs){
+                    for(var i=0; i<rs.rows.length; i++) {
+                        var row = rs.rows.item(i);
+                        result.push(row);
+                    }
+                    resolve(result, e)
+                });
+            }, function(e){
+                reject(e)
             });
-        }, function(e){
-            console.log(e)
         });
+
     };
 })(RAD.namespace('RAD.utils.sql', {}), this);

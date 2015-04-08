@@ -8,7 +8,6 @@ RAD.views.SwipeExt =  RAD.Blanks.View.extend({
     onattach: function(){
         var viewCoord  = this.el.getBoundingClientRect();
         this.halfWidth = viewCoord.width * 0.5;
-
     },
     coordinates: {
         x: [],
