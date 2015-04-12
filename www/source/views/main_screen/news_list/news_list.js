@@ -193,7 +193,7 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
         window.setTimeout(function(){
             errorDiv.classList.remove('show');
         }, 2000)
-    },
+    }
 //    onScrollEnd: function(){
 //        var pullDiv = this.el.querySelector('.pull-down'),
 //            arrow = pullDiv.querySelector('.arrow-img'),

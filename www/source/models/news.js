@@ -27,6 +27,24 @@ RAD.model('News', Backbone.Collection.extend({
             return +new Date(item.pubDate) > +new Date(maxDate.pubDate);
         });
     },
+    getNews: function(opt, callback){
+        var self = this,
+            settings = RAD.models.Settings,
+            val = settings.get('selectedSubCategory'),
+            lang = settings.get('lang');
+        var options = {
+            url: 'http://k.img.com.ua/rss/' + RAD.newsUrls[lang] + '/' + RAD.newsUrls[val] + '.xml',
+            type: 'GET',
+            timeout: 10000,
+            dataType: 'xml',
+            success: function(data){
+                data = self.parseXml(data);
+                callback(data)
+            }
+        };
+        $.extend(options, opt);
+        $.ajax(options);
+    },
     setNews: function(opt){
         var self = this,
             settings = RAD.models.Settings,
@@ -34,32 +52,23 @@ RAD.model('News', Backbone.Collection.extend({
             lang = settings.get('lang');
 
             RAD.utils.sql.getRows('SELECT * FROM news WHERE lang = "' + lang + '" AND newsId = "' + val + '"').then(function(oldNews){
-                var options = {
-                    url: 'http://k.img.com.ua/rss/' + RAD.newsUrls[lang] + '/' + RAD.newsUrls[val] + '.xml',
-                    type: 'GET',
-                    timeout: 10000,
-                    dataType: 'xml',
-                    success: function(data){
-                        data = self.parseXml(data);
-                        if(!oldNews.length){
-                            RAD.utils.sql.insertRows(data).then(function(){
-                                RAD.models.News.reset(oldNews.concat(data));
-                            });
-                        }else{
-                            var newNews = RAD.models.News.getLastNews(data);
-                            console.log('----------------BUFFER-----------------', newNews);
-                            _.each(newNews, function(item){
-                                item.buffer = true;
-                            });
-                            RAD.models.BufferNews.add(newNews, {silent: true});
-                            RAD.utils.sql.insertRows(newNews).then(function(){
-                                RAD.models.BufferNews.trigger('add');
-                            });
-                        }
+                function callback(data){
+                    if(!oldNews.length){
+                        RAD.utils.sql.insertRows(data).then(function(){
+                            RAD.models.News.reset(oldNews.concat(data));
+                        });
+                    }else{
+                        var newNews = RAD.models.News.getLastNews(data);
+                        _.each(newNews, function(item){
+                            item.buffer = true;
+                        });
+                        RAD.models.BufferNews.add(newNews, {silent: true});
+                        RAD.utils.sql.insertRows(newNews).then(function(){
+                            RAD.models.BufferNews.trigger('add');
+                        });
                     }
-                };
-                $.extend(options, opt);
-                $.ajax(options);
+                }
+                self.getNews(opt, callback);
             });
     },
     parseXml: function(xml){
