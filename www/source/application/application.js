@@ -13,15 +13,27 @@ RAD.application(function (core) {
         var settings = RAD.models.Settings,
             val = settings.get('selectedSubCategory'),
             lang = settings.get('lang');
-        RAD.utils.sql.getRows('SELECT * FROM news WHERE lang = "' + lang + '" AND newsId = "' + val + '"').then(function(news){
-            if(news && news.length){
+        RAD.utils.sql.getRows('SELECT * FROM news WHERE lang = "' + lang + '" AND newsId = "' + val + '"').then(function(oldNews){
+            if(oldNews && oldNews.length){
+                var buffer = [],
+                    news = [];
+                for(var i=0; i<oldNews.length; i++){
+                    if(oldNews[i].buffer){
+                        buffer.push(oldNews[i])
+                    }else{
+                        news.push(oldNews[i])
+                    }
+                }
                 RAD.models.News.reset(news);
-                core.publish('service.check_news.startTracking');
+                core.startService();
+                options.callback = function(){
+                    RAD.models.BufferNews.reset(buffer);
+                };
                 core.publish('navigation.show', options);
             }else{
                 RAD.models.News.getNews({
                     error: function(){
-                        core.publish('service.check_news.startTracking');
+                        core.startService();
                         core.publish('navigation.show', options);
                         options.callback = function(){
                             var errorDiv = document.querySelector('.message');
@@ -32,9 +44,11 @@ RAD.application(function (core) {
                         }
                     }
                 }, function(data){
-                    RAD.models.News.reset(data);
-                    core.publish('service.check_news.startTracking');
-                    core.publish('navigation.show', options);
+                    RAD.utils.sql.insertRows(data, 'news').then(function(){
+                        RAD.models.News.reset(data);
+                        core.startService();
+                        core.publish('navigation.show', options);
+                    });
                 });
             }
         })

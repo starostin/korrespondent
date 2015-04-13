@@ -172,6 +172,8 @@ ul {
     width: 100px;
     float: left;
 }
+
+/*--------------------------------------SIDEBAR MENU---------------------------------*/
 .sidebar-menu {
     position: absolute;
     width: 100%;
@@ -179,8 +181,6 @@ ul {
     left: 0;
     z-index: 100;
 }
-
-/*--------------------------------------SIDEBAR MENU---------------------------------*/
 .sidebar-menu-view{
     background: blue;
 }
@@ -195,6 +195,15 @@ ul {
 }
 .sidebar-menu-view li.selected{
     background: grey;
+}
+.support{
+    position: absolute;
+    bottom: 0;
+    height: 50px;
+    line-height: 50px;
+    width: 100%;
+    text-align: left;
+    background: yellow;
 }
 
 
@@ -212,7 +221,14 @@ ul {
     transform: translateX(0);
     -webkit-transform: translateX(0);
 }
-
+.header-btn.favorite{
+    background: white;
+    float: right;
+}
+.header-btn.favorite.added{
+    background: gray;
+    float: right;
+}
 
 /*--------------------------------------SPINNER START-----------------------------*/
 .loader {

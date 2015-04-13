@@ -7,7 +7,8 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
             'click .sidebar-button': 'toggleSidebar',
             'click .sub-menu-item': 'changeSubMenu',
             'click .one-news': 'openNews',
-            'click .news-list': 'openNewsList'
+            'click .news-list': 'openNewsList',
+            'click .update-message': 'addBufferNews'
         })
     },
     onInitialize: function(){
@@ -17,8 +18,8 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
         this.settings = RAD.models.Settings;
         this.news = RAD.models.News;
         this.bufferNews = RAD.models.BufferNews;
-//        this.settings.on('change:selectedSubCategory', this.setNews, this);
-//        this.settings.on('change:lang', this.setNews, this);
+        this.settings.on('change:selectedSubCategory', this.setNews, this);
+        this.settings.on('change:lang', this.setNews, this);
         this.news.on('reset', this.render, this);
         this.news.on('add', this.addNews, this);
         this.bufferNews.on('all', this.showUpdateMessage, this);
@@ -60,11 +61,32 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
             subMenu = this.el.querySelector('.sub-menu'),
             newsId = this.settings.get('selectedSubCategory'),
             lang = this.settings.get('lang');
-//            oldNews = JSON.parse(window.localStorage.getItem(identifier)) || [];
 
         RAD.utils.sql.getRows('SELECT * FROM news WHERE lang = "' + lang + '" AND newsId = "' + newsId + '"').then(function(oldNews){
-            self.bufferNews.reset();
-            self.news.reset(oldNews);
+            if(oldNews.length){
+                var buffer = [],
+                    news = [];
+                for(var i=0; i<oldNews.length; i++){
+                    if(oldNews[i].buffer){
+                        buffer.push(oldNews[i])
+                    }else{
+                        news.push(oldNews[i])
+                    }
+                }
+                self.news.reset(news);
+                self.bufferNews.reset(buffer);
+            }else{
+                RAD.models.News.getNews({
+                    error: function(){
+                        self.showErrorMessage();
+                    }
+                }, function(data){
+                    RAD.utils.sql.insertRows(data, 'news').then(function(){
+                        self.news.reset(data);
+                    });
+                });
+            }
+
         });
 
         if(subMenu.classList.contains('open')){
@@ -84,6 +106,11 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
         }else{
             list.appendChild(li)
         }
+    },
+    addBufferNews: function(){
+        this.news.add(this.bufferNews.toJSON());
+        this.bufferNews.reset();
+        RAD.utils.sql.insertRows(this.news.toJSON(), 'news');
     },
     toggleSubMenu: function(e){
         var subMenu = this.el.querySelector('.sub-menu');
@@ -117,12 +144,12 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
             return;
         }
         this.nativeScroll.style.transition  = 'none';
-        this.nativeScroll.style.transform = 'translateY(' + (diff*0.4)+ 'px)';
+        this.nativeScroll.style.transform = 'translateY(' + (this.startScrollCoord.top + diff*0.4)+ 'px)';
 
         deg = Math.abs(this.rotateCoef * diff)-180;
 
         arrow.style.transform = 'rotate(' + deg + 'deg)';
-        if(diff >=50 && !pullDiv.classList.contains('update')){
+        if(diff >=50){
             pullDiv.classList.add('update');
         }else if(!pullDiv.classList.contains('update')){
             pullDiv.classList.remove('update');
@@ -133,22 +160,14 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
             arrow = pullDiv.querySelector('.arrow-img'),
             isUpdate = pullDiv.classList.contains('update'),
             spinner = pullDiv.querySelector('.loader');
-        var scrollView = this.el.querySelector('.list');
         if(!this.el.classList.contains('open')){
             this.nativeScroll.classList.remove('stop-scrolling');
         }
         this.nativeScroll.style.transition  = 'all 0.2s ease-in-out';
         this.nativeScroll.style.transform = 'translateY(0)';
-//        if(isUpdate && spinner.style.display === 'none'){
-//            this.getNews();
-//        }else{
-//           this.finishScroll()
-//        }
-    },
-    finishScroll: function(){
-        var scrollView = this.el.querySelector('.list');
-        scrollView.style.transition  = 'all 0.2s ease-in-out';
-        scrollView.style.transform = 'translateY(0)';
+        if(isUpdate){
+            this.getNews();
+        }
     },
     finishSwipe: function(val, half){
         val >= half ? this.el.classList.add('open') : this.el.classList.remove('open');
@@ -158,24 +177,31 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
         var self = this,
             pullDiv = this.el.querySelector('.pull-down'),
             arrow = pullDiv.querySelector('.arrow-img'),
-            newsId = this.settings.get('selectedSubCategory'),
-            lang = this.settings.get('lang'),
             spinner = pullDiv.querySelector('.loader');
         arrow.style.display = 'none';
         spinner.style.display = '';
-        this.bufferNews.reset();
-        RAD.utils.sql.getRows('SELECT * FROM news WHERE lang = "' + lang + '" AND newsId = "' + newsId + '" AND buffer="true"').then(function(bufferNews){
-            _.each(bufferNews, function(item){
-                item.buffer = '';
+        this.nativeScroll.style.transform = 'translateY(50px)';
+        window.setTimeout(function(){
+            RAD.models.News.getNews({
+                error: function(){
+                    removeSpinner();
+                    self.addBufferNews();
+                    self.showErrorMessage();
+                }
+            }, function(data){
+                removeSpinner();
+                self.addBufferNews();
+                self.news.add(data);
+                RAD.utils.sql.insertRows(data, 'news');
             });
-            RAD.models.News.add(bufferNews);
-            RAD.utils.sql.insertRows(bufferNews);
-            self.finishScroll();
+        }, 1000);
+
+        function removeSpinner(){
+            self.nativeScroll.style.transform = 'translateY(0)';
             spinner.style.display = 'none';
             pullDiv.classList.remove('update');
-            self.mScroll.refresh();
             arrow.style.display = '';
-        });
+        }
     },
     showUpdateMessage: function(model, collection, options){
         var updateMessage = this.el.querySelector('.update-message');
@@ -194,13 +220,4 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
             errorDiv.classList.remove('show');
         }, 2000)
     }
-//    onScrollEnd: function(){
-//        var pullDiv = this.el.querySelector('.pull-down'),
-//            arrow = pullDiv.querySelector('.arrow-img'),
-//            isUpdate = pullDiv.classList.contains('update'),
-//            spinner = pullDiv.querySelector('.loader');
-//        if(isUpdate && spinner.style.display === 'none'){
-//            this.getNews();
-//        }
-//    }
 }));

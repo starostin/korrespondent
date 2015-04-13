@@ -21,6 +21,7 @@ RAD.views.SwipeExt =  RAD.Blanks.View.extend({
         this.coordinates.y = [e.originalEvent.changedTouches[0].clientY];
         this.directionDefined = false;
         this.startCoord = this.el.getBoundingClientRect();
+        this.startScrollCoord = this.nativeScroll.getBoundingClientRect();
         if(this.onTouchStart){
             this.onTouchStart()
         }
@@ -53,6 +54,7 @@ RAD.views.SwipeExt =  RAD.Blanks.View.extend({
             return;
         }
         this.startCoord = {};
+        this.startScrollCoord = {};
         var tr = this.el.style.transform,
             value = tr.split('(')[1];
         value = parseInt(value.split(')')[0]);

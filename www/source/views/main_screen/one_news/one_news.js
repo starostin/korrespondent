@@ -11,8 +11,9 @@ RAD.view("view.one_news", RAD.views.SwipeExt.extend({
         this.settings = RAD.models.Settings;
         this.settings.on('change:currentNews', this.showNews, this)
     },
-    onStartRender: function(){
+    setNews: function(){
         this.news = this.settings.get('currentNews') ? RAD.models.News.get(this.settings.get('currentNews')).toJSON() : {};
+        this.render();
     },
     finishSwipe: function(val, half){
         if(val < half){
@@ -26,8 +27,8 @@ RAD.view("view.one_news", RAD.views.SwipeExt.extend({
         if(!val){
             this.el.classList.remove('open')
         }else{
+            this.setNews();
             this.el.classList.add('open');
-            this.render();
         }
     },
     removeCurrentNews: function(){

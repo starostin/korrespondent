@@ -1,10 +1,13 @@
 (function(scope, win){
     var columns = {
-        guid: 'INTEGER UNIQUE',
+        ident: "VARCHAR(50) UNIQUE",
+        favorite: "INTEGER",
+        guid: "INTEGER",
         author: "VARCHAR(100)",
         category: "TEXT",
         comments: "TEXT",
         description: "TEXT",
+        fullText: "TEXT",
         image: "VARCHAR(100)",
         link: "TEXT",
         pubDate: "VARCHAR(50)",
@@ -32,7 +35,7 @@
         }, function(e){
             console.log(e)
         });
-    scope.insertRows = function(data){
+    scope.insertRows = function(data, table){
         var keys = Object.keys(columns).sort(),
             columnsStr = keys.join(', '),
             promisesArr = [],
@@ -47,6 +50,7 @@
         for(var j=0; j<data.length; j++)(function(j){
             data[j].lang = RAD.models.Settings.get('lang');
             data[j].newsId = +RAD.models.Settings.get('selectedSubCategory');
+            data[j].ident = data[j].guid + '_' + data[j].newsId + '_' + data[j].lang;
             promisesArr.push(
                 new Promise(function(resolve, reject){
                 korDB.transaction(function(t) {
@@ -54,7 +58,7 @@
                     for(var k=0; k<keys.length; k++){
                         dataArr.push(data[j][keys[k]] || '')
                     }
-                    var queryStr = "INSERT OR REPLACE INTO news (" + columnsStr + ") VALUES (" + valStr + ")";
+                    var queryStr = "INSERT OR REPLACE INTO " + table + " (" + columnsStr + ") VALUES (" + valStr + ")";
                     t.executeSql(queryStr, dataArr, function(e, rs){
                         resolve(e, rs)
                     });

@@ -94,6 +94,16 @@ RAD.menuMapping = {
                     title: 'Новости политики'
                 }
             ]
+        },
+        {
+            id: 1000,
+            title: 'Избранное',
+            subMenus: [
+                {
+                    id: 1000,
+                    title: 'Избранное'
+                }
+            ]
         }
     ],
     ukr: [
@@ -168,6 +178,16 @@ RAD.menuMapping = {
                     title: 'Новости политики'
                 }
             ]
+        },
+        {
+            id: 1000,
+            title: 'Избранное',
+            subMenus: [
+                {
+                    id: 1000,
+                    title: 'Избранное'
+                }
+            ]
         }
     ]
 };
@@ -211,7 +231,7 @@ RAD.model('MenuData', Backbone.Model.extend({
 }), false);
 RAD.model('Sidebar', Backbone.Collection.extend({
     model: RAD.models.MenuData,
-    arr: [1,2,3,4],
+    arr: [1,2,3,4,1000],
     resetWithOrder: function(){
         this.reset();
         var sortArr = JSON.parse(window.localStorage.getItem('sidebarOptionsOrder')) || this.arr,

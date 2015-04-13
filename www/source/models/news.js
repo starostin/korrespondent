@@ -1,12 +1,12 @@
 RAD.model('OneNews', Backbone.Model.extend({
     idAttribute: "guid",
     initialize: function(data){
-
+        this.unset('buffer');
     }
 }), false);
 RAD.model('OneBufferNews', Backbone.Model.extend({
     initialize: function(data){
-
+        this.set('buffer', 1);
     }
 }), false);
 RAD.model('BufferNews', Backbone.Collection.extend({
@@ -45,31 +45,18 @@ RAD.model('News', Backbone.Collection.extend({
         $.extend(options, opt);
         $.ajax(options);
     },
-    setNews: function(opt){
-        var self = this,
-            settings = RAD.models.Settings,
-            val = settings.get('selectedSubCategory'),
-            lang = settings.get('lang');
-
-            RAD.utils.sql.getRows('SELECT * FROM news WHERE lang = "' + lang + '" AND newsId = "' + val + '"').then(function(oldNews){
-                function callback(data){
-                    if(!oldNews.length){
-                        RAD.utils.sql.insertRows(data).then(function(){
-                            RAD.models.News.reset(oldNews.concat(data));
-                        });
-                    }else{
-                        var newNews = RAD.models.News.getLastNews(data);
-                        _.each(newNews, function(item){
-                            item.buffer = true;
-                        });
-                        RAD.models.BufferNews.add(newNews, {silent: true});
-                        RAD.utils.sql.insertRows(newNews).then(function(){
-                            RAD.models.BufferNews.trigger('add');
-                        });
-                    }
-                }
-                self.getNews(opt, callback);
+    setBufferNews: function(opt){
+        function callback(data){
+            var newNews = RAD.models.News.getLastNews(data);
+            _.each(newNews, function(item){
+                item.buffer = 1;
             });
+            RAD.models.BufferNews.add(newNews, {silent: true});
+            RAD.utils.sql.insertRows(RAD.models.BufferNews.toJSON(), 'news').then(function(){
+                RAD.models.BufferNews.trigger('add');
+            });
+        }
+        this.getNews(opt, callback);
     },
     parseXml: function(xml){
         var newsArr = [];
