@@ -102,12 +102,16 @@ RAD.views.SwipeExt =  RAD.Blanks.View.extend({
             return;
         }
         if(diff < 0){
+            if(this.onMoveLeft){
+                this.onMoveLeft()
+            }
             diff = 0
         }
         this.el.style.transform = 'translateX(' + (diff)+ 'px)';
         this.el.style.webkitTransform = 'translateX(' + (diff)+ 'px)';
     },
     moveRight: function(diff){
+
         if(this.rightLineWidth && diff > this.rightLineWidth){
             diff = this.rightLineWidth;
         }
