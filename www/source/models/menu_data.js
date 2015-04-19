@@ -194,16 +194,16 @@ RAD.menuMapping = {
 RAD.model('Settings', Backbone.Model.extend({
     initialize: function(){
         var lang = window.localStorage.getItem('lang') || 'rus',
-            selectedCategory = window.localStorage.getItem('selectedCategory') || 1,
-            selectedSubCategory = window.localStorage.getItem('selectedSubCategory') || 1;
+            selectedCategory = +window.localStorage.getItem('selectedCategory'),
+            selectedSubCategory = +window.localStorage.getItem('selectedSubCategory');
         this.on('change:lang', this.updateLang, this);
         this.on('change:selectedCategory', this.updateSelectedCategory, this);
         this.on('change:selectedSubCategory', this.updateSelectedSubCategory, this);
 
         this.set({
             lang: lang,
-            selectedCategory: +selectedCategory,
-            selectedSubCategory: +selectedSubCategory
+            selectedCategory: (selectedCategory && selectedCategory !== 1000) ? selectedCategory : 1,
+            selectedSubCategory: (selectedSubCategory && selectedSubCategory !== 1000) ? selectedSubCategory : 1
         })
     },
     updateLang: function(model, val, opt){

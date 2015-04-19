@@ -8,7 +8,8 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
             'click .sub-menu-item': 'changeSubMenu',
             'click .one-news': 'openNews',
             'click .news-list': 'openNewsList',
-            'click .update-message': 'addBufferNews'
+            'click .update-message': 'addBufferNews',
+            'click .favorites-button': 'openFavorites'
         })
     },
     onInitialize: function(){
@@ -124,7 +125,9 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
         if(!this.el.classList.contains('open')) return;
         this.toggleSidebar();
     },
-
+    openFavorites: function(){
+        this.publish('view.favorites.toggleView')
+    },
     onMoveVertically: function(e){
         var pullDiv = this.el.querySelector('.pull-down'),
             arrow = pullDiv.querySelector('.arrow-img'),

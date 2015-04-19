@@ -10,6 +10,10 @@ RAD.view("view.main_screen", RAD.Blanks.View.extend({
             content: 'view.sidebar_menu'
         },
         {
+            container_id: '#favorites',
+            content: 'view.favorites'
+        },
+        {
             container_id: '#one-news',
             content: 'view.one_news'
         }

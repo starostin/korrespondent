@@ -1,0 +1,20 @@
+<div class="header-wrapper">
+    <div class="header">
+        <div class="back-button header-btn"></div>
+        <div class="news-topic">{{ _.findWhere(this.selected.get('subMenus'), {selected: true}).title }}
+            {{# if(this.selected.get('subMenus').length > 1) { }}
+            <span>&#65516</span>
+            {{# } }}
+        </div>
+    </div>
+</div>
+<div class="wrapper">
+    <div class="background"></div>
+    <div class="swipe-view news-list native-scroll">
+        <div class="scroll">
+            <ul class="list">
+
+            </ul>
+        </div>
+    </div>
+</div>
