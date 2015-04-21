@@ -170,6 +170,12 @@ ul {
     background: green;
     border: 1px solid black;
 }
+.one-news.remove{
+    transform: translateX(-100%) !important;
+}
+.one-news.stay{
+    transform: translateX(0) !important;
+}
 .small-img{
     height: 100px;
     width: 100px;

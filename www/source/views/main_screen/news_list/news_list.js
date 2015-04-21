@@ -9,7 +9,10 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
             'click .one-news': 'openNews',
             'click .news-list': 'openNewsList',
             'click .update-message': 'addBufferNews',
-            'click .favorites-button': 'openFavorites'
+            'click .favorites-button': 'openFavorites',
+            'touchstart .one-news': 'touchStartSwipe',
+            'touchmove .one-news': 'touchMoveSwipe',
+            'touchend .one-news': 'touchEndSwipe'
         })
     },
     onInitialize: function(){
@@ -26,8 +29,8 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
         this.bufferNews.on('all', this.showUpdateMessage, this);
     },
     onStartAttach: function(){
-        var viewCoord  = this.el.getBoundingClientRect();
-        this.rightLineWidth = viewCoord.width * 0.9;
+        this.viewCoord  = this.el.getBoundingClientRect();
+        this.rightLineWidth = this.viewCoord.width * 0.9;
     },
     onStartRender: function(){
         this.selected = this.sidebar.findWhere({selected: true});
@@ -40,6 +43,52 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
         }else{
             console.log('view.news_list does not have method '+ method)
         }
+    },
+    touchStartSwipe: function(e){
+        this.startItemCoord = e.currentTarget.getBoundingClientRect();
+        this.startX = Math.abs(this.startItemCoord.left) + e.originalEvent.changedTouches[0].clientX;
+    },
+    touchMoveSwipe: function(e){
+        if(this.el.classList.contains('open') || this.directionVert) return;
+        var curTar = e.currentTarget,
+            diff = this.startX - e.originalEvent.changedTouches[0].clientX;
+        if(diff<0){
+            diff=0;
+        }
+        curTar.style.transform = 'translateX(' + (-diff) + 'px)'
+    },
+    touchEndSwipe: function(e){
+        var curTar = e.currentTarget,
+            tr = curTar.style.transform,
+            value = 0;
+        if(!tr){
+            return;
+        }
+
+        value = tr.split('(')[1];
+        value = Math.abs(parseInt(value.split(')')[0]));
+        if(!value){
+            curTar.style.transition = 'none';
+            curTar.style.transform = 'translateX(0px)';
+            curTar.className = 'one-news';
+            return;
+        }
+        curTar.style.transition = 'all 0.3s ease-in-out';
+        if(value >= this.viewCoord.width/2){
+            curTar.classList.add('remove')
+        }else{
+            curTar.classList.add('stay')
+        }
+        function endTransition(){
+            curTar.style.transition = 'none';
+            curTar.style.transform = 'translateX(0px)';
+            curTar.className = 'one-news';
+            if(curTar.classList.contains('remove')){
+                $(curTar).remove();
+            }
+        }
+        curTar.addEventListener('webkittransitionend', endTransition);
+        curTar.addEventListener('transitionend', endTransition);
     },
     openNews: function(e){
         if(this.el.classList.contains('open')) return;
@@ -109,6 +158,7 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
         }
     },
     addBufferNews: function(){
+        if(this.el.classList.contains('open')) return;
         this.news.add(this.bufferNews.toJSON());
         this.bufferNews.reset();
         RAD.utils.sql.insertRows(this.news.toJSON(), 'news');
