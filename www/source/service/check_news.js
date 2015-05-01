@@ -17,6 +17,7 @@ RAD.service("service.check_news", RAD.Blanks.Service.extend({
     },
     immediateResetTracking: function(model, val){
         if(val === 1000){
+            this.stopTracking();
             return;
         }
         this.stopTracking();

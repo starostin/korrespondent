@@ -195,19 +195,25 @@ RAD.model('Settings', Backbone.Model.extend({
     initialize: function(){
         var lang = window.localStorage.getItem('lang') || 'rus',
             selectedCategory = +window.localStorage.getItem('selectedCategory'),
-            selectedSubCategory = +window.localStorage.getItem('selectedSubCategory');
+            selectedSubCategory = +window.localStorage.getItem('selectedSubCategory'),
+            font = +window.localStorage.getItem('font');
         this.on('change:lang', this.updateLang, this);
+        this.on('change:font', this.updateFont, this);
         this.on('change:selectedCategory', this.updateSelectedCategory, this);
         this.on('change:selectedSubCategory', this.updateSelectedSubCategory, this);
 
         this.set({
             lang: lang,
-            selectedCategory: (selectedCategory && selectedCategory !== 1000) ? selectedCategory : 1,
-            selectedSubCategory: (selectedSubCategory && selectedSubCategory !== 1000) ? selectedSubCategory : 1
-        })
+            font: font || 14,
+            selectedCategory: selectedCategory || 1,
+            selectedSubCategory: selectedSubCategory || 1
+        });
     },
     updateLang: function(model, val, opt){
         window.localStorage.setItem('lang', val);
+    },
+    updateFont: function(model, val, opt){
+        window.localStorage.setItem('font', val);
     },
     updateSelectedCategory: function(model, val, opt){
         window.localStorage.setItem('selectedCategory', val);

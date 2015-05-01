@@ -81,6 +81,7 @@ RAD.model('News', Backbone.Collection.extend({
                     comments: $this.find("comments").text(),
                     source: $this.find("source").text()
                 };
+            item.bigImage = RAD.utils.getBigImage(item.image);
             newsArr.push(item);
         });
         return newsArr;

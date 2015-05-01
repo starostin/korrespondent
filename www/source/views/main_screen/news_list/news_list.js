@@ -159,7 +159,8 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
         li.className = 'one-news';
         li.setAttribute('data-cid', model.cid);
         li.innerHTML = '<img class="small-img" src="' + model.get('image') + '"/> ' +
-            '<div class="news-title">' + model.get('title') + '</div>';
+            '<div class="news-title">' + model.get('title') + '</div>' +
+            '<div class="favorite-news hide" ></div>';
         if(firstLi){
             list.insertBefore(li, firstLi);
         }else{
@@ -196,13 +197,15 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
         this.el.classList.add('favorites-list');
     },
     markFavorite: function(model, val, options){
-        console.log('--------------------------')
-        var li = this.el.querySelector('[data-cid="' + model.cid + '"]'),
-            favoriteIcon = li.querySelector('.favorite-news');
-        val ? favoriteIcon.classList.remove('hide') : favoriteIcon.classList.add('hide');
+        var li = this.el.querySelector('[data-cid="' + model.cid + '"]');
         if(this.el.classList.contains('favorites-list')){
-            $(li).remove();
+            val ? this.addNews(model) : $(li).remove();
         }
+        var  newLi = this.el.querySelector('[data-cid="' + model.cid + '"]');
+        if(!newLi) return;
+        var favoriteIcon = newLi.querySelector('.favorite-news');
+        val ? favoriteIcon.classList.remove('hide') : favoriteIcon.classList.add('hide');
+
     },
     onMoveVertically: function(e){
         var pullDiv = this.el.querySelector('.pull-down'),

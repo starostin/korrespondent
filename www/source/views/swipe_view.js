@@ -57,7 +57,9 @@ RAD.views.SwipeExt =  RAD.Blanks.View.extend({
         this.startScrollCoord = {};
         var tr = this.el.style.transform,
             value = tr.split('(')[1];
-        value = parseInt(value.split(')')[0]);
+        if(value){
+            value = parseInt(value.split(')')[0]);
+        }
         this.el.style.transition  = 'all 0.3s ease-in-out';
         this.el.style.webkitTransition  = 'all 0.3s ease-in-out';
         this.el.removeAttribute('style');

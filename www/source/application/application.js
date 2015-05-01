@@ -13,6 +13,16 @@ RAD.application(function (core) {
         var settings = RAD.models.Settings,
             val = settings.get('selectedSubCategory'),
             lang = settings.get('lang');
+        if(val === 1000){
+            RAD.utils.sql.getRows('SELECT * FROM news WHERE lang = "' + lang + '" AND favorite = "true"').then(function(favorites){
+                RAD.models.News.reset(favorites);
+                options.callback = function(){
+                    document.querySelector('.news-list-view').classList.add('favorites-list');
+                };
+                core.publish('navigation.show', options);
+            });
+            return;
+        }
         RAD.utils.sql.getRows('SELECT * FROM news WHERE lang = "' + lang + '" AND newsId = "' + val + '"').then(function(oldNews){
             if(oldNews && oldNews.length){
                 var buffer = [],

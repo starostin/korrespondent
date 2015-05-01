@@ -4,13 +4,33 @@ RAD.view("view.one_news", RAD.views.SwipeExt.extend({
     events: function(){
         return $.extend(RAD.views.SwipeExt.prototype.events, {
             'click .back': 'removeCurrentNews',
-            'click .favorite': 'addNewsToFavorite'
+            'click .favorite': 'addNewsToFavorite',
+            'click .font': 'toggleFontPopup',
+            'click .font-small': 'makeSmallFont',
+            'click .font-big': 'makeBigFont'
         })
     },
     onInitialize: function(){
         this.oneNews = new Backbone.Model;
         this.settings = RAD.models.Settings;
-        this.settings.on('change:currentNews', this.showNews, this)
+        this.settings.on('change:currentNews', this.showNews, this);
+        this.settings.on('change:font', this.updateFont, this);
+    },
+    toggleFontPopup: function(e){
+        if(!e.target.classList.contains('font')) return;
+        e.currentTarget.classList.toggle('show')
+    },
+    makeSmallFont: function(){
+        var currentFont = this.settings.get('font');
+        this.settings.set('font', currentFont - 2)
+    },
+    makeBigFont: function(){
+        var currentFont = this.settings.get('font');
+        this.settings.set('font', currentFont + 2)
+    },
+    updateFont: function(model, val){
+        var textWrapper = this.el.querySelector('.par-text');
+        textWrapper.style.fontSize = val + 'px';
     },
     addNewsToFavorite: function(e){
         var curTar = e.currentTarget,

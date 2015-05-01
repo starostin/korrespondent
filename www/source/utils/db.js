@@ -49,8 +49,8 @@
         }
         for(var j=0; j<data.length; j++)(function(j){
             data[j].lang = RAD.models.Settings.get('lang');
-            data[j].newsId = +RAD.models.Settings.get('selectedSubCategory');
-            data[j].ident = data[j].guid + '_' + data[j].newsId + '_' + data[j].lang + '_' + data[j].favorite;
+            data[j].newsId = data[j].newsId || +RAD.models.Settings.get('selectedSubCategory');
+            data[j].ident = data[j].guid + '_' + data[j].newsId + '_' + data[j].lang;
             promisesArr.push(
                 new Promise(function(resolve, reject){
                 korDB.transaction(function(t) {
