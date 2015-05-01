@@ -7,7 +7,8 @@ RAD.view("view.one_news", RAD.views.SwipeExt.extend({
             'click .favorite': 'addNewsToFavorite',
             'click .font': 'toggleFontPopup',
             'click .font-small': 'makeSmallFont',
-            'click .font-big': 'makeBigFont'
+            'click .font-big': 'makeBigFont',
+            'click .sharing': 'shareNews'
         })
     },
     onInitialize: function(){
@@ -31,6 +32,13 @@ RAD.view("view.one_news", RAD.views.SwipeExt.extend({
     updateFont: function(model, val){
         var textWrapper = this.el.querySelector('.par-text');
         textWrapper.style.fontSize = model.get('font') + 'px';
+    },
+    shareNews: function(){
+        if(!window.cordova) {
+            console.log('Share plugin use cordova');
+            return;
+        }
+        window.plugins.socialsharing.share(this.oneNews.get('title'), null, null, this.oneNews.get('link'))
     },
     addNewsToFavorite: function(e){
         var curTar = e.currentTarget,

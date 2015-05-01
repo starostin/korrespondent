@@ -248,7 +248,7 @@ window['Slip'] = (function(){
                 }
 
                 this.target.node.className += ' slip-reordering';
-                this.target.node.style.zIndex = '99999';
+                this.target.node.style.zIndex = '100';
                 this.target.node.style[userSelectPrefix] = 'none';
                 if (compositorDoesNotOrderLayers) {
                     // Chrome's compositor doesn't sort 2D layers
@@ -466,6 +466,10 @@ window['Slip'] = (function(){
         },
 
         onTouchStart: function(e) {
+            if(e.target.nodeName === 'LI') {
+                return;
+            }
+            $(e.target).closest('li')[0].classList.add('active');
             this.usingTouch = true;
             this.canPreventScrolling = true;
 
@@ -577,6 +581,7 @@ window['Slip'] = (function(){
         },
 
         onTouchEnd: function(e) {
+            $(e.target).closest('li')[0].classList.remove('active');
             if (e.touches.length > 1) {
                 this.cancel();
             } else if (this.state.onEnd && false === this.state.onEnd.call(this)) {

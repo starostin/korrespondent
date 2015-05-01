@@ -1,10 +1,10 @@
 RAD.view("view.sidebar_menu", RAD.views.SlipExt.extend({
     url: 'source/views/main_screen/sidebar_menu/sidebar_menu.html',
     events: {
-        'touchstart li': 'onTouchStart',
-        'touchend li': 'onTouchEnd',
+        //'touchstart li': 'onTouchStart',
+        //'touchend li': 'onTouchEnd',
         'tap li': 'openNewsListPage',
-        'tap .lang': 'changeLanguage',
+        'click .lang': 'changeLanguage',
         'click .support': 'sendFeedback'
     },
     slip_el_name: 'ul',
