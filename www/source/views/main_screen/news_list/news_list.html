@@ -7,7 +7,7 @@
             <span>&#65516</span>
             {{# } }}
         </div>
-        <div class="favorites-button header-btn"></div>
+        <!--<div class="favorites-button header-btn"></div>-->
     </div>
     <ul class="sub-menu">
         {{# _.each(this.selected.get('subMenus'), function(item, index, items){ }}
@@ -33,6 +33,7 @@
                 <li class="one-news" data-cid="{{ item.cid }}">
                     <img class="small-img" src="{{ item.get('image') }}"/>
                     <div class="news-title">{{ item.get('title') }}</div>
+                    <div class="favorite-news {{ !item.get('favorite') && 'hide' }}" ></div>
                 </li>
                 {{# }) }}
             </ul>

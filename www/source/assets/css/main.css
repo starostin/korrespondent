@@ -7,8 +7,11 @@
 .news-list-view .wrapper{
     top: 0;
 }
+.hide{
+    display: none;
+}
 .stop-scrolling {
-    height: 100%;
+    height: 94.5%;
     overflow: hidden;
 }
 .swipe-view{
@@ -169,6 +172,15 @@ ul {
     width: 100%;
     background: green;
     border: 1px solid black;
+    position: relative;
+}
+.favorite-news{
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    background: grey;
+    right: 5%;
+    top: 25px;
 }
 .one-news.remove{
     transform: translateX(-100%) !important;
@@ -176,10 +188,51 @@ ul {
 .one-news.stay{
     transform: translateX(0) !important;
 }
+html {
+    height: 100%;
+    overflow: hidden;
+}
 .small-img{
     height: 100px;
     width: 100px;
     float: left;
+}
+.parallax{
+    perspective: 1px;
+    transform-style: preserve-3d;
+    height: 100%;
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
+.stop-scrolling .parallax{
+    overflow-y: hidden;
+}
+.parallax__layer {
+    position: relative;
+    min-height: 70%;
+    box-sizing: border-box;
+    box-shadow: 0 -1px 10px rgba(0, 0, 0, .7);
+    transform-style: inherit;
+}
+.parallax__layer, .parallax__layer:before {
+    background: 50% 50% / cover;
+}
+.parallax__layer:before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+.parallax__layer.par-img{
+    top: -15%;
+    transform: translateZ(-1px) scale(2);
+    z-index: -1;
+}
+.parallax__layer.par-text{
+    background: white;
+    background-attachment: fixed;
 }
 
 /*--------------------------------------SIDEBAR MENU---------------------------------*/

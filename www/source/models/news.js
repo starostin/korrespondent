@@ -17,7 +17,12 @@ RAD.model('News', Backbone.Collection.extend({
     comparator: function(item){
         return -(+new Date(item.get('pubDate')));
     },
-    initialize: function(){},
+    initialize: function(){
+        this.on('change:favorite', this.setFavorite, this)
+    },
+    setFavorite: function(model, val, options){
+        RAD.utils.sql.insertRows([model.toJSON()], 'news');
+    },
     getLastNews: function(data){
         var news = RAD.models.BufferNews.length ? RAD.models.BufferNews : this,
             maxDate = _.max(news.toJSON(), function(item){
@@ -71,6 +76,7 @@ RAD.model('News', Backbone.Collection.extend({
                     image:  RAD.utils.getImageLink($this.find("image").text()),
                     pubDate: $this.find("pubDate").text(),
                     guid: $this.find("guid").text(),
+                    favorite: "",
                     category: $this.find("category").text(),
                     comments: $this.find("comments").text(),
                     source: $this.find("source").text()

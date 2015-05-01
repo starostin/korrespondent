@@ -1,12 +1,21 @@
 <div class="header">
     <div class="header-btn back">BACK</div>
     HEADER
-    <div class="header-btn favorite">FAV</div>
+    <div class="header-btn favorite {{ this.oneNews.get('favorite') && 'added' }}">FAV</div>
 </div>
 <div class="wrapper native-scroll">
-    <div class="swipe-view">
-        <div>
-            {{ this.news.fullText }}
+    <div class="swipe-view parallax">
+        {{# var parts = this.oneNews.get('image') && this.oneNews.get('image').split('/'); }}
+        {{# if(parts){ }}
+        {{# parts[4] = '610x385'; }}
+        {{# var bigImage = parts.join('/') }}
+        {{# } }}
+
+        <div class="par-img parallax__layer" style="background-image: url('{{ bigImage }}')">
+            <!--<img src="http://kor.ill.in.ua/m/610x385/1612607.jpg" alt=""/>-->
+        </div>
+        <div class="par-text parallax__layer">
+            {{ this.oneNews.get('fullText') }}
         </div>
     </div>
 </div>

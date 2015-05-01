@@ -3,16 +3,24 @@ RAD.view("view.one_news", RAD.views.SwipeExt.extend({
     className: 'one-news-view',
     events: function(){
         return $.extend(RAD.views.SwipeExt.prototype.events, {
-            'click .back': 'removeCurrentNews'
+            'click .back': 'removeCurrentNews',
+            'click .favorite': 'addNewsToFavorite'
         })
     },
     onInitialize: function(){
-        this.news = {};
+        this.oneNews = new Backbone.Model;
         this.settings = RAD.models.Settings;
         this.settings.on('change:currentNews', this.showNews, this)
     },
+    addNewsToFavorite: function(e){
+        var curTar = e.currentTarget,
+            isAdd = curTar.classList.contains('added') ? '' : true;
+        curTar.classList.toggle('added');
+        this.parentNews.set('favorite', isAdd);
+    },
     setNews: function(){
-        this.news = this.settings.get('currentNews') ? RAD.models.News.get(this.settings.get('currentNews')).toJSON() : {};
+       this.parentNews = RAD.models.News.get(this.settings.get('currentNews'));
+        this.oneNews.set(this.parentNews.toJSON());
         this.render();
     },
     finishSwipe: function(val, half){

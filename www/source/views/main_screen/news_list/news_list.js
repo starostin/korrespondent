@@ -26,6 +26,7 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
         this.settings.on('change:lang', this.setNews, this);
         this.news.on('reset', this.render, this);
         this.news.on('add', this.addNews, this);
+        this.news.on('change:favorite', this.markFavorite, this);
         this.bufferNews.on('all', this.showUpdateMessage, this);
     },
     onStartAttach: function(){
@@ -49,7 +50,7 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
         this.startX = Math.abs(this.startItemCoord.left) + e.originalEvent.changedTouches[0].clientX;
     },
     touchMoveSwipe: function(e){
-        if(this.el.classList.contains('open') || this.directionVert) return;
+        if(this.el.classList.contains('open') || this.directionVert || !this.el.classList.contains('favorites-list')) return;
         var curTar = e.currentTarget,
             diff = this.startX - e.originalEvent.changedTouches[0].clientX;
         if(diff<0){
@@ -60,6 +61,8 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
     touchEndSwipe: function(e){
         var curTar = e.currentTarget,
             tr = curTar.style.transform,
+            cid = curTar.getAttribute('data-cid'),
+            model = this.news.get(cid),
             value = 0;
         if(!tr){
             return;
@@ -82,10 +85,11 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
         function endTransition(){
             curTar.style.transition = 'none';
             curTar.style.transform = 'translateX(0px)';
-            curTar.className = 'one-news';
             if(curTar.classList.contains('remove')){
-                $(curTar).remove();
+                console.log('---------------------MODEk--------------', model)
+                model.set('favorite', '');
             }
+            curTar.className = 'one-news';
         }
         curTar.addEventListener('webkittransitionend', endTransition);
         curTar.addEventListener('transitionend', endTransition);
@@ -111,8 +115,13 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
             subMenu = this.el.querySelector('.sub-menu'),
             newsId = this.settings.get('selectedSubCategory'),
             lang = this.settings.get('lang');
-
+        this.el.classList.remove('favorites-list');
+        if(newsId === 1000){
+            self.resetByFavorites();
+            return;
+        }
         RAD.utils.sql.getRows('SELECT * FROM news WHERE lang = "' + lang + '" AND newsId = "' + newsId + '"').then(function(oldNews){
+
             if(oldNews.length){
                 var buffer = [],
                     news = [];
@@ -178,12 +187,29 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
     openFavorites: function(){
         this.publish('view.favorites.toggleView')
     },
+    resetByFavorites: function(){
+        var self = this,
+            lang = this.settings.get('lang');
+        RAD.utils.sql.getRows('SELECT * FROM news WHERE lang = "' + lang + '" AND favorite = "' + true + '"').then(function(favorites){
+            self.news.reset(favorites);
+        });
+        this.el.classList.add('favorites-list');
+    },
+    markFavorite: function(model, val, options){
+        console.log('--------------------------')
+        var li = this.el.querySelector('[data-cid="' + model.cid + '"]'),
+            favoriteIcon = li.querySelector('.favorite-news');
+        val ? favoriteIcon.classList.remove('hide') : favoriteIcon.classList.add('hide');
+        if(this.el.classList.contains('favorites-list')){
+            $(li).remove();
+        }
+    },
     onMoveVertically: function(e){
         var pullDiv = this.el.querySelector('.pull-down'),
             arrow = pullDiv.querySelector('.arrow-img'),
             deg = 0;
 
-        if(this.nativeScroll.scrollTop > 0 || this.el.classList.contains('open')){
+        if(this.nativeScroll.scrollTop > 0 || this.el.classList.contains('open') || this.el.classList.contains('favorites-list')){
             return;
         }
 
