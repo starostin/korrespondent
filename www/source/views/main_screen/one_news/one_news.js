@@ -30,7 +30,7 @@ RAD.view("view.one_news", RAD.views.SwipeExt.extend({
     },
     updateFont: function(model, val){
         var textWrapper = this.el.querySelector('.par-text');
-        textWrapper.style.fontSize = val + 'px';
+        textWrapper.style.fontSize = model.get('font') + 'px';
     },
     addNewsToFavorite: function(e){
         var curTar = e.currentTarget,

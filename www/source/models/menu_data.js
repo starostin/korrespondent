@@ -213,6 +213,14 @@ RAD.model('Settings', Backbone.Model.extend({
         window.localStorage.setItem('lang', val);
     },
     updateFont: function(model, val, opt){
+        var minFont = 8,
+            maxFont = 50;
+        if(val<minFont){
+            this.set('font', minFont, {silent: true})
+        }
+        if(val>maxFont){
+            this.set('font', maxFont, {silent: true})
+        }
         window.localStorage.setItem('font', val);
     },
     updateSelectedCategory: function(model, val, opt){
