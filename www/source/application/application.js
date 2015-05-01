@@ -1,10 +1,15 @@
 RAD.application(function (core) {
     var app = this;
+    app.cordovaEnv = {};
+    app.isEnv = function (key) {
+        return !!this.cordovaEnv[key];
+    };
 
-    app.start = function () {
-
-// to add your first view - run "rad add view view.main" from the root of this project
-// you can use the code below to show your first view
+    app.setEnv = function (key, value) {
+        this.cordovaEnv[key] = value;
+        return app;
+    };
+    app.showScreen = function(){
         var options = {
             container_id: '#screen',
             content: "view.main_screen",
@@ -62,6 +67,42 @@ RAD.application(function (core) {
                 });
             }
         })
+    };
+    app.start = function () {
+        var pause = function () {
+                console.log('pause');
+                app.setEnv('pause', true);
+            },
+            resume = function () {
+                console.log('resume');
+                app.setEnv('pause', false);
+                core.publish('application.resume');
+            },
+            online = function () {
+                console.log('online');
+                app.setEnv('online', true);
+                core.publish('application.online');
+            },
+            offline = function () {
+                console.log('offline');
+                app.setEnv('online', false);
+                core.publish('application.offline');
+            },
+            deviceready = function () {
+                document.addEventListener("pause", pause, false);
+                document.addEventListener("resume", resume, false);
+                document.addEventListener("online", online, false);
+                document.addEventListener("offline", offline, false);
+                console.log('deviceready');
+
+                app.setEnv('deviceready', true);
+                app.showScreen();
+            };
+
+        document.addEventListener("deviceready", deviceready, false);
+        if (!window.cordova) {
+            app.showScreen();
+        }
     };
 
     return app;
