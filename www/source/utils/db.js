@@ -9,6 +9,7 @@
         description: "TEXT",
         fullText: "TEXT",
         image: "VARCHAR(100)",
+        bigImage: "VARCHAR(100)",
         link: "TEXT",
         pubDate: "VARCHAR(50)",
         source: "TEXT",

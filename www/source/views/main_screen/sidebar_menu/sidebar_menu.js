@@ -4,7 +4,8 @@ RAD.view("view.sidebar_menu", RAD.views.SlipExt.extend({
         'touchstart li': 'onTouchStart',
         'touchend li': 'onTouchEnd',
         'tap li': 'openNewsListPage',
-        'tap .lang': 'changeLanguage'
+        'tap .lang': 'changeLanguage',
+        'click .support': 'sendFeedback'
     },
     slip_el_name: 'ul',
     className: 'sidebar-menu-view',
@@ -14,6 +15,23 @@ RAD.view("view.sidebar_menu", RAD.views.SlipExt.extend({
         this.settings.on('change:lang', this.updateSidebarLanguage, this);
         this.settings.on('change:selectedCategory', this.updateSelectedOption, this);
         this.sidebar.on('change:selected', this.highlightSelected, this)
+    },
+    sendFeedback: function(e){
+        if(!window.cordova) {
+            console.log('Email plugin use cordova');
+            return;
+        }
+
+        cordova.plugins.email.addAlias('gmail', 'com.google.android.gm');
+        cordova.plugins.email.open({
+            app: 'gmail',
+            to:      'korrespondent.android@gmail.com',
+            subject: 'Korrespondent Feedback',
+            body:    '<em>Напишите Ваши пожелания или расскажите о ' +
+            'проблеме - нам это очень важно. Спасибо!</em><br> <em>Android ' + device.version + ', </em><br>' +
+            '<em>Версия приложения ' + settings.version + '</em><br><br><p>Отправлено с ' + device.model + '</p>',
+            isHtml:  true
+        })
     },
     updateSidebarLanguage: function(){
         this.sidebar.resetWithOrder();
