@@ -31,7 +31,7 @@
             <ul class="list">
                 {{# _.each(this.news.models, function(item, index, items){ }}
                 <li class="one-news" data-cid="{{ item.cid }}">
-                    <img class="small-img" src="{{ item.get('image') }}"/>
+                    <img class="small-img" src="{{ item.get('imagesNativeURL') || item.get('image') }}"/>
                     <div class="news-title">{{ item.get('title') }}</div>
                     <div class="favorite-news {{ !item.get('favorite') && 'hide' }}" ></div>
                 </li>

@@ -11,6 +11,8 @@
         image: "VARCHAR(100)",
         bigImage: "VARCHAR(100)",
         link: "TEXT",
+        imagesNativeURL: "VARCHAR(100)",
+        bigImagesNativeURL: "VARCHAR(100)",
         pubDate: "VARCHAR(50)",
         source: "TEXT",
         title: "TEXT",

@@ -300,6 +300,17 @@ html {
     box-sizing: border-box;
     content: "";
 }
+.favorite-item::after{
+    margin-left: 10px;
+    display: inline-block;
+    content: attr(data-count);
+    width: 30px;
+    text-align: center;
+    font: 19px/30px 'robotoregular';
+    border-radius: 50%;
+    background: #7bc143;
+    color: #fff;
+}
 
 /*--------------------------------------ONE NEWS---------------------------------*/
 .one-news-view{

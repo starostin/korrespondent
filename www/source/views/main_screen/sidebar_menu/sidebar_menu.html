@@ -4,7 +4,8 @@
         <ul>
             {{# _.each(this.sidebar.toJSON(), function(item, index, items){ }}
             <li data-id="{{ item.id }}" class="{{# if(item.selected) { }} selected {{# } }}">
-                {{ item.title }}
+                <span {{# if(item.id === 1000) { }} class=favorite-item data-count = {{ RAD.models.FavotiteNews.where({lang: RAD.models.Settings.get('lang') }).length || '' }} {{# } }} > {{ item.title }}</span>
+
                 <div class="mover-wrapper">
                     <span class="mover"></span>
                 </div>

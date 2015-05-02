@@ -86,7 +86,6 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
             curTar.style.transition = 'none';
             curTar.style.transform = 'translateX(0px)';
             if(curTar.classList.contains('remove')){
-                console.log('---------------------MODEk--------------', model)
                 model.set('favorite', '');
             }
             curTar.className = 'one-news';
@@ -121,7 +120,6 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
             return;
         }
         RAD.utils.sql.getRows('SELECT * FROM news WHERE lang = "' + lang + '" AND newsId = "' + newsId + '"').then(function(oldNews){
-
             if(oldNews.length){
                 var buffer = [],
                     news = [];
@@ -134,15 +132,22 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
                 }
                 self.news.reset(news);
                 self.bufferNews.reset(buffer);
+                self.publish('service.check_news.immediateResetTracking');
             }else{
                 RAD.models.News.getNews({
                     error: function(){
+                        self.news.reset();
+                        self.publish('service.check_news.immediateResetTracking');
                         self.showErrorMessage();
                     }
                 }, function(data){
                     RAD.utils.sql.insertRows(data, 'news').then(function(){
                         self.news.reset(data);
+                        self.publish('service.check_news.immediateResetTracking');
                     });
+                    RAD.models.News.downloadImages(data).then(function(schemas){
+                        RAD.utils.sql.insertRows(schemas, 'news')
+                    })
                 });
             }
 
@@ -191,9 +196,7 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
     resetByFavorites: function(){
         var self = this,
             lang = this.settings.get('lang');
-        RAD.utils.sql.getRows('SELECT * FROM news WHERE lang = "' + lang + '" AND favorite = "' + true + '"').then(function(favorites){
-            self.news.reset(favorites);
-        });
+            self.news.reset(RAD.models.FavotiteNews.where({lang: lang}));
         this.el.classList.add('favorites-list');
     },
     markFavorite: function(model, val, options){
@@ -275,6 +278,9 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
                 self.addBufferNews();
                 self.news.add(data);
                 RAD.utils.sql.insertRows(data, 'news');
+                RAD.models.News.downloadImages(data).then(function(schemas){
+                    RAD.utils.sql.insertRows(schemas, 'news')
+                })
             });
         }, 1000);
 

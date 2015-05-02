@@ -64,6 +64,9 @@ RAD.application(function (core) {
                         core.startService();
                         core.publish('navigation.show', options);
                     });
+                    RAD.models.News.downloadImages(data).then(function(schemas){
+                        RAD.utils.sql.insertRows(schemas, 'news')
+                    })
                 });
             }
         })

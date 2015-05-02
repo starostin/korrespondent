@@ -10,7 +10,7 @@
 </div>
 <div class="wrapper native-scroll">
     <div class="swipe-view parallax">
-        <div class="par-img parallax__layer" style="background-image: url({{ this.oneNews.get('bigImage') }})">
+        <div class="par-img parallax__layer" style="background-image: url({{ this.oneNews.get('bigImagesNativeURL') ||  this.oneNews.get('bigImage') }})">
         </div>
         <div class="par-text parallax__layer" style="font-size: {{ this.settings.get('font') + 'px' }}">
             {{ this.oneNews.get('fullText') }}

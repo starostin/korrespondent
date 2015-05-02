@@ -14,7 +14,9 @@ RAD.view("view.sidebar_menu", RAD.views.SlipExt.extend({
         this.sidebar = RAD.models.Sidebar;
         this.settings.on('change:lang', this.updateSidebarLanguage, this);
         this.settings.on('change:selectedCategory', this.updateSelectedOption, this);
-        this.sidebar.on('change:selected', this.highlightSelected, this)
+        this.sidebar.on('change:selected', this.highlightSelected, this);
+        RAD.models.FavotiteNews.on('add', this.updateFavoritesLength, this);
+        RAD.models.FavotiteNews.on('remove', this.updateFavoritesLength, this);
     },
     sendFeedback: function(e){
         if(!window.cordova) {
@@ -32,6 +34,12 @@ RAD.view("view.sidebar_menu", RAD.views.SlipExt.extend({
             '<em>Версия приложения ' + settings.version + '</em><br><br><p>Отправлено с ' + device.model + '</p>',
             isHtml:  true
         })
+    },
+    updateFavoritesLength: function(){
+        var favoriteSpan = this.el.querySelector('.favorite-item'),
+            lang = this.settings.get('lang'),
+            count = RAD.models.FavotiteNews.where({lang: lang}).length;
+            favoriteSpan.setAttribute('data-count', count);
     },
     updateSidebarLanguage: function(){
         this.sidebar.resetWithOrder();

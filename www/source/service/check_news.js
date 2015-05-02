@@ -2,8 +2,8 @@ RAD.service("service.check_news", RAD.Blanks.Service.extend({
     requestTime: 10 * 1000,
     onInitialize: function(){
         this.settings = RAD.models.Settings;
-        this.settings.on('change:selectedSubCategory', this.immediateResetTracking, this);
-        this.settings.on('change:lang', this.immediateResetTracking, this);
+        //this.settings.on('change:selectedSubCategory', this.immediateResetTracking, this);
+        //this.settings.on('change:lang', this.immediateResetTracking, this);
         this.resetTracking();
     },
     onReceiveMsg: function (channel, data) {

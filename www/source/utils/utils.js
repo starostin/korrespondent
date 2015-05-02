@@ -17,12 +17,13 @@ RAD.namespace('RAD.utils.getBigImage', function(link){
 
     return bigImage;
 });
-RAD.namespace('RAD.utils.download', function(link, folder, context){
+RAD.namespace('RAD.utils.download', function(link, folder, context, obj){
     if(!window.cordova) {
         console.log('Download plugin use cordova');
         return;
     }
-    var callbackFn = function(entry){
+    var $deferred = $.Deferred(),
+        callbackFn = function(entry){
             var fileTransfer = new FileTransfer();
             var uri = encodeURI(link),
                 filename = (function () {
@@ -37,11 +38,15 @@ RAD.namespace('RAD.utils.download', function(link, folder, context){
                 filePath,
                 function(entry) {
                     console.log("download complete: " + entry.fullPath);
+                    obj[folder + 'NativeURL'] = entry.nativeURL;
+                    $deferred.resolve(obj)
                 },
                 function(error) {
                     console.log("download error source " + error.source);
                     console.log("download error target " + error.target);
                     console.log("upload error code" + error.code);
+                    obj[folder + 'NativeURL'] = '';
+                    $deferred.resolve(obj)
                 },
                 false
             );
@@ -49,8 +54,8 @@ RAD.namespace('RAD.utils.download', function(link, folder, context){
         fail = function(e){
 
         };
-
     RAD.utils.getDirectory(folder, callbackFn, fail, context);
+    return $deferred.promise();
 });
 RAD.namespace('RAD.utils.getDirectory', function (dir, callback, fail, context) {
     var dirArr = dir.split('/'),
@@ -68,7 +73,7 @@ RAD.namespace('RAD.utils.getDirectory', function (dir, callback, fail, context) 
                     RAD.utils.callback(callback, context, arguments);
                 };
             } else {
-                success = function (entry) {;
+                success = function (entry) {
                     getDirectory(entry);
                 };
             }
