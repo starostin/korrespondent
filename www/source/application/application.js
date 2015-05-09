@@ -11,32 +11,35 @@ RAD.application(function (core) {
     };
     app.showScreen = function(){
         var options = {
-            container_id: '#screen',
-            content: "view.main_screen",
-            animation: 'none'
-        };
-        var settings = RAD.models.Settings,
+                container_id: '#screen',
+                content: "view.main_screen",
+                animation: 'none'
+            },
+            settings = RAD.models.Settings,
             val = settings.get('selectedSubCategory'),
             lang = settings.get('lang');
-        if(val === 1000){
-            RAD.utils.sql.getRows('SELECT * FROM news WHERE lang = "' + lang + '" AND favorite = "true"').then(function(favorites){
-                RAD.models.News.reset(favorites);
-                options.callback = function(){
-                    document.querySelector('.news-list-view').classList.add('favorites-list');
-                };
-                core.publish('navigation.show', options);
-            });
-            return;
-        }
-        RAD.utils.sql.getRows('SELECT * FROM news WHERE lang = "' + lang + '" AND newsId = "' + val + '"').then(function(oldNews){
-            if(oldNews && oldNews.length){
+
+        RAD.utils.sql.getRows('SELECT * FROM news').then(function(allNews){
+            RAD.models.AllNews.reset(allNews);
+            var favorites = RAD.models.AllNews.where({lang: lang, favorite: 'true'});
+            RAD.models.FavotiteNews.reset(favorites);
+            if(val === 1000){
+                    RAD.models.News.reset(favorites);
+                    options.callback = function(){
+                        document.querySelector('.news-list-view').classList.add('favorites-list');
+                    };
+                    core.publish('navigation.show', options);
+                return;
+            }
+            var currentNews = RAD.models.AllNews.where({lang: lang, newsId: val});
+            if(currentNews.length){
                 var buffer = [],
                     news = [];
-                for(var i=0; i<oldNews.length; i++){
-                    if(oldNews[i].buffer){
-                        buffer.push(oldNews[i])
+                for(var i=0; i<currentNews.length; i++){
+                    if(currentNews[i].buffer){
+                        buffer.push(currentNews[i])
                     }else{
-                        news.push(oldNews[i])
+                        news.push(currentNews[i])
                     }
                 }
                 RAD.models.News.reset(news);
@@ -61,6 +64,7 @@ RAD.application(function (core) {
                 }, function(data){
                     RAD.utils.sql.insertRows(data, 'news').then(function(){
                         RAD.models.News.reset(data);
+                        RAD.models.AllNews.add(data);
                         core.startService();
                         core.publish('navigation.show', options);
                     });

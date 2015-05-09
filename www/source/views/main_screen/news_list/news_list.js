@@ -113,45 +113,44 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
         var self = this,
             subMenu = this.el.querySelector('.sub-menu'),
             newsId = this.settings.get('selectedSubCategory'),
-            lang = this.settings.get('lang');
+            lang = this.settings.get('lang'),
+            currentNews = RAD.models.AllNews.where({lang: lang, newsId: newsId});
         this.el.classList.remove('favorites-list');
         if(newsId === 1000){
             self.resetByFavorites();
             return;
         }
-        RAD.utils.sql.getRows('SELECT * FROM news WHERE lang = "' + lang + '" AND newsId = "' + newsId + '"').then(function(oldNews){
-            if(oldNews.length){
-                var buffer = [],
-                    news = [];
-                for(var i=0; i<oldNews.length; i++){
-                    if(oldNews[i].buffer){
-                        buffer.push(oldNews[i])
-                    }else{
-                        news.push(oldNews[i])
-                    }
+        if(currentNews.length){
+            var buffer = [],
+                news = [];
+            for(var i=0; i<currentNews.length; i++){
+                if(currentNews[i].buffer){
+                    buffer.push(currentNews[i])
+                }else{
+                    news.push(currentNews[i])
                 }
-                self.news.reset(news);
-                self.bufferNews.reset(buffer);
-                self.publish('service.check_news.immediateResetTracking');
-            }else{
-                RAD.models.News.getNews({
-                    error: function(){
-                        self.news.reset();
-                        self.publish('service.check_news.immediateResetTracking');
-                        self.showErrorMessage();
-                    }
-                }, function(data){
-                    RAD.utils.sql.insertRows(data, 'news').then(function(){
-                        self.news.reset(data);
-                        self.publish('service.check_news.immediateResetTracking');
-                    });
-                    RAD.models.News.downloadImages(data).then(function(schemas){
-                        RAD.utils.sql.insertRows(schemas, 'news')
-                    })
-                });
             }
-
-        });
+            self.news.reset(news);
+            self.bufferNews.reset(buffer);
+            self.publish('service.check_news.immediateResetTracking');
+        }else{
+            RAD.models.News.getNews({
+                error: function(){
+                    self.news.reset();
+                    self.publish('service.check_news.immediateResetTracking');
+                    self.showErrorMessage();
+                }
+            }, function(data){
+                RAD.utils.sql.insertRows(data, 'news').then(function(){
+                    self.news.reset(data);
+                    RAD.models.AllNews.add(data);
+                    self.publish('service.check_news.immediateResetTracking');
+                });
+                RAD.models.News.downloadImages(data).then(function(schemas){
+                    RAD.utils.sql.insertRows(schemas, 'news')
+                })
+            });
+        }
 
         if(subMenu.classList.contains('open')){
             subMenu.classList.remove('open');
@@ -163,7 +162,7 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
             firstLi = list.querySelector('li');
         li.className = 'one-news';
         li.setAttribute('data-cid', model.cid);
-        li.innerHTML = '<img class="small-img" src="' + model.get('image') + '"/> ' +
+        li.innerHTML = '<img class="small-img" src="' + (model.get('imagesNativeURL') ||model.get('image')) + '"/> ' +
             '<div class="news-title">' + model.get('title') + '</div>' +
             '<div class="favorite-news hide" ></div>';
         if(firstLi){
@@ -277,6 +276,7 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
                 removeSpinner();
                 self.addBufferNews();
                 self.news.add(data);
+                console.log('-=-=-=-=-==-=--=-=DAAD-=-=-=-=-=-=-=', data)
                 RAD.utils.sql.insertRows(data, 'news');
                 RAD.models.News.downloadImages(data).then(function(schemas){
                     RAD.utils.sql.insertRows(schemas, 'news')

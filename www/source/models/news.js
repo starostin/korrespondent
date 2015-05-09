@@ -12,11 +12,7 @@ RAD.model('OneFavoriteNews', Backbone.Model.extend({
 RAD.model('FavotiteNews', Backbone.Collection.extend({
     model: RAD.models.OneFavoriteNews,
     initialize: function(data){
-        var self = this,
-            lang = RAD.models.Settings.get('lang');
-        RAD.utils.sql.getRows('SELECT * FROM news WHERE lang = "' + lang + '" AND favorite = "' + true + '"').then(function(favorites){
-            self.reset(favorites)
-        })
+
     }
 }), true);
 RAD.model('OneBufferNews', Backbone.Model.extend({
@@ -27,13 +23,22 @@ RAD.model('OneBufferNews', Backbone.Model.extend({
 RAD.model('BufferNews', Backbone.Collection.extend({
     model: RAD.models.OneBufferNews
 }), true);
+RAD.model('AllNews', Backbone.Collection.extend({
+    model: Backbone.Model.extend({
+        idAttribute: "guid"
+    })
+}), true);
 RAD.model('News', Backbone.Collection.extend({
     model: RAD.models.OneNews,
     comparator: function(item){
         return -(+new Date(item.get('pubDate')));
     },
     initialize: function(){
-        this.on('change:favorite', this.setFavorite, this)
+        this.on('change:favorite', this.setFavorite, this);
+        this.on('add', this.addNewsToAll, this)
+    },
+    addNewsToAll: function(model, col, opt){
+        RAD.models.AllNews.add(model.toJSON())
     },
     setFavorite: function(model, val, options){
         if(val){
@@ -64,7 +69,7 @@ RAD.model('News', Backbone.Collection.extend({
             dataType: 'xml',
             success: function(data){
                 data = self.parseXml(data, val);
-                callback(data)
+                callback(self.getNewNews(data))
             }
         };
         $.extend(options, opt);
@@ -85,6 +90,16 @@ RAD.model('News', Backbone.Collection.extend({
             })
         }
         this.getNews(opt, callback);
+    },
+    getNewNews: function(data){
+        var uniqueNews = [];
+        for(var i=0; i<data.length; i++){
+            if(!this.findWhere({guid: data[i].guid})){
+                uniqueNews.push(data[i])
+            }
+        }
+        console.log(uniqueNews)
+        return uniqueNews
     },
     parseXml: function(xml, id){
         var newsArr = [];

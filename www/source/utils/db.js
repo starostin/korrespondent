@@ -2,7 +2,7 @@
     var columns = {
         ident: "VARCHAR(50) UNIQUE",
         favorite: "INTEGER",
-        guid: "INTEGER",
+        guid: "VARCHAR(50)",
         author: "VARCHAR(100)",
         category: "TEXT",
         comments: "TEXT",
@@ -39,7 +39,10 @@
             console.log(e)
         });
     scope.insertRows = function(data, table){
+        console.log('----------------INSERT-------------', data)
         var keys = Object.keys(columns).sort(),
+            $deferred = $.Deferred(),
+            $allDeferred = $.Deferred(),
             columnsStr = keys.join(', '),
             promisesArr = [],
             valStr = '';
@@ -51,11 +54,13 @@
             }
         }
         for(var j=0; j<data.length; j++)(function(j){
+            if(data[j].fullText){
+                data[j].fullText = RAD.utils.updateText(data[j].fullText)
+            }
             data[j].lang = RAD.models.Settings.get('lang');
             data[j].newsId = data[j].newsId || +RAD.models.Settings.get('selectedSubCategory');
             data[j].ident = data[j].guid + '_' + data[j].newsId + '_' + data[j].lang;
             promisesArr.push(
-                new Promise(function(resolve, reject){
                 korDB.transaction(function(t) {
                     var dataArr = [];
                     for(var k=0; k<keys.length; k++){
@@ -63,31 +68,34 @@
                     }
                     var queryStr = "INSERT OR REPLACE INTO " + table + " (" + columnsStr + ") VALUES (" + valStr + ")";
                     t.executeSql(queryStr, dataArr, function(e, rs){
-                        resolve(e, rs)
+                        $deferred.resolve(e, rs)
                     });
                 }, function(e){
-                    reject(e)
-                });
-            }))
+                    $deferred.reject(e)
+                }));
         })(j)
-       return Promise.all(promisesArr);
+        $.when.apply($, promisesArr).then(function(){
+            console.log('-------------RESOLVE--------------')
+            $allDeferred.resolve();
+        });
+        return $allDeferred.promise();
     };
     scope.getRows = function(query){
         console.log(query)
-        var result = [];
-        return new Promise(function(resolve, reject){
-            korDB.transaction(function(t) {
-                t.executeSql(query, [], function(e, rs){
-                    for(var i=0; i<rs.rows.length; i++) {
-                        var row = rs.rows.item(i);
-                        result.push(row);
-                    }
-                    resolve(result, e)
-                });
-            }, function(e){
-                reject(e)
-            });
-        });
+        var result = [],
+            $deferred = $.Deferred();
 
+        korDB.transaction(function(t) {
+            t.executeSql(query, [], function(e, rs){
+                for(var i=0; i<rs.rows.length; i++) {
+                    var row = rs.rows.item(i);
+                    result.push(row);
+                }
+                $deferred.resolve(result, e)
+            });
+        }, function(e){
+            $deferred.reject()
+        });
+        return $deferred.promise();
     };
 })(RAD.namespace('RAD.utils.sql', {}), this);

@@ -105,3 +105,6 @@ RAD.namespace('RAD.utils.callback', function (callback, context, arg) {
         callback.apply(context, arg);
     }
 });
+RAD.namespace('RAD.utils.updateText', function (text) {
+    return text;
+});
