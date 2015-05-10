@@ -300,7 +300,7 @@ html {
     box-sizing: border-box;
     content: "";
 }
-.favorite-item::after{
+.count::after{
     margin-left: 10px;
     display: inline-block;
     content: attr(data-count);

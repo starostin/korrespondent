@@ -16,7 +16,7 @@
         pubDate: "VARCHAR(50)",
         source: "TEXT",
         title: "TEXT",
-        buffer: "BOOLEAN",
+        buffer: "INTEGER",
         newsId: "INTEGER",
         lang: "VARCHAR(5)"
     };
@@ -39,7 +39,6 @@
             console.log(e)
         });
     scope.insertRows = function(data, table){
-        console.log('----------------INSERT-------------', data)
         var keys = Object.keys(columns).sort(),
             $deferred = $.Deferred(),
             $allDeferred = $.Deferred(),
@@ -64,7 +63,7 @@
                 korDB.transaction(function(t) {
                     var dataArr = [];
                     for(var k=0; k<keys.length; k++){
-                        dataArr.push(data[j][keys[k]] || '')
+                        dataArr.push(data[j][keys[k]] === undefined ? '' : data[j][keys[k]])
                     }
                     var queryStr = "INSERT OR REPLACE INTO " + table + " (" + columnsStr + ") VALUES (" + valStr + ")";
                     t.executeSql(queryStr, dataArr, function(e, rs){
@@ -75,7 +74,6 @@
                 }));
         })(j)
         $.when.apply($, promisesArr).then(function(){
-            console.log('-------------RESOLVE--------------')
             $allDeferred.resolve();
         });
         return $allDeferred.promise();

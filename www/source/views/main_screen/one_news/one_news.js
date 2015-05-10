@@ -42,12 +42,12 @@ RAD.view("view.one_news", RAD.views.SwipeExt.extend({
     },
     addNewsToFavorite: function(e){
         var curTar = e.currentTarget,
-            isAdd = curTar.classList.contains('added') ? '' : true;
+            isAdd = curTar.classList.contains('added') ? 0 : 1;
         curTar.classList.toggle('added');
         this.parentNews.set('favorite', isAdd);
     },
     setNews: function(){
-       this.parentNews = RAD.models.News.get(this.settings.get('currentNews'));
+        this.parentNews = RAD.models.News.get(this.settings.get('currentNews'));
         this.oneNews.set(this.parentNews.toJSON());
         this.render();
     },

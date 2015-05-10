@@ -466,26 +466,26 @@ window['Slip'] = (function(){
         },
 
         onTouchStart: function(e) {
-            if(e.target.nodeName === 'LI') {
-                return;
+            if(e.target.classList.contains('mover-wrapper') || e.target.classList.contains('mover')) {
+                $(e.target).closest('li')[0].classList.add('active');
+                this.usingTouch = true;
+                this.canPreventScrolling = true;
+
+                // This implementation cares only about single touch
+                if (e.touches.length > 1) {
+                    this.setState(this.states.idle);
+                    return;
+                }
+
+                if (!this.setTarget(e)) return;
+
+                this.startAtPosition({
+                    x: e.touches[0].clientX,
+                    y: e.touches[0].clientY - window.scrollY,
+                    time: e.timeStamp,
+                });
             }
-            $(e.target).closest('li')[0].classList.add('active');
-            this.usingTouch = true;
-            this.canPreventScrolling = true;
 
-            // This implementation cares only about single touch
-            if (e.touches.length > 1) {
-                this.setState(this.states.idle);
-                return;
-            }
-
-            if (!this.setTarget(e)) return;
-
-            this.startAtPosition({
-                x: e.touches[0].clientX,
-                y: e.touches[0].clientY - window.scrollY,
-                time: e.timeStamp,
-            });
         },
 
         setTarget: function(e) {

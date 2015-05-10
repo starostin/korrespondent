@@ -17,7 +17,8 @@
         {{# }) }}
     </ul>
     <div class="message">No Internet!</div>
-    <div class="update-message" data-count="1"></div>
+    {{# var buffer =  this.allNews.where({lang: this.settings.get('lang'), newsId: this.settings.get('selectedSubCategory'), buffer: 1}); }}
+    <div class="update-message {{ buffer.length ? 'show' : '' }}" data-count="{{ buffer.length || '' }}"></div>
 </div>
 <div class="wrapper">
     <div class="background"></div>

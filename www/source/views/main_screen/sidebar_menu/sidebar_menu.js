@@ -12,11 +12,12 @@ RAD.view("view.sidebar_menu", RAD.views.SlipExt.extend({
     onInitialize: function(){
         this.settings = RAD.models.Settings;
         this.sidebar = RAD.models.Sidebar;
+        this.allNews = RAD.models.AllNews;
+        this.allNews.on('add', this.updateNewsLength, this);
         this.settings.on('change:lang', this.updateSidebarLanguage, this);
         this.settings.on('change:selectedCategory', this.updateSelectedOption, this);
         this.sidebar.on('change:selected', this.highlightSelected, this);
-        RAD.models.FavotiteNews.on('add', this.updateFavoritesLength, this);
-        RAD.models.FavotiteNews.on('remove', this.updateFavoritesLength, this);
+        this.allNews.on('change:favorite', this.updateFavoritesLength, this);
     },
     sendFeedback: function(e){
         if(!window.cordova) {
@@ -38,8 +39,15 @@ RAD.view("view.sidebar_menu", RAD.views.SlipExt.extend({
     updateFavoritesLength: function(){
         var favoriteSpan = this.el.querySelector('.favorite-item'),
             lang = this.settings.get('lang'),
-            count = RAD.models.FavotiteNews.where({lang: lang}).length;
-            favoriteSpan.setAttribute('data-count', count);
+            favorites = this.allNews.where({lang: lang, favorite: 1});
+            favoriteSpan.setAttribute('data-count', favorites.length || '');
+    },
+    updateNewsLength: function(model, col, opt){
+        var li = this.el.querySelector('[data-id="' + model.get('newsId') + '"]'),
+            countSpan = li.querySelector('.count'),
+            lang = this.settings.get('lang'),
+            news = this.allNews.where({lang: lang, newsId: model.get('newsId'), buffer: 0});
+        countSpan.setAttribute('data-count', news.length || '');
     },
     updateSidebarLanguage: function(){
         this.sidebar.resetWithOrder();

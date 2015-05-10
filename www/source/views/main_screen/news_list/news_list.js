@@ -16,18 +16,17 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
         })
     },
     onInitialize: function(){
-        var self = this;
         this.rotateCoef = 180/50;
         this.sidebar = RAD.models.Sidebar;
         this.settings = RAD.models.Settings;
         this.news = RAD.models.News;
-        this.bufferNews = RAD.models.BufferNews;
+        this.allNews = RAD.models.AllNews;
         this.settings.on('change:selectedSubCategory', this.setNews, this);
         this.settings.on('change:lang', this.setNews, this);
         this.news.on('reset', this.render, this);
         this.news.on('add', this.addNews, this);
-        this.news.on('change:favorite', this.markFavorite, this);
-        this.bufferNews.on('all', this.showUpdateMessage, this);
+        this.allNews.on('change:favorite', this.markFavorite, this);
+        this.allNews.on('change:buffer', this.showUpdateMessage, this);
     },
     onStartAttach: function(){
         this.viewCoord  = this.el.getBoundingClientRect();
@@ -121,17 +120,7 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
             return;
         }
         if(currentNews.length){
-            var buffer = [],
-                news = [];
-            for(var i=0; i<currentNews.length; i++){
-                if(currentNews[i].buffer){
-                    buffer.push(currentNews[i])
-                }else{
-                    news.push(currentNews[i])
-                }
-            }
-            self.news.reset(news);
-            self.bufferNews.reset(buffer);
+            self.news.reset(currentNews);
             self.publish('service.check_news.immediateResetTracking');
         }else{
             RAD.models.News.getNews({
@@ -157,6 +146,10 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
         }
     },
     addNews: function(model, collection, opt){
+        if(model.get('buffer')){
+            this.showUpdateMessage();
+            return;
+        }
         var li = document.createElement('li'),
             list = this.el.querySelector('.list'),
             firstLi = list.querySelector('li');
@@ -173,9 +166,14 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
     },
     addBufferNews: function(){
         if(this.el.classList.contains('open')) return;
-        this.news.add(this.bufferNews.toJSON());
-        this.bufferNews.reset();
-        RAD.utils.sql.insertRows(this.news.toJSON(), 'news');
+        var newsId = this.settings.get('selectedSubCategory'),
+            lang = this.settings.get('lang'),
+            bufferNews = this.allNews.where({lang: lang, newsId: newsId, buffer: 1});
+        for(var i=0; i<bufferNews.length; i++){
+            bufferNews[i].set('buffer', 0);
+        }
+        this.news.add(bufferNews);
+        RAD.utils.sql.insertRows(bufferNews, 'news');
     },
     toggleSubMenu: function(e){
         var subMenu = this.el.querySelector('.sub-menu');
@@ -195,7 +193,7 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
     resetByFavorites: function(){
         var self = this,
             lang = this.settings.get('lang');
-            self.news.reset(RAD.models.FavotiteNews.where({lang: lang}));
+            self.news.reset(RAD.models.AllNews.where({lang: lang, favorite: 1}));
         this.el.classList.add('favorites-list');
     },
     markFavorite: function(model, val, options){
@@ -276,7 +274,6 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
                 removeSpinner();
                 self.addBufferNews();
                 self.news.add(data);
-                console.log('-=-=-=-=-==-=--=-=DAAD-=-=-=-=-=-=-=', data)
                 RAD.utils.sql.insertRows(data, 'news');
                 RAD.models.News.downloadImages(data).then(function(schemas){
                     RAD.utils.sql.insertRows(schemas, 'news')
@@ -292,11 +289,14 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
         }
     },
     showUpdateMessage: function(model, collection, options){
-        var updateMessage = this.el.querySelector('.update-message');
+        var updateMessage = this.el.querySelector('.update-message'),
+            newsId = this.settings.get('selectedSubCategory'),
+            lang = this.settings.get('lang'),
+            bufferNews = this.allNews.where({lang: lang, newsId: newsId, buffer: 1});
         if(!updateMessage) return;
-        if(this.bufferNews.length){
+        if(bufferNews.length){
             updateMessage.classList.add('show');
-            updateMessage.setAttribute('data-count', this.bufferNews.length);
+            updateMessage.setAttribute('data-count', bufferNews.length);
         }else {
             updateMessage.classList.remove('show');
         }

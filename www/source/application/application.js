@@ -21,8 +21,8 @@ RAD.application(function (core) {
 
         RAD.utils.sql.getRows('SELECT * FROM news').then(function(allNews){
             RAD.models.AllNews.reset(allNews);
-            var favorites = RAD.models.AllNews.where({lang: lang, favorite: 'true'});
-            RAD.models.FavotiteNews.reset(favorites);
+            var favorites = RAD.models.AllNews.where({lang: lang, favorite: 1});
+            //RAD.models.FavotiteNews.reset(favorites);
             if(val === 1000){
                     RAD.models.News.reset(favorites);
                     options.callback = function(){
@@ -33,20 +33,20 @@ RAD.application(function (core) {
             }
             var currentNews = RAD.models.AllNews.where({lang: lang, newsId: val});
             if(currentNews.length){
-                var buffer = [],
-                    news = [];
-                for(var i=0; i<currentNews.length; i++){
-                    if(currentNews[i].buffer){
-                        buffer.push(currentNews[i])
-                    }else{
-                        news.push(currentNews[i])
-                    }
-                }
-                RAD.models.News.reset(news);
+                //var buffer = [],
+                //    news = [];
+                //for(var i=0; i<currentNews.length; i++){
+                //    if(currentNews[i].buffer){
+                //        buffer.push(currentNews[i])
+                //    }else{
+                //        news.push(currentNews[i])
+                //    }
+                //}
+                RAD.models.News.reset(currentNews);
                 core.startService();
-                options.callback = function(){
-                    RAD.models.BufferNews.reset(buffer);
-                };
+                //options.callback = function(){
+                //    RAD.models.BufferNews.reset(buffer);
+                //};
                 core.publish('navigation.show', options);
             }else{
                 RAD.models.News.getNews({

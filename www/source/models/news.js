@@ -1,32 +1,11 @@
 RAD.model('OneNews', Backbone.Model.extend({
-    idAttribute: "guid",
+    idAttribute: 'guid' + 'newsId' + 'lang',
     initialize: function(data){
-        this.unset('buffer');
+        //this.unset('buffer');
     }
 }), false);
-RAD.model('OneFavoriteNews', Backbone.Model.extend({
-    initialize: function(data){
-
-    }
-}), false);
-RAD.model('FavotiteNews', Backbone.Collection.extend({
-    model: RAD.models.OneFavoriteNews,
-    initialize: function(data){
-
-    }
-}), true);
-RAD.model('OneBufferNews', Backbone.Model.extend({
-    initialize: function(data){
-        this.set('buffer', 1);
-    }
-}), false);
-RAD.model('BufferNews', Backbone.Collection.extend({
-    model: RAD.models.OneBufferNews
-}), true);
 RAD.model('AllNews', Backbone.Collection.extend({
-    model: Backbone.Model.extend({
-        idAttribute: "guid"
-    })
+    model: RAD.models.OneNews
 }), true);
 RAD.model('News', Backbone.Collection.extend({
     model: RAD.models.OneNews,
@@ -41,16 +20,10 @@ RAD.model('News', Backbone.Collection.extend({
         RAD.models.AllNews.add(model.toJSON())
     },
     setFavorite: function(model, val, options){
-        if(val){
-            RAD.models.FavotiteNews.add(model.toJSON());
-        }else{
-            RAD.models.FavotiteNews.remove(RAD.models.FavotiteNews.findWhere({guid: model.get('guid')}));
-        }
         RAD.utils.sql.insertRows([model.toJSON()], 'news');
     },
     getLastNews: function(data){
-        var news = RAD.models.BufferNews.length ? RAD.models.BufferNews : this,
-            maxDate = _.max(news.toJSON(), function(item){
+        var maxDate = _.max(this.toJSON(), function(item){
                 return +new Date(item.pubDate)
             });
         return _.filter(data, function(item){
@@ -78,13 +51,12 @@ RAD.model('News', Backbone.Collection.extend({
     setBufferNews: function(opt){
         function callback(data){
             var newNews = RAD.models.News.getLastNews(data);
+
             _.each(newNews, function(item){
                 item.buffer = 1;
             });
-            RAD.models.BufferNews.add(newNews, {silent: true});
-            RAD.utils.sql.insertRows(RAD.models.BufferNews.toJSON(), 'news').then(function(){
-                RAD.models.BufferNews.trigger('add');
-            });
+            RAD.models.News.add(newNews);
+            RAD.utils.sql.insertRows(newNews, 'news');
             RAD.models.News.downloadImages(newNews).then(function(schemas){
                 RAD.utils.sql.insertRows(schemas, 'news')
             })
@@ -94,11 +66,10 @@ RAD.model('News', Backbone.Collection.extend({
     getNewNews: function(data){
         var uniqueNews = [];
         for(var i=0; i<data.length; i++){
-            if(!this.findWhere({guid: data[i].guid})){
+            if(!this.findWhere({guid: data[i].guid, newsId: data[i].newsId})){
                 uniqueNews.push(data[i])
             }
         }
-        console.log(uniqueNews)
         return uniqueNews
     },
     parseXml: function(xml, id){
@@ -114,7 +85,8 @@ RAD.model('News', Backbone.Collection.extend({
                     image:  RAD.utils.getImageLink($this.find("image").text()),
                     pubDate: $this.find("pubDate").text(),
                     guid: $this.find("guid").text(),
-                    favorite: "",
+                    favorite: 0,
+                    buffer: 0,
                     newsId: id,
                     category: $this.find("category").text(),
                     comments: $this.find("comments").text(),
