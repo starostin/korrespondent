@@ -15,8 +15,9 @@ RAD.service("service.check_news", RAD.Blanks.Service.extend({
             console.log('RAD.services.Track can`t find method ' + method);
         }
     },
-    immediateResetTracking: function(model, val){
-        if(val === 1000){
+    immediateResetTracking: function(){
+        var newsId = RAD.models.Settings.get('selectedSubCategory');
+        if(newsId === 1000){
             this.stopTracking();
             return;
         }
@@ -25,6 +26,11 @@ RAD.service("service.check_news", RAD.Blanks.Service.extend({
         RAD.models.News.setBufferNews({});
     },
     resetTracking: function(){
+        var newsId = RAD.models.Settings.get('selectedSubCategory');
+        if(newsId === 1000){
+            this.stopTracking();
+            return;
+        }
         this.stopTracking();
         this.startTracking();
     },

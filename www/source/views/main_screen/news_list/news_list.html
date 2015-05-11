@@ -17,7 +17,8 @@
         {{# }) }}
     </ul>
     <div class="message">No Internet!</div>
-    {{# var buffer =  this.allNews.where({lang: this.settings.get('lang'), newsId: this.settings.get('selectedSubCategory'), buffer: 1}); }}
+    {{# var buffer = (this.settings.get('selectedSubCategory') === 1000) ? [] : this.news.where({lang: this.settings.get('lang'), newsId: this.settings.get('selectedSubCategory'), buffer: 1}); }}
+    {{# var news = this.news.where({buffer: 0}); }}
     <div class="update-message {{ buffer.length ? 'show' : '' }}" data-count="{{ buffer.length || '' }}"></div>
 </div>
 <div class="wrapper">
@@ -30,9 +31,11 @@
         </div>
         <div class="scroll">
             <ul class="list">
-                {{# _.each(this.news.models, function(item, index, items){ }}
+                {{# _.each(news, function(item, index, items){ }}
                 <li class="one-news" data-cid="{{ item.cid }}">
-                    <img class="small-img" src="{{ item.get('imagesNativeURL') || item.get('image') }}"/>
+                    <div class="small-img">
+                        <div class="small-img-placeholder" style="background-image: url('{{ item.get('imagesNativeURL') || item.get('image') }}')"></div>
+                    </div>
                     <div class="news-title">{{ item.get('title') }}</div>
                     <div class="favorite-news {{ !item.get('favorite') && 'hide' }}" ></div>
                 </li>

@@ -116,30 +116,29 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
             currentNews = RAD.models.AllNews.where({lang: lang, newsId: newsId});
         this.el.classList.remove('favorites-list');
         if(newsId === 1000){
+            self.publish('service.check_news.stopTracking');
             self.resetByFavorites();
             return;
         }
         if(currentNews.length){
             self.news.reset(currentNews);
-            self.publish('service.check_news.immediateResetTracking');
         }else{
             RAD.models.News.getNews({
                 error: function(){
                     self.news.reset();
-                    self.publish('service.check_news.immediateResetTracking');
                     self.showErrorMessage();
                 }
             }, function(data){
                 RAD.utils.sql.insertRows(data, 'news').then(function(){
                     self.news.reset(data);
                     RAD.models.AllNews.add(data);
-                    self.publish('service.check_news.immediateResetTracking');
                 });
                 RAD.models.News.downloadImages(data).then(function(schemas){
                     RAD.utils.sql.insertRows(schemas, 'news')
                 })
             });
         }
+        self.publish('service.check_news.immediateResetTracking');
 
         if(subMenu.classList.contains('open')){
             subMenu.classList.remove('open');
@@ -155,7 +154,8 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
             firstLi = list.querySelector('li');
         li.className = 'one-news';
         li.setAttribute('data-cid', model.cid);
-        li.innerHTML = '<img class="small-img" src="' + (model.get('imagesNativeURL') ||model.get('image')) + '"/> ' +
+        li.innerHTML = '<div class="small-img"> <div class="small-img-placeholder" ' +
+            'style="background-image: url(' + (model.get('imagesNativeURL') || model.get('image')) + ')"></div></div>' +
             '<div class="news-title">' + model.get('title') + '</div>' +
             '<div class="favorite-news hide" ></div>';
         if(firstLi){
@@ -168,12 +168,13 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
         if(this.el.classList.contains('open')) return;
         var newsId = this.settings.get('selectedSubCategory'),
             lang = this.settings.get('lang'),
+            newsArr = [],
             bufferNews = this.allNews.where({lang: lang, newsId: newsId, buffer: 1});
         for(var i=0; i<bufferNews.length; i++){
             bufferNews[i].set('buffer', 0);
+            newsArr.push(bufferNews[i].toJSON())
         }
-        this.news.add(bufferNews);
-        RAD.utils.sql.insertRows(bufferNews, 'news');
+        RAD.utils.sql.insertRows(newsArr, 'news');
     },
     toggleSubMenu: function(e){
         var subMenu = this.el.querySelector('.sub-menu');
@@ -288,7 +289,11 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
             arrow.style.display = '';
         }
     },
-    showUpdateMessage: function(model, collection, options){
+    showUpdateMessage: function(model){
+        if(model && !model.get('buffer')){
+            this.addNews(model);
+            //return;
+        }
         var updateMessage = this.el.querySelector('.update-message'),
             newsId = this.settings.get('selectedSubCategory'),
             lang = this.settings.get('lang'),

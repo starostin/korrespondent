@@ -17,12 +17,13 @@ RAD.application(function (core) {
             },
             settings = RAD.models.Settings,
             val = settings.get('selectedSubCategory'),
+            allNewsCol = RAD.models.AllNews,
             lang = settings.get('lang');
 
         RAD.utils.sql.getRows('SELECT * FROM news').then(function(allNews){
-            RAD.models.AllNews.reset(allNews);
-            var favorites = RAD.models.AllNews.where({lang: lang, favorite: 1});
-            //RAD.models.FavotiteNews.reset(favorites);
+            allNewsCol.reset(allNews);
+            var favorites = allNewsCol.where({lang: lang, favorite: 1});
+            core.startService();
             if(val === 1000){
                     RAD.models.News.reset(favorites);
                     options.callback = function(){
@@ -31,27 +32,13 @@ RAD.application(function (core) {
                     core.publish('navigation.show', options);
                 return;
             }
-            var currentNews = RAD.models.AllNews.where({lang: lang, newsId: val});
+            var currentNews = allNewsCol.where({lang: lang, newsId: val});
             if(currentNews.length){
-                //var buffer = [],
-                //    news = [];
-                //for(var i=0; i<currentNews.length; i++){
-                //    if(currentNews[i].buffer){
-                //        buffer.push(currentNews[i])
-                //    }else{
-                //        news.push(currentNews[i])
-                //    }
-                //}
                 RAD.models.News.reset(currentNews);
-                core.startService();
-                //options.callback = function(){
-                //    RAD.models.BufferNews.reset(buffer);
-                //};
                 core.publish('navigation.show', options);
             }else{
                 RAD.models.News.getNews({
                     error: function(){
-                        core.startService();
                         core.publish('navigation.show', options);
                         options.callback = function(){
                             var errorDiv = document.querySelector('.message');
@@ -64,8 +51,7 @@ RAD.application(function (core) {
                 }, function(data){
                     RAD.utils.sql.insertRows(data, 'news').then(function(){
                         RAD.models.News.reset(data);
-                        RAD.models.AllNews.add(data);
-                        core.startService();
+                        allNewsCol.add(data);
                         core.publish('navigation.show', options);
                     });
                     RAD.models.News.downloadImages(data).then(function(schemas){

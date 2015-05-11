@@ -105,6 +105,24 @@ RAD.namespace('RAD.utils.callback', function (callback, context, arg) {
         callback.apply(context, arg);
     }
 });
-RAD.namespace('RAD.utils.updateText', function (text) {
-    return text;
+RAD.namespace('RAD.utils.updateText', function (data) {
+    var template = document.createElement('template');
+    template.innerHTML = data.fullText;
+    var fragment = template.content;
+    var imgs = fragment.querySelectorAll('img'),
+        imgLinks = [],
+        when = [],
+        $deferred = $.Deferred();
+
+    for(var i=0; i<imgs.length; i++)(function(i){
+        var obj = {};
+        RAD.utils.download(imgs[i].getAttribute('src'), settings.otherImage, this, obj).done(function(e){
+            imgs[i].setAttribute('src', e['otherImagesNativeURL']);
+            data.fullText = template.innerHTML;
+            console.log(data)
+            RAD.utils.sql.insertRows([data], 'news');
+        });
+    }(i))
+
+
 });

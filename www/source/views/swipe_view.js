@@ -28,10 +28,10 @@ RAD.views.SwipeExt =  RAD.Blanks.View.extend({
     },
     touchMove: function(e){
         if(this.coordinates.x.length<5 && !this.directionDefined){
-            if(Math.abs(this.coordinates.x[this.coordinates.x.length-1] - e.originalEvent.changedTouches[0].clientX) >=10){
+            if(Math.abs(this.coordinates.x[this.coordinates.x.length-1] - e.originalEvent.changedTouches[0].clientX) >=50){
                 this.directionVert = false;
                 this.directionDefined = true;
-            }else if(Math.abs(this.coordinates.y[this.coordinates.y.length-1] - e.originalEvent.changedTouches[0].clientY) >=10){
+            }else if(Math.abs(this.coordinates.y[this.coordinates.y.length-1] - e.originalEvent.changedTouches[0].clientY) >=50){
                 this.directionVert = true;
                 this.directionDefined = true;
             }
@@ -55,13 +55,10 @@ RAD.views.SwipeExt =  RAD.Blanks.View.extend({
         }
         this.startCoord = {};
         this.startScrollCoord = {};
-        var tr = this.el.style.transform,
+        var tr = this.el.style.transform || 'translate3d(0,0,0)',
             value = tr.split('(')[1];
-        if(value){
             value = parseInt(value.split(')')[0]);
-        }
-        //this.el.style.transition  = 'all 0.3s ease-in-out';
-        //this.el.style.webkitTransition  = 'all 0.3s ease-in-out';
+
         this.el.removeAttribute('style');
         this.enableScroll();
         this.finishSwipe(value, this.halfWidth);

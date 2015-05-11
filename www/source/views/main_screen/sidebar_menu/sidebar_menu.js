@@ -14,6 +14,7 @@ RAD.view("view.sidebar_menu", RAD.views.SlipExt.extend({
         this.sidebar = RAD.models.Sidebar;
         this.allNews = RAD.models.AllNews;
         this.allNews.on('add', this.updateNewsLength, this);
+        this.allNews.on('change:buffer', this.updateNewsLength, this);
         this.settings.on('change:lang', this.updateSidebarLanguage, this);
         this.settings.on('change:selectedCategory', this.updateSelectedOption, this);
         this.sidebar.on('change:selected', this.highlightSelected, this);
