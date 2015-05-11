@@ -9,6 +9,7 @@ RAD.application(function (core) {
         this.cordovaEnv[key] = value;
         return app;
     };
+
     app.showScreen = function(){
         var options = {
                 container_id: '#screen',
@@ -91,7 +92,12 @@ RAD.application(function (core) {
                 app.setEnv('deviceready', true);
                 app.showScreen();
             };
-
+        RAD.utils.getFile('.nomedia', function (file) {
+                settings.rootPath = file.nativeURL;
+            },
+            function () {
+                console.log('nomedia file has not created');
+            }, app);
         document.addEventListener("deviceready", deviceready, false);
         if (!window.cordova) {
             app.showScreen();
