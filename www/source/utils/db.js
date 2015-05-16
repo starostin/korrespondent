@@ -9,10 +9,9 @@
         description: "TEXT",
         fullText: "TEXT",
         image: "VARCHAR(100)",
+        imageName: "VARCHAR(100)",
         bigImage: "VARCHAR(100)",
         link: "TEXT",
-        imagesNativeURL: "VARCHAR(100)",
-        bigImagesNativeURL: "VARCHAR(100)",
         pubDate: "VARCHAR(50)",
         source: "TEXT",
         title: "TEXT",
@@ -53,9 +52,9 @@
             }
         }
         for(var j=0; j<data.length; j++)(function(j){
-            //if(data[j].fullText){
-            //    RAD.utils.updateText(data[j])
-            //}
+            if(data[j].fullText){
+                data[j].fullText = RAD.utils.updateText(data[j].fullText)
+            }
             data[j].lang = RAD.models.Settings.get('lang');
             data[j].newsId = data[j].newsId || +RAD.models.Settings.get('selectedSubCategory');
             data[j].ident = data[j].guid + '_' + data[j].newsId + '_' + data[j].lang;

@@ -25,15 +25,27 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
         this.settings.on('change:lang', this.setNews, this);
         this.news.on('reset', this.render, this);
         this.news.on('add', this.addNews, this);
+        this.news.on('change:buffer', this.showUpdateMessage, this);
         this.allNews.on('change:favorite', this.markFavorite, this);
-        this.allNews.on('change:buffer', this.showUpdateMessage, this);
     },
     onStartAttach: function(){
         this.viewCoord  = this.el.getBoundingClientRect();
         this.rightLineWidth = this.viewCoord.width * 0.9;
+        if(this.settings.get('selectedCategory') === 1000){
+            this.el.classList.add('favorites-list');
+        }
     },
     onStartRender: function(){
         this.selected = this.sidebar.findWhere({selected: true});
+    },
+    onEndRender: function(){
+        var self = this;
+        if(!this.news.length && this.settings.get('selectedCategory') !== 1000){
+            window.setTimeout(function(e){
+                self.showErrorMessage();
+            }, 50)
+
+        }
     },
     onReceiveMsg: function(channel, data){
         var parts = channel.split('.'),
@@ -126,16 +138,13 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
             RAD.models.News.getNews({
                 error: function(){
                     self.news.reset();
-                    self.showErrorMessage();
                 }
             }, function(data){
                 RAD.utils.sql.insertRows(data, 'news').then(function(){
                     self.news.reset(data);
                     RAD.models.AllNews.add(data);
                 });
-                RAD.models.News.downloadImages(data).then(function(schemas){
-                    RAD.utils.sql.insertRows(schemas, 'news')
-                })
+                RAD.models.News.downloadImages(data)
             });
         }
         self.publish('service.check_news.immediateResetTracking');
@@ -276,9 +285,7 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
                 self.addBufferNews();
                 self.news.add(data);
                 RAD.utils.sql.insertRows(data, 'news');
-                RAD.models.News.downloadImages(data).then(function(schemas){
-                    RAD.utils.sql.insertRows(schemas, 'news')
-                })
+                RAD.models.News.downloadImages(data)
             });
         }, 1000);
 
@@ -297,7 +304,7 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
         var updateMessage = this.el.querySelector('.update-message'),
             newsId = this.settings.get('selectedSubCategory'),
             lang = this.settings.get('lang'),
-            bufferNews = this.allNews.where({lang: lang, newsId: newsId, buffer: 1});
+            bufferNews = this.news.where({newsId: newsId, buffer: 1});
         if(!updateMessage) return;
         if(bufferNews.length){
             updateMessage.classList.add('show');

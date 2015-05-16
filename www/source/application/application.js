@@ -26,11 +26,8 @@ RAD.application(function (core) {
             var favorites = allNewsCol.where({lang: lang, favorite: 1});
             core.startService();
             if(val === 1000){
-                    RAD.models.News.reset(favorites);
-                    options.callback = function(){
-                        document.querySelector('.news-list-view').classList.add('favorites-list');
-                    };
-                    core.publish('navigation.show', options);
+                RAD.models.News.reset(favorites);
+                core.publish('navigation.show', options);
                 return;
             }
             var currentNews = allNewsCol.where({lang: lang, newsId: val});
@@ -41,13 +38,6 @@ RAD.application(function (core) {
                 RAD.models.News.getNews({
                     error: function(){
                         core.publish('navigation.show', options);
-                        options.callback = function(){
-                            var errorDiv = document.querySelector('.message');
-                            errorDiv.classList.add('show');
-                            window.setTimeout(function(){
-                                errorDiv.classList.remove('show');
-                            }, 2000)
-                        }
                     }
                 }, function(data){
                     RAD.utils.sql.insertRows(data, 'news').then(function(){
@@ -55,9 +45,7 @@ RAD.application(function (core) {
                         allNewsCol.add(data);
                         core.publish('navigation.show', options);
                     });
-                    RAD.models.News.downloadImages(data).then(function(schemas){
-                        RAD.utils.sql.insertRows(schemas, 'news')
-                    })
+                    RAD.models.News.downloadImages(data)
                 });
             }
         })
@@ -90,14 +78,15 @@ RAD.application(function (core) {
                 console.log('deviceready');
 
                 app.setEnv('deviceready', true);
-                app.showScreen();
+                RAD.utils.getFile('.nomedia', function (file) {
+                        settings.rootPath = file.nativeURL.split('.nomedia')[0];
+                        app.showScreen();
+                    },
+                    function () {
+                        console.log('nomedia file has not created');
+                        app.showScreen();
+                    }, app);
             };
-        RAD.utils.getFile('.nomedia', function (file) {
-                settings.rootPath = file.nativeURL;
-            },
-            function () {
-                console.log('nomedia file has not created');
-            }, app);
         document.addEventListener("deviceready", deviceready, false);
         if (!window.cordova) {
             app.showScreen();

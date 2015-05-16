@@ -57,9 +57,7 @@ RAD.model('News', Backbone.Collection.extend({
             });
             RAD.models.News.add(newNews);
             RAD.utils.sql.insertRows(newNews, 'news');
-            RAD.models.News.downloadImages(newNews).then(function(schemas){
-                RAD.utils.sql.insertRows(schemas, 'news')
-            })
+            RAD.models.News.downloadImages(newNews);
         }
         this.getNews(opt, callback);
     },
@@ -92,38 +90,17 @@ RAD.model('News', Backbone.Collection.extend({
                     comments: $this.find("comments").text(),
                     source: $this.find("source").text()
                 };
-
+            var imageParts = item.image.split('/');
+            item.imageName = imageParts[imageParts.length-1];
             item.bigImage = RAD.utils.getBigImage(item.image);
             newsArr.push(item);
         });
         return newsArr;
     },
     downloadImages: function(data){
-        var arr = _.clone(data),
-            $deferred = $.Deferred();
-        function downloadSmallImages(withoutImg){
-            var whenImages = [],
-                $deferredImages = $.Deferred();
-            for(var i=0; i<withoutImg.length; i++){
-                whenImages.push(RAD.utils.download(withoutImg[i].image, settings.image, this, withoutImg[i]));
-            }
-            $.when.apply($, whenImages).then(function() {
-                $deferredImages.resolve([].slice.call(arguments));
-            });
-            return $deferredImages.promise();
+        for(var i=0; i<data.length; i++){
+            RAD.utils.download(data[i].image, settings.image, this);
+            RAD.utils.download(data[i].bigImage, settings.bigImage, this)
         }
-        $.when(downloadSmallImages(arr)).then(function(withSmallImg){
-            var whenBigImages = [],
-                $deferredBigImages = $.Deferred();
-            for(var i=0; i<withSmallImg.length; i++){
-                if(!withSmallImg[i]) continue;
-                whenBigImages.push(RAD.utils.download(withSmallImg[i].bigImage, settings.bigImage, this, withSmallImg[i]));
-            }
-            $.when.apply($, whenBigImages).then(function() {
-                $deferred.resolve([].slice.call(arguments))
-            });
-            return $deferredBigImages.promise();
-        });
-        return $deferred.promise()
     }
 }), true);

@@ -205,6 +205,7 @@ html {
     width: 100%;
     background-repeat: no-repeat;
     background-size: cover;
+    background-position: center;
 }
 .parallax{
     perspective: 1px;
@@ -226,18 +227,22 @@ html {
 .parallax__layer, .parallax__layer:before {
     background: 50% 50% / cover;
 }
-.parallax__layer:before {
-    content: "";
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-}
 .parallax__layer.par-img{
     top: -25%;
     transform: translateZ(-1px) scale(2);
     z-index: -1;
+    position: relative;
+}
+.big-image{
+    top: 0;
+    bottom: 0;
+    width: 100%;
+    position: absolute;
+    background-size: cover;
+    background-position: center;
+}
+.big-placeholder-image{
+    background-image: url('../img/big-placeholder.jpeg');
 }
 .parallax__layer.par-text{
     background: white;
@@ -374,6 +379,9 @@ html {
     display: inline-block;
     width: 40%;
     padding: 0;
+}
+.video{
+    margin: auto;
 }
 
 

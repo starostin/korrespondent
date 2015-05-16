@@ -17,7 +17,7 @@ RAD.namespace('RAD.utils.getBigImage', function(link){
 
     return bigImage;
 });
-RAD.namespace('RAD.utils.download', function(link, folder, context, obj){
+RAD.namespace('RAD.utils.download', function(link, folder, context){
     if(!window.cordova) {
         console.log('Download plugin use cordova');
         return;
@@ -38,15 +38,15 @@ RAD.namespace('RAD.utils.download', function(link, folder, context, obj){
                 filePath,
                 function(entry) {
                     console.log("download complete: " + entry.fullPath);
-                    obj[folder + 'NativeURL'] = entry.nativeURL;
-                    $deferred.resolve(obj)
+                    //obj[folder + 'NativeURL'] = entry.nativeURL;
+                    //$deferred.resolve(obj)
                 },
                 function(error) {
                     console.log("download error source " + error.source);
                     console.log("download error target " + error.target);
                     console.log("upload error code" + error.code);
-                    obj[folder + 'NativeURL'] = '';
-                    $deferred.resolve(obj)
+                    //obj[folder + 'NativeURL'] = '';
+                    //$deferred.resolve(obj)
                 },
                 false
             );
@@ -82,6 +82,33 @@ RAD.namespace('RAD.utils.getDirectory', function (dir, callback, fail, context) 
         };
     RAD.utils.fileSystem(callbackFn, fail, context);
 });
+RAD.namespace('RAD.utils.getFile', function (file, callback, fail, context) {
+    if(!file){
+        return;
+    }
+    var parts = file.split('/'),
+        fileName = parts.pop().toString(),
+        dir = parts.join('/'),
+        callbackFn = function (DirectoryEntry) {
+            DirectoryEntry = DirectoryEntry.root || DirectoryEntry;
+
+            var success = function (entry) {
+                    RAD.utils.callback(callback, context, arguments);
+                    console.log("download complete: " + entry.toURL());
+                },
+                error = function (error) {
+                    console.log("Failed to retrieve file: " + error.code);
+                    RAD.utils.callback(fail, context, arguments);
+                };
+            DirectoryEntry.getFile(fileName, {create: true}, success, error);
+        };
+
+    if (dir === "") {
+        RAD.utils.fileSystem(callbackFn, fail, context);
+    } else {
+        RAD.utils.getDirectory(dir, callbackFn, fail, context);
+    }
+});
 RAD.namespace('RAD.utils.fileSystem', function (callback, fail, context) {
     if (!window.cordova) {
         console.log('File API use cordova');
@@ -97,7 +124,6 @@ RAD.namespace('RAD.utils.fileSystem', function (callback, fail, context) {
             RAD.utils.callback(fail, context, arguments);
         };
     window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory, onFileSystemSuccess, error);
-    //window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, onFileSystemSuccess, error);
 });
 RAD.namespace('RAD.utils.callback', function (callback, context, arg) {
     if (typeof callback === 'function') {
@@ -107,22 +133,47 @@ RAD.namespace('RAD.utils.callback', function (callback, context, arg) {
 });
 RAD.namespace('RAD.utils.updateText', function (data) {
     var template = document.createElement('template');
-    template.innerHTML = data.fullText;
-    var fragment = template.content;
-    var imgs = fragment.querySelectorAll('img'),
-        imgLinks = [],
-        when = [],
-        $deferred = $.Deferred();
-
-    for(var i=0; i<imgs.length; i++)(function(i){
-        var obj = {};
-        RAD.utils.download(imgs[i].getAttribute('src'), settings.otherImage, this, obj).done(function(e){
-            imgs[i].setAttribute('src', e['otherImagesNativeURL']);
-            data.fullText = template.innerHTML;
-            console.log(data)
-            RAD.utils.sql.insertRows([data], 'news');
-        });
+    template.innerHTML = data;
+    var fragment = template.content,
+        images = fragment.querySelectorAll('img'),
+        allElements = fragment.querySelectorAll('*'),
+        iframes = fragment.querySelectorAll('iframe'),
+        imageParts = [],
+        name = '',
+        src = '',
+        path = '';
+    for(var j=0; j<allElements.length; j++){
+        allElements[j].removeAttribute('style');
+        allElements[j].removeAttribute('class');
+        allElements[j].removeAttribute('id');
+    }
+    for(var i=0; i<images.length; i++)(function(i){
+        src = images[i].getAttribute('src');
+        RAD.utils.download(src, settings.otherImage, this);
+        imageParts = src.split('/');
+        name = imageParts[imageParts.length-1];
+        name = name.split('?')[0];
+        path = settings.rootPath ? settings.rootPath + settings.otherImage + '/' + name : src;
+        images[i].setAttribute('src', path);
     }(i))
-
-
+    for(var t=0; t<iframes.length; t++){
+        var div = document.createElement('span');
+        var link = document.createElement('a');
+        div.className = 'video';
+        link.style.display = 'block';
+        link.target = '_blank';
+        var videoSrc = iframes[t].getAttribute('src');
+        var imageSrc = videoSrc.replace('www', 'img');
+        imageSrc = imageSrc.replace('embed', 'vi');
+        imageSrc = imageSrc + '/0.jpg';
+        div.style.display = 'block';
+        div.style.width = iframes[t].width + 'px';
+        div.style.height = iframes[t].height + 'px';
+        div.style.background = 'url(' + imageSrc + ')';
+        link.href = videoSrc;
+        div.setAttribute('data-utl', videoSrc);
+        link.appendChild(div);
+        iframes[t].parentNode.replaceChild(link, iframes[t])
+    }
+    return template.innerHTML
 });
