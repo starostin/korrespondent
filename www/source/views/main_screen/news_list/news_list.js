@@ -25,7 +25,7 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
         this.settings.on('change:lang', this.setNews, this);
         this.news.on('reset', this.render, this);
         this.news.on('add', this.addNews, this);
-        this.news.on('change:buffer', this.showUpdateMessage, this);
+        this.allNews.on('change:buffer', this.showUpdateMessage, this);
         this.allNews.on('change:favorite', this.markFavorite, this);
     },
     onStartAttach: function(){
@@ -304,7 +304,7 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
         var updateMessage = this.el.querySelector('.update-message'),
             newsId = this.settings.get('selectedSubCategory'),
             lang = this.settings.get('lang'),
-            bufferNews = this.news.where({newsId: newsId, buffer: 1});
+            bufferNews = this.allNews.where({newsId: newsId, buffer: 1, lang: lang});
         if(!updateMessage) return;
         if(bufferNews.length){
             updateMessage.classList.add('show');

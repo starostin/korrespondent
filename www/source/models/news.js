@@ -5,7 +5,9 @@ RAD.model('OneNews', Backbone.Model.extend({
     }
 }), false);
 RAD.model('AllNews', Backbone.Collection.extend({
-    model: RAD.models.OneNews
+    model: Backbone.Model.extend({
+        idAttribute: 'guid' + 'newsId' + 'lang'
+    })
 }), true);
 RAD.model('News', Backbone.Collection.extend({
     model: RAD.models.OneNews,
@@ -41,7 +43,7 @@ RAD.model('News', Backbone.Collection.extend({
             timeout: 10000,
             dataType: 'xml',
             success: function(data){
-                data = self.parseXml(data, val);
+                data = self.parseXml(data, val, lang);
                 callback(self.getNewNews(data))
             }
         };
@@ -70,7 +72,7 @@ RAD.model('News', Backbone.Collection.extend({
         }
         return uniqueNews
     },
-    parseXml: function(xml, id){
+    parseXml: function(xml, id, lang){
         var newsArr = [];
         $(xml).find("item").each(function() {
             var $this = $(this),
@@ -85,7 +87,10 @@ RAD.model('News', Backbone.Collection.extend({
                     guid: $this.find("guid").text(),
                     favorite: 0,
                     buffer: 0,
+                    imageDownloaded: 0,
+                    bigImageDownloaded: 0,
                     newsId: id,
+                    lang: lang,
                     category: $this.find("category").text(),
                     comments: $this.find("comments").text(),
                     source: $this.find("source").text()
@@ -98,9 +103,15 @@ RAD.model('News', Backbone.Collection.extend({
         return newsArr;
     },
     downloadImages: function(data){
-        for(var i=0; i<data.length; i++){
-            RAD.utils.download(data[i].image, settings.image, this);
-            RAD.utils.download(data[i].bigImage, settings.bigImage, this)
-        }
+        for(var i=0; i<data.length; i++)(function(i){
+            RAD.utils.download(data[i].image, settings.image, this).done(function(){
+                data[i].imageDownloaded = 1;
+                RAD.utils.sql.insertRows(data[i], 'news');
+            });
+            RAD.utils.download(data[i].bigImage, settings.bigImage, this).done(function(){
+                data[i].bigImageDownloaded = 1;
+                RAD.utils.sql.insertRows(data[i], 'news');
+            })
+        })(i)
     }
 }), true);

@@ -12,6 +12,8 @@
         imageName: "VARCHAR(100)",
         bigImage: "VARCHAR(100)",
         link: "TEXT",
+        imageDownloaded: "INTEGER",
+        bigImageDownloaded: "INTEGER",
         pubDate: "VARCHAR(50)",
         source: "TEXT",
         title: "TEXT",

@@ -9,7 +9,7 @@
 </div>
 <div class="wrapper native-scroll">
     <div class="swipe-view parallax">
-        {{# var path = settings.rootPath ? settings.rootPath + settings.bigImage + '/' + this.oneNews.get('imageName') : this.oneNews.get('bigImage'); }}
+        {{# var path = this.oneNews.get('bigImageDownloaded') ? settings.rootPath + settings.bigImage + '/' + this.oneNews.get('imageName') : this.oneNews.get('bigImage'); }}
         <div class="big-placeholder-image par-img parallax__layer">
             <div class="big-image" style="background-image: url({{ path }})"></div>
         </div>

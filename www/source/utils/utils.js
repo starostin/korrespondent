@@ -17,16 +17,17 @@ RAD.namespace('RAD.utils.getBigImage', function(link){
 
     return bigImage;
 });
-RAD.namespace('RAD.utils.download', function(link, folder, context){
+RAD.namespace('RAD.utils.download', function(link, folder, context, name){
+    var $deferred = $.Deferred();
     if(!window.cordova) {
         console.log('Download plugin use cordova');
-        return;
+        $deferred.reject();
+        return $deferred.promise();
     }
-    var $deferred = $.Deferred(),
-        callbackFn = function(entry){
+    var callbackFn = function(entry){
             var fileTransfer = new FileTransfer();
             var uri = encodeURI(link),
-                filename = (function () {
+                filename = name || (function () {
                         var parts = link.split('/'),
                             lastIndex =  parts.length - 1;
                         return parts[lastIndex].replace(/\?.+/, '');
@@ -39,14 +40,14 @@ RAD.namespace('RAD.utils.download', function(link, folder, context){
                 function(entry) {
                     console.log("download complete: " + entry.fullPath);
                     //obj[folder + 'NativeURL'] = entry.nativeURL;
-                    //$deferred.resolve(obj)
+                    $deferred.resolve()
                 },
                 function(error) {
                     console.log("download error source " + error.source);
                     console.log("download error target " + error.target);
                     console.log("upload error code" + error.code);
                     //obj[folder + 'NativeURL'] = '';
-                    //$deferred.resolve(obj)
+                    $deferred.reject()
                 },
                 false
             );
@@ -161,15 +162,20 @@ RAD.namespace('RAD.utils.updateText', function (data) {
         var link = document.createElement('a');
         div.className = 'video';
         link.style.display = 'block';
-        link.target = '_blank';
+        //link.target = '_blank';
         var videoSrc = iframes[t].getAttribute('src');
         var imageSrc = videoSrc.replace('www', 'img');
         imageSrc = imageSrc.replace('embed', 'vi');
-        imageSrc = imageSrc + '/0.jpg';
+        var imageNameParts = imageSrc.split('/'),
+            imageName = imageNameParts[imageNameParts.length-1].split('?')[0];
+            imageSrc = imageSrc + '/0.jpg';
+        RAD.utils.download(imageSrc, settings.otherImage, this, imageName)
         div.style.display = 'block';
         div.style.width = iframes[t].width + 'px';
         div.style.height = iframes[t].height + 'px';
-        div.style.background = 'url(' + imageSrc + ')';
+        div.style.lineHeight = iframes[t].height + 'px';
+        var videoFirstImagePath = settings.rootPath ? settings.rootPath + settings.otherImage + '/' + imageName : imageSrc;
+        div.style.background = 'url(' + videoFirstImagePath + ')';
         link.href = videoSrc;
         div.setAttribute('data-utl', videoSrc);
         link.appendChild(div);
