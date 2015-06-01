@@ -135,19 +135,19 @@ RAD.menuMapping = {
             subMenus: [
                 {
                     id: 2,
-                    title: 'Спорт'
+                    title: 'Sport'
                 },
                 {
                     id: 8,
-                    title: 'Бокс'
+                    title: 'Box'
                 },
                 {
                     id: 9,
-                    title: 'Футбол'
+                    title: 'Football'
                 },
                 {
                     id: 10,
-                    title: 'Баскетбол'
+                    title: 'Basket'
                 }
             ]
         },

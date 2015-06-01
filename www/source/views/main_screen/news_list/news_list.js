@@ -25,7 +25,7 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
         this.settings.on('change:lang', this.setNews, this);
         this.news.on('reset', this.render, this);
         this.news.on('add', this.addNews, this);
-        this.allNews.on('change:buffer', this.showUpdateMessage, this);
+        this.news.on('change:buffer', this.showUpdateMessage, this);
         this.allNews.on('change:favorite', this.markFavorite, this);
     },
     onStartAttach: function(){
@@ -178,9 +178,10 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
         var newsId = this.settings.get('selectedSubCategory'),
             lang = this.settings.get('lang'),
             newsArr = [],
-            bufferNews = this.allNews.where({lang: lang, newsId: newsId, buffer: 1});
+            bufferNews = this.news.where({lang: lang, newsId: newsId, buffer: 1});
         for(var i=0; i<bufferNews.length; i++){
             bufferNews[i].set('buffer', 0);
+            RAD.models.AllNews.get(bufferNews[i].id).set('buffer', 0);
             newsArr.push(bufferNews[i].toJSON())
         }
         RAD.utils.sql.insertRows(newsArr, 'news');
@@ -304,7 +305,7 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
         var updateMessage = this.el.querySelector('.update-message'),
             newsId = this.settings.get('selectedSubCategory'),
             lang = this.settings.get('lang'),
-            bufferNews = this.allNews.where({newsId: newsId, buffer: 1, lang: lang});
+            bufferNews = this.news.where({newsId: newsId, buffer: 1, lang: lang});
         if(!updateMessage) return;
         if(bufferNews.length){
             updateMessage.classList.add('show');

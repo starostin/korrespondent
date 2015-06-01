@@ -16,7 +16,7 @@ RAD.view("view.sidebar_menu", RAD.views.SlipExt.extend({
         this.allNews.on('add', this.updateNewsLength, this);
         this.allNews.on('change:buffer', this.updateNewsLength, this);
         this.settings.on('change:lang', this.updateSidebarLanguage, this);
-        this.settings.on('change:selectedCategory', this.updateSelectedOption, this);
+        this.settings.on('change:selectedSubCategory', this.updateSelectedOption, this);
         this.sidebar.on('change:selected', this.highlightSelected, this);
         this.allNews.on('change:favorite', this.updateFavoritesLength, this);
     },
@@ -43,12 +43,22 @@ RAD.view("view.sidebar_menu", RAD.views.SlipExt.extend({
             favorites = this.allNews.where({lang: lang, favorite: 1});
             favoriteSpan.setAttribute('data-count', favorites.length || '');
     },
+    getUniqueNews: function(news){
+        var  uniqueNews = [];
+        for(var i=0; i<news.length; i++){
+            if(uniqueNews.indexOf(news[i].get('guid')) == -1){
+                uniqueNews.push(news[i].get('guid'))
+            }
+        }
+        return uniqueNews;
+    },
     updateNewsLength: function(model, col, opt){
-        var li = this.el.querySelector('[data-id="' + model.get('newsId') + '"]'),
+        var li = this.el.querySelector('[data-id="' + model.get('parentId') + '"]'),
             countSpan = li.querySelector('.count'),
             lang = this.settings.get('lang'),
-            news = this.allNews.where({lang: lang, newsId: model.get('newsId'), buffer: 0});
-        countSpan.setAttribute('data-count', news.length || '');
+            news = this.allNews.where({lang: lang, parentId: model.get('parentId'), buffer: 0});
+
+        countSpan.setAttribute('data-count', this.getUniqueNews(news).length || '');
     },
     updateSidebarLanguage: function(){
         this.sidebar.resetWithOrder();
@@ -57,8 +67,8 @@ RAD.view("view.sidebar_menu", RAD.views.SlipExt.extend({
     updateSelectedOption: function(model, val, opt){
         var oldSelected = this.sidebar.findWhere({selected: true}),
             oldSelectedSub = _.findWhere(oldSelected.get('subMenus'), {selected: true}),
-            newSelected = this.sidebar.findWhere({id: val}),
-            newSelectedSub = _.findWhere(newSelected.get('subMenus'), {id: val});
+            newSelected = this.sidebar.findWhere({id: model.get('selectedCategory')}),
+            newSelectedSub = _.findWhere(newSelected.get('subMenus'), {id: model.get('selectedSubCategory')});
         oldSelected.unset('selected');
         newSelected.set('selected', true);
         delete oldSelectedSub.selected;

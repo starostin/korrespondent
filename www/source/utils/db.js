@@ -19,6 +19,7 @@
         title: "TEXT",
         buffer: "INTEGER",
         newsId: "INTEGER",
+        parentId: "INTEGER",
         lang: "VARCHAR(5)"
     };
         //Create the database the parameters are 1. the database name 2.version number 3. a description 4. the size of the database (in bytes) 1024 x 1024 = 1MB
@@ -57,9 +58,9 @@
             if(data[j].fullText){
                 data[j].fullText = RAD.utils.updateText(data[j].fullText)
             }
-            data[j].lang = RAD.models.Settings.get('lang');
-            data[j].newsId = data[j].newsId || +RAD.models.Settings.get('selectedSubCategory');
-            data[j].ident = data[j].guid + '_' + data[j].newsId + '_' + data[j].lang;
+            //data[j].lang = RAD.models.Settings.get('lang');
+            //data[j].newsId = data[j].newsId || +RAD.models.Settings.get('selectedSubCategory');
+            //data[j].ident = data[j].guid + '_' + data[j].newsId + '_' + data[j].lang;
             promisesArr.push(
                 korDB.transaction(function(t) {
                     var dataArr = [];

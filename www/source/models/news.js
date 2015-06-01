@@ -1,12 +1,12 @@
 RAD.model('OneNews', Backbone.Model.extend({
-    idAttribute: 'guid' + 'newsId' + 'lang',
+    idAttribute: 'ident',
     initialize: function(data){
         //this.unset('buffer');
     }
 }), false);
 RAD.model('AllNews', Backbone.Collection.extend({
     model: Backbone.Model.extend({
-        idAttribute: 'guid' + 'newsId' + 'lang'
+        idAttribute: 'ident'
     })
 }), true);
 RAD.model('News', Backbone.Collection.extend({
@@ -35,15 +35,16 @@ RAD.model('News', Backbone.Collection.extend({
     getNews: function(opt, callback){
         var self = this,
             settings = RAD.models.Settings,
-            val = settings.get('selectedSubCategory'),
+            newsId = settings.get('selectedSubCategory'),
+            parentId = settings.get('selectedCategory'),
             lang = settings.get('lang');
         var options = {
-            url: 'http://k.img.com.ua/rss/' + RAD.newsUrls[lang] + '/' + RAD.newsUrls[val] + '.xml',
+            url: 'http://k.img.com.ua/rss/' + RAD.newsUrls[lang] + '/' + RAD.newsUrls[newsId] + '.xml',
             type: 'GET',
             timeout: 10000,
             dataType: 'xml',
             success: function(data){
-                data = self.parseXml(data, val, lang);
+                data = self.parseXml(data, newsId, parentId, lang);
                 callback(self.getNewNews(data))
             }
         };
@@ -72,7 +73,7 @@ RAD.model('News', Backbone.Collection.extend({
         }
         return uniqueNews
     },
-    parseXml: function(xml, id, lang){
+    parseXml: function(xml, id, parentId, lang){
         var newsArr = [];
         $(xml).find("item").each(function() {
             var $this = $(this),
@@ -90,11 +91,13 @@ RAD.model('News', Backbone.Collection.extend({
                     imageDownloaded: 0,
                     bigImageDownloaded: 0,
                     newsId: id,
+                    parentId: parentId,
                     lang: lang,
                     category: $this.find("category").text(),
                     comments: $this.find("comments").text(),
                     source: $this.find("source").text()
                 };
+            item.ident = item.guid + '_' + item.newsId + '_' + item.lang;
             var imageParts = item.image.split('/');
             item.imageName = imageParts[imageParts.length-1];
             item.bigImage = RAD.utils.getBigImage(item.image);
