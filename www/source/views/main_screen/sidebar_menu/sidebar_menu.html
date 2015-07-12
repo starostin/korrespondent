@@ -1,29 +1,30 @@
-<div class="header"><div class="lang header-btn">{{ RAD.languages[RAD.models.Settings.get('lang')] }}</div></div>
-<div class="wrapper">
-    <div class="menu-list">
-        <ul>
-            {{# var self = this, favorites = RAD.models.AllNews.where({lang: RAD.models.Settings.get('lang'), favorite: 1}); }}
-            {{# _.each(this.sidebar.toJSON(), function(item, index, items){ }}
-            {{# var news = RAD.models.AllNews.where({lang: RAD.models.Settings.get('lang'), parentId: item.id, buffer: 0}); }}
-            <li data-id="{{ item.id }}" class="{{# if(item.selected) { }} selected {{# } }}">
-                <span
-                {{# if(item.id === 1000) { }}
-                    class="favorite-item count" data-count = {{ favorites.length || '' }}
-                {{# } else { }}
-                    class="count" data-count = {{ self.getUniqueNews(news).length || '' }}
-                {{# } }}
-                >
-                {{ item.title }}
-                </span>
-                <div class="mover-wrapper">
-                    <span class="mover"></span>
-                </div>
-            </li>
-            {{# }) }}
-        </ul>
-        <div class="support">
-            DEV TEAM
 
+    <div class="header"><div class="lang header-btn">{{ RAD.languages[RAD.models.Settings.get('lang')] }}</div></div>
+    <div class="wrapper">
+        <div class="menu-list">
+            <ul>
+                {{# var self = this, favorites = RAD.models.AllNews.where({lang: RAD.models.Settings.get('lang'), favorite: 1}); }}
+                {{# _.each(this.sidebar.toJSON(), function(item, index, items){ }}
+                {{# var news = RAD.models.AllNews.where({lang: RAD.models.Settings.get('lang'), parentId: item.id, buffer: 0}); }}
+                <li data-id="{{ item.id }}" class="{{# if(item.selected) { }} selected {{# } }}">
+                    <span
+                    {{# if(item.id === 1000) { }}
+                    class="favorite-item count" data-count = {{ favorites.length || '' }}
+                    {{# } else { }}
+                    class="count" data-count = {{ self.getUniqueNews(news).length || '' }}
+                    {{# } }}
+                    >
+                    {{ item.title }}
+                    </span>
+                    <div class="mover-wrapper">
+                        <span class="mover"></span>
+                    </div>
+                </li>
+                {{# }) }}
+            </ul>
+            <div class="support">
+                DEV TEAM
+
+            </div>
         </div>
     </div>
-</div>

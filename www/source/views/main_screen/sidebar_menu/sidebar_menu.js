@@ -1,8 +1,6 @@
 RAD.view("view.sidebar_menu", RAD.views.SlipExt.extend({
     url: 'source/views/main_screen/sidebar_menu/sidebar_menu.html',
     events: {
-        //'touchstart li': 'onTouchStart',
-        //'touchend li': 'onTouchEnd',
         'tap li': 'openNewsListPage',
         'click .lang': 'changeLanguage',
         'click .support': 'sendFeedback'
@@ -17,6 +15,7 @@ RAD.view("view.sidebar_menu", RAD.views.SlipExt.extend({
         this.allNews.on('change:buffer', this.updateNewsLength, this);
         this.settings.on('change:lang', this.updateSidebarLanguage, this);
         this.settings.on('change:selectedSubCategory', this.updateSelectedOption, this);
+        this.settings.on('change:sidebarOpen', this.toggleSidebar, this);
         this.sidebar.on('change:selected', this.highlightSelected, this);
         this.allNews.on('change:favorite', this.updateFavoritesLength, this);
     },
@@ -97,7 +96,12 @@ RAD.view("view.sidebar_menu", RAD.views.SlipExt.extend({
         curTar.classList.add('selected');
         this.settings.set('selectedCategory', id);
         this.settings.set('selectedSubCategory', id);
-        this.publish('view.news_list.toggleSidebar', null);
+        this.settings.set('sidebarOpen', !this.settings.get('sidebarOpen'));
+        //this.publish('view.news_list.toggleSidebar', null);
+    },
+    toggleSidebar: function(){
+        var isOpen = this.settings.get('sidebarOpen');
+        isOpen ? this.el.classList.add('open') : this.el.classList.remove('open')
     },
     onReorder: function (e) {
         var target = e.target,

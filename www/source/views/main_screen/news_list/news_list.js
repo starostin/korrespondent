@@ -191,12 +191,14 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
         subMenu.classList.toggle('open');
     },
     toggleSidebar: function(){
-        this.el.classList.toggle('open');
-        this.el.classList.contains('open') ? this.nativeScroll.classList.add('stop-scrolling') : this.nativeScroll.classList.remove('stop-scrolling');
+        console.log('-=-=-=-=-==--=')
+        this.settings.set('sidebarOpen', !this.settings.get('sidebarOpen'));
+        //this.el.classList.toggle('open');
+        //this.el.classList.contains('open') ? this.nativeScroll.classList.add('stop-scrolling') : this.nativeScroll.classList.remove('stop-scrolling');
     },
     openNewsList: function(){
-        if(!this.el.classList.contains('open')) return;
-        this.toggleSidebar();
+        //if(!this.el.classList.contains('open')) return;
+        //this.toggleSidebar();
     },
     openFavorites: function(){
         this.publish('view.favorites.toggleView')
