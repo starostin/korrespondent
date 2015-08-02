@@ -258,12 +258,20 @@ html {
     z-index: 100;
 }
 #sidebar-menu .sidebar-menu-view{
-    background: #2fb5ff;
+    /*background: #2fb5ff;*/
     transition: all 0.3s ease-in-out;
     -webkit-transition: all 0.3s ease-in-out;
     transform: translateX(-100%);
     -webkit-transform: translateX(-100%);
     z-index: 400;
+    width: 100%;
+}
+.side-wrap{
+    position: relative;
+    top: 0;
+    bottom: 0;
+    background-color: #2fb5ff;
+    height: 100%;
     width: 70%;
 }
 #sidebar-menu .sidebar-menu-view.open{

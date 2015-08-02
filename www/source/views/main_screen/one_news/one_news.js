@@ -8,7 +8,8 @@ RAD.view("view.one_news", RAD.views.SwipeExt.extend({
             'click .font': 'toggleFontPopup',
             'click .font-small': 'makeSmallFont',
             'click .font-big': 'makeBigFont',
-            'click .sharing': 'shareNews'
+            'click .sharing': 'shareNews',
+            'click a': 'openLink'
         })
     },
     onInitialize: function(){
@@ -16,6 +17,11 @@ RAD.view("view.one_news", RAD.views.SwipeExt.extend({
         this.settings = RAD.models.Settings;
         this.settings.on('change:currentNews', this.showNews, this);
         this.settings.on('change:font', this.updateFont, this);
+    },
+    openLink: function(e){
+        e.preventDefault();
+        var href = e.currentTarget.href;
+        window.open(href, '_blank', 'location=yes');
     },
     toggleFontPopup: function(e){
         if(!e.target.classList.contains('font')) return;

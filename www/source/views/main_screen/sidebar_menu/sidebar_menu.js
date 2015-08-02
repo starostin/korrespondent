@@ -3,10 +3,14 @@ RAD.view("view.sidebar_menu", RAD.views.SlipExt.extend({
     events: {
         'tap li': 'openNewsListPage',
         'click .lang': 'changeLanguage',
-        'click .support': 'sendFeedback'
+        'click .support': 'sendFeedback',
+        'click': 'toggleMenu'
     },
     slip_el_name: 'ul',
     className: 'sidebar-menu-view',
+    toggleMenu: function(){
+        this.settings.set('sidebarOpen', !this.settings.get('sidebarOpen'));
+    },
     onInitialize: function(){
         this.settings = RAD.models.Settings;
         this.sidebar = RAD.models.Sidebar;
@@ -96,7 +100,7 @@ RAD.view("view.sidebar_menu", RAD.views.SlipExt.extend({
         curTar.classList.add('selected');
         this.settings.set('selectedCategory', id);
         this.settings.set('selectedSubCategory', id);
-        this.settings.set('sidebarOpen', !this.settings.get('sidebarOpen'));
+        //this.settings.set('sidebarOpen', !this.settings.get('sidebarOpen'));
         //this.publish('view.news_list.toggleSidebar', null);
     },
     toggleSidebar: function(){
