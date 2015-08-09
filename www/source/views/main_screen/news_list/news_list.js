@@ -23,6 +23,7 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
         this.allNews = RAD.models.AllNews;
         this.settings.on('change:selectedSubCategory', this.setNews, this);
         this.settings.on('change:lang', this.setNews, this);
+        this.settings.on('change:sidebarOpen', this.toggleScrollEnable, this);
         this.news.on('reset', this.render, this);
         this.news.on('add', this.addNews, this);
         this.news.on('change:buffer', this.showUpdateMessage, this);
@@ -55,6 +56,9 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
         }else{
             console.log('view.news_list does not have method '+ method)
         }
+    },
+    closeSidebar: function(){
+        this.settings.set('sidebarOpen', false);
     },
     touchStartSwipe: function(e){
         this.startItemCoord = e.currentTarget.getBoundingClientRect();
@@ -105,7 +109,10 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
         curTar.addEventListener('transitionend', endTransition);
     },
     openNews: function(e){
-        if(this.el.classList.contains('open')) return;
+        if(this.settings.get('sidebarOpen')){
+            this.closeSidebar();
+            return;
+        }
         var curTar = e.currentTarget,
             cid = curTar.getAttribute('data-cid');
         this.settings.set('currentNews', cid);
@@ -191,10 +198,7 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
         subMenu.classList.toggle('open');
     },
     toggleSidebar: function(){
-        console.log('-=-=-=-=-==--=')
         this.settings.set('sidebarOpen', !this.settings.get('sidebarOpen'));
-        //this.el.classList.toggle('open');
-        //this.el.classList.contains('open') ? this.nativeScroll.classList.add('stop-scrolling') : this.nativeScroll.classList.remove('stop-scrolling');
     },
     openNewsList: function(){
         //if(!this.el.classList.contains('open')) return;
@@ -225,7 +229,7 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
             arrow = pullDiv.querySelector('.arrow-img'),
             deg = 0;
 
-        if(this.nativeScroll.scrollTop > 0 || this.el.classList.contains('open') || this.el.classList.contains('favorites-list')){
+        if(this.nativeScroll.scrollTop > 0 || this.el.classList.contains('open') || this.el.classList.contains('favorites-list') || this.settings.get('sidebarOpen')){
             return;
         }
 
@@ -253,20 +257,27 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
     onTouchEnd: function(){
         var pullDiv = this.el.querySelector('.pull-down'),
             arrow = pullDiv.querySelector('.arrow-img'),
-            isUpdate = pullDiv.classList.contains('update'),
-            spinner = pullDiv.querySelector('.loader');
-        if(!this.el.classList.contains('open')){
-            this.nativeScroll.classList.remove('stop-scrolling');
-        }
+            isUpdate = pullDiv.classList.contains('update');
+
         this.nativeScroll.style.transition  = 'all 0.2s ease-in-out';
         this.nativeScroll.style.transform = 'translateY(0)';
         if(isUpdate){
             this.getNews();
         }
     },
+    toggleScrollEnable: function(){
+        var isOpen = this.settings.get('sidebarOpen');
+        isOpen ? this.nativeScroll.classList.add('stop-scrolling') : this.nativeScroll.classList.remove('stop-scrolling');
+    },
     finishSwipe: function(val, half){
-        val >= half ? this.el.classList.add('open') : this.el.classList.remove('open');
-        val >= half ? this.nativeScroll.classList.add('stop-scrolling') : this.nativeScroll.classList.remove('stop-scrolling');
+        var isOpen = false;
+        if(this.settings.get('sidebarOffset') >=50){
+            isOpen = true;
+        }
+        this.settings.set('sidebarOpen',  isOpen, {silent: true});
+        this.settings.trigger('change:sidebarOpen');
+        //val >= half ? this.el.classList.add('open') : this.el.classList.remove('open');
+        //val >= half ? this.nativeScroll.classList.add('stop-scrolling') : this.nativeScroll.classList.remove('stop-scrolling');
     },
     getNews: function(){
         var self = this,

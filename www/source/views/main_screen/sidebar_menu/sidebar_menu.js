@@ -1,15 +1,24 @@
 RAD.view("view.sidebar_menu", RAD.views.SlipExt.extend({
     url: 'source/views/main_screen/sidebar_menu/sidebar_menu.html',
     events: {
-        'tap li': 'openNewsListPage',
+        'click li': 'openNewsListPage',
         'click .lang': 'changeLanguage',
         'click .support': 'sendFeedback',
-        'click': 'toggleMenu'
     },
     slip_el_name: 'ul',
-    className: 'sidebar-menu-view',
+    className: 'sidebar-menu-view animated',
     toggleMenu: function(){
         this.settings.set('sidebarOpen', !this.settings.get('sidebarOpen'));
+    },
+    setSidebarOpen: function(){
+        this.el.style.transform = 'translateX(0)';
+        this.el.style.webkitTransform = 'translateX(0)';
+        this.settings.set('sidebarOffset', this.width)
+    },
+    setSidebarClose: function(){
+        this.el.style.transform = 'translateX(-100%)';
+        this.el.style.webkitTransform = 'translateX(-100%)';
+        this.settings.set('sidebarOffset', 0);
     },
     onInitialize: function(){
         this.settings = RAD.models.Settings;
@@ -22,6 +31,41 @@ RAD.view("view.sidebar_menu", RAD.views.SlipExt.extend({
         this.settings.on('change:sidebarOpen', this.toggleSidebar, this);
         this.sidebar.on('change:selected', this.highlightSelected, this);
         this.allNews.on('change:favorite', this.updateFavoritesLength, this);
+    },
+    onStartAttach: function(){
+        this.width = this.$el.width()
+    },
+    onReceiveMsg: function(channel, data){
+        var parts = channel.split('.'),
+            method = parts[2];
+        if(typeof this[method] === 'function'){
+            this[method](data)
+        }else{
+            console.log('view.sidebar_menu does not have method '+ method)
+        }
+    },
+    moveSidebarRight: function(data){
+        if(this.settings.get('sidebarOpen')) return;
+        var val = data.value,
+            diff = -this.width + (+val);
+        if(diff>=0){
+            diff = 0
+        }
+        this.el.classList.remove('animated');
+        this.el.style.transform = 'translateX(' + diff + 'px)';
+        this.el.style.webkitTransform = 'translateX(' + diff + 'px)';
+        this.settings.set('sidebarOffset', val)
+    },
+    moveSidebarLeft: function(data){
+        var val = data.value,
+            diff = +val;
+        if(diff>=0){
+            diff = 0
+        }
+        this.el.classList.remove('animated');
+        this.el.style.transform = 'translateX(' + diff + 'px)';
+        this.el.style.webkitTransform = 'translateX(' + diff + 'px)';
+        this.settings.set('sidebarOffset', this.width + diff)
     },
     sendFeedback: function(e){
         if(!window.cordova) {
@@ -100,12 +144,14 @@ RAD.view("view.sidebar_menu", RAD.views.SlipExt.extend({
         curTar.classList.add('selected');
         this.settings.set('selectedCategory', id);
         this.settings.set('selectedSubCategory', id);
-        //this.settings.set('sidebarOpen', !this.settings.get('sidebarOpen'));
+        this.settings.set('sidebarOpen', !this.settings.get('sidebarOpen'));
         //this.publish('view.news_list.toggleSidebar', null);
     },
     toggleSidebar: function(){
+        this.el.classList.add('animated');
         var isOpen = this.settings.get('sidebarOpen');
-        isOpen ? this.el.classList.add('open') : this.el.classList.remove('open')
+        isOpen ? this.el.classList.add('open') : this.el.classList.remove('open');
+        isOpen ? this.setSidebarOpen() : this.setSidebarClose();
     },
     onReorder: function (e) {
         var target = e.target,

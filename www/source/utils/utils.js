@@ -155,6 +155,7 @@ RAD.namespace('RAD.utils.updateText', function (data) {
         name = imageParts[imageParts.length-1];
         name = name.split('?')[0];
         path = settings.rootPath ? settings.rootPath + settings.otherImage + '/' + name : src;
+        images[i].parentNode.classList.add('image-wrapper');
         images[i].setAttribute('src', path);
     }(i))
     for(var t=0; t<iframes.length; t++){
@@ -164,20 +165,22 @@ RAD.namespace('RAD.utils.updateText', function (data) {
         link.style.display = 'block';
         //link.target = '_blank';
         var videoSrc = iframes[t].getAttribute('src');
-        var imageSrc = videoSrc.replace('www', 'img');
-        imageSrc = imageSrc.replace('embed', 'vi');
-        var imageNameParts = imageSrc.split('/'),
-            imageName = imageNameParts[imageNameParts.length-1].split('?')[0];
-            imageSrc = imageSrc + '/0.jpg';
-        RAD.utils.download(imageSrc, settings.otherImage, this, imageName)
+        //var imageSrc = videoSrc.replace('www', 'img');
+        //imageSrc = imageSrc.replace('embed', 'vi');
+        //var imageNameParts = imageSrc.split('/'),
+            //imageName = imageNameParts[imageNameParts.length-1].split('?')[0];
+            //imageSrc = imageSrc + '/0.jpg';
+        //RAD.utils.download(imageSrc, settings.otherImage, this, imageName)
         div.style.display = 'block';
-        div.style.width = iframes[t].width + 'px';
-        div.style.height = iframes[t].height + 'px';
-        div.style.lineHeight = iframes[t].height + 'px';
-        var videoFirstImagePath = settings.rootPath ? settings.rootPath + settings.otherImage + '/' + imageName : imageSrc;
-        div.style.background = 'url(' + videoFirstImagePath + ')';
+        //div.style.width = iframes[t].width + 'px';
+        //div.style.height = iframes[t].height + 'px';
+        //div.style.lineHeight = iframes[t].height + 'px';
+        //var videoPlaceholder = 'assets/img/video-placeholder.png';
+        //var videoFirstImagePath = settings.rootPath ? settings.rootPath + settings.otherImage + '/' + imageName : imageSrc;
+        //div.style.background = 'url(source/assets/img/video-placeholder.png)';
+        //console.log(div.style.background)
         link.href = videoSrc;
-        div.setAttribute('data-utl', videoSrc);
+        div.setAttribute('data-url', videoSrc);
         link.appendChild(div);
         iframes[t].parentNode.replaceChild(link, iframes[t])
     }

@@ -61,7 +61,9 @@ RAD.views.SwipeExt =  RAD.Blanks.View.extend({
 
         this.el.removeAttribute('style');
         this.enableScroll();
-        this.finishSwipe(value, this.halfWidth);
+        if( this.finishSwipe){
+            this.finishSwipe(value, this.halfWidth);
+        }
     },
     disableScroll: function(){
         if(this.mScroll){
@@ -100,22 +102,28 @@ RAD.views.SwipeExt =  RAD.Blanks.View.extend({
         if(viewCoord.left<0){
             return;
         }
+        this.publish('view.sidebar_menu.moveSidebarLeft', {
+            value: diff
+        });
         if(diff < 0){
             if(this.onMoveLeft){
                 this.onMoveLeft()
             }
             diff = 0
         }
-        this.el.style.transform = 'translateX(' + (diff)+ 'px)';
-        this.el.style.webkitTransform = 'translateX(' + (diff)+ 'px)';
+        //this.el.style.transform = 'translateX(' + (diff)+ 'px)';
+        //this.el.style.webkitTransform = 'translateX(' + (diff)+ 'px)';
     },
     moveRight: function(diff){
 
         if(this.rightLineWidth && diff > this.rightLineWidth){
             diff = this.rightLineWidth;
         }
-        this.el.style.transform = 'translateX(' + (diff)+ 'px)';
-        this.el.style.webkitTransform = 'translateX(' + (diff)+ 'px)';
+        this.publish('view.sidebar_menu.moveSidebarRight', {
+            value: diff
+        });
+        //this.el.style.transform = 'translateX(' + (diff)+ 'px)';
+        //this.el.style.webkitTransform = 'translateX(' + (diff)+ 'px)';
     },
     isVertDirection: function(xArr, yArr){
         var xSum = 0, ySum = 0;
