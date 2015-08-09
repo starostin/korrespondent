@@ -58,13 +58,23 @@ RAD.view("view.one_news", RAD.views.SwipeExt.extend({
         this.render();
     },
     finishSwipe: function(val, half){
-        if(val < half){
-            this.el.classList.add('open');
-        }else{
-            this.el.classList.remove('open');
-            this.removeCurrentNews();
+        var isOpen = false;
+        if(this.settings.get('sidebarOffset') >=50){
+            isOpen = true;
         }
+        this.settings.set('sidebarOpen',  isOpen, {silent: true});
+        this.settings.trigger('change:sidebarOpen');
+        //val >= half ? this.el.classList.add('open') : this.el.classList.remove('open');
+        //val >= half ? this.nativeScroll.classList.add('stop-scrolling') : this.nativeScroll.classList.remove('stop-scrolling');
     },
+    //finishSwipe: function(val, half){
+    //    if(val < half){
+    //        this.el.classList.add('open');
+    //    }else{
+    //        this.el.classList.remove('open');
+    //        this.removeCurrentNews();
+    //    }
+    //},
     showNews: function(model, val, option){
         if(!val){
             this.el.classList.remove('open')
