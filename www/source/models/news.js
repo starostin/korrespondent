@@ -81,7 +81,7 @@ RAD.model('News', Backbone.Collection.extend({
                     title: $this.find("title").text(),
                     link: $this.find("link").text(),
                     description: $this.find("description").text(),
-                    fullText: $this.find("fulltext").text(),
+                    fullText: RAD.utils.updateText($this.find("fulltext").text()),
                     author: $this.find("author").text(),
                     image:  RAD.utils.getImageLink($this.find("image").text()),
                     pubDate: $this.find("pubDate").text(),
@@ -106,14 +106,25 @@ RAD.model('News', Backbone.Collection.extend({
         return newsArr;
     },
     downloadImages: function(data){
+        var self = this;
         for(var i=0; i<data.length; i++)(function(i){
             RAD.utils.download(data[i].image, settings.image, this).done(function(){
                 data[i].imageDownloaded = 1;
-                RAD.utils.sql.insertRows(data[i], 'news');
+                RAD.utils.sql.insertRows([data[i]], 'news').done(function(){
+                    var newsModel = self.findWhere({guid: data[i].guid});
+                    if(newsModel){
+                        newsModel.set('imageDownloaded', 1)
+                    }
+                });
             });
             RAD.utils.download(data[i].bigImage, settings.bigImage, this).done(function(){
                 data[i].bigImageDownloaded = 1;
-                RAD.utils.sql.insertRows(data[i], 'news');
+                RAD.utils.sql.insertRows([data[i]], 'news').done(function(){
+                    var newsModel = self.findWhere({guid: data[i].guid});
+                    if(newsModel){
+                        newsModel.set('bigImageDownloaded', 1)
+                    }
+                });
             })
         })(i)
     }

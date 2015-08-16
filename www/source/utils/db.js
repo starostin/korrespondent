@@ -55,12 +55,6 @@
             }
         }
         for(var j=0; j<data.length; j++)(function(j){
-            if(data[j].fullText){
-                data[j].fullText = RAD.utils.updateText(data[j].fullText)
-            }
-            //data[j].lang = RAD.models.Settings.get('lang');
-            //data[j].newsId = data[j].newsId || +RAD.models.Settings.get('selectedSubCategory');
-            //data[j].ident = data[j].guid + '_' + data[j].newsId + '_' + data[j].lang;
             promisesArr.push(
                 korDB.transaction(function(t) {
                     var dataArr = [];

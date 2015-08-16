@@ -20,6 +20,7 @@ RAD.view("view.one_news", RAD.views.SwipeExt.extend({
     },
     openLink: function(e){
         e.preventDefault();
+        e.stopPropagation();
         var href = e.currentTarget.href;
         window.open(href, '_blank', 'location=yes');
     },

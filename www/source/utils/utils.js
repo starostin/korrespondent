@@ -26,7 +26,7 @@ RAD.namespace('RAD.utils.download', function(link, folder, context, name){
     }
     var callbackFn = function(entry){
             var fileTransfer = new FileTransfer();
-            var uri = encodeURI(link),
+            var uri = encodeURI(link.split('?')[0]),
                 filename = name || (function () {
                         var parts = link.split('/'),
                             lastIndex =  parts.length - 1;
@@ -39,14 +39,12 @@ RAD.namespace('RAD.utils.download', function(link, folder, context, name){
                 filePath,
                 function(entry) {
                     console.log("download complete: " + entry.fullPath);
-                    //obj[folder + 'NativeURL'] = entry.nativeURL;
                     $deferred.resolve()
                 },
                 function(error) {
                     console.log("download error source " + error.source);
                     console.log("download error target " + error.target);
                     console.log("upload error code" + error.code);
-                    //obj[folder + 'NativeURL'] = '';
                     $deferred.reject()
                 },
                 false
@@ -159,29 +157,15 @@ RAD.namespace('RAD.utils.updateText', function (data) {
         images[i].setAttribute('src', path);
     }(i))
     for(var t=0; t<iframes.length; t++){
-        var div = document.createElement('span');
+        var iframe = document.createElement('iframe');
         var link = document.createElement('a');
-        div.className = 'video';
-        link.style.display = 'block';
-        //link.target = '_blank';
+        iframe.className = 'video';
+        link.className = 'video-link';
+        link.target = '_blank';
         var videoSrc = iframes[t].getAttribute('src');
-        //var imageSrc = videoSrc.replace('www', 'img');
-        //imageSrc = imageSrc.replace('embed', 'vi');
-        //var imageNameParts = imageSrc.split('/'),
-            //imageName = imageNameParts[imageNameParts.length-1].split('?')[0];
-            //imageSrc = imageSrc + '/0.jpg';
-        //RAD.utils.download(imageSrc, settings.otherImage, this, imageName)
-        div.style.display = 'block';
-        //div.style.width = iframes[t].width + 'px';
-        //div.style.height = iframes[t].height + 'px';
-        //div.style.lineHeight = iframes[t].height + 'px';
-        //var videoPlaceholder = 'assets/img/video-placeholder.png';
-        //var videoFirstImagePath = settings.rootPath ? settings.rootPath + settings.otherImage + '/' + imageName : imageSrc;
-        //div.style.background = 'url(source/assets/img/video-placeholder.png)';
-        //console.log(div.style.background)
         link.href = videoSrc;
-        div.setAttribute('data-url', videoSrc);
-        link.appendChild(div);
+        iframe.src = videoSrc;
+        link.appendChild(iframe);
         iframes[t].parentNode.replaceChild(link, iframes[t])
     }
     return template.innerHTML

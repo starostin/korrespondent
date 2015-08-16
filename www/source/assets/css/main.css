@@ -400,16 +400,24 @@ html {
     width: 40%;
     padding: 0;
 }
+.video-link{
+    display: block;
+    margin: 20px;
+}
+.video-link > body{
+    display: none;
+}
 .video{
     margin: auto;
     text-align: center;
     background: url(../img/video-placeholder.png);
     background-size: cover;
+    display: block;
     background-position: center;
-    width: 100%;
+    width: 90%;
     height: 300px;
 }
-.img-wrapper{
+.image-wrapper{
     text-align: center;
     margin: 10px;
 }
