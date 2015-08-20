@@ -407,6 +407,12 @@ html {
 .video-link > body{
     display: none;
 }
+.video-wrapper{
+    background: url(../img/video-placeholder.png);
+    background-size: cover;
+    display: block;
+    background-position: center;
+}
 .video{
     margin: auto;
     text-align: center;
@@ -414,7 +420,7 @@ html {
     background-size: cover;
     display: block;
     background-position: center;
-    width: 90%;
+    /*width: 90%;*/
     height: 300px;
 }
 .image-wrapper{

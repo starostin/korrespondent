@@ -157,15 +157,22 @@ RAD.namespace('RAD.utils.updateText', function (data) {
         images[i].setAttribute('src', path);
     }(i))
     for(var t=0; t<iframes.length; t++){
-        var iframe = document.createElement('iframe');
+        var span = document.createElement('span');
+        var spanWrapper = document.createElement('span');
         var link = document.createElement('a');
-        iframe.className = 'video';
+        span.className = 'video';
         link.className = 'video-link';
         link.target = '_blank';
         var videoSrc = iframes[t].getAttribute('src');
+        spanWrapper.className = 'video-wrapper';
+        if(videoSrc.indexOf('youtube') !== -1){
+            var videoUrlParts = videoSrc.split('/');
+            var videoId = videoUrlParts[videoUrlParts.length-1];
+            span.style.backgroundImage = "url('http://img.youtube.com/vi/" + videoId + "/0.jpg')";
+        }
         link.href = videoSrc;
-        iframe.src = videoSrc;
-        link.appendChild(iframe);
+        spanWrapper.appendChild(span);
+        link.appendChild(spanWrapper);
         iframes[t].parentNode.replaceChild(link, iframes[t])
     }
     return template.innerHTML
