@@ -7,6 +7,27 @@ RAD.namespace('RAD.utils.getImageLink', function(str){
 
     return regex.exec(str) && regex.exec(str)[1];
 });
+RAD.namespace('RAD.utils.checkConnection', function () {
+
+    if (!window.cordova) {
+        console.log('Connection API use cordova');
+        return true;
+    }
+
+    var networkState = navigator.connection.type,
+        states = {};
+
+    states[Connection.UNKNOWN]  = 'Unknown connection';
+    states[Connection.ETHERNET] = 'Ethernet connection';
+    states[Connection.WIFI]     = 'WiFi connection';
+    states[Connection.CELL_2G]  = 'Cell 2G connection';
+    states[Connection.CELL_3G]  = 'Cell 3G connection';
+    states[Connection.CELL_4G]  = 'Cell 4G connection';
+    states[Connection.CELL]     = 'Cell generic connection';
+    states[Connection.NONE]     = false;
+
+    return states[networkState];
+});
 RAD.namespace('RAD.utils.getBigImage', function(link){
     var parts = link && link.split('/'),
         bigImage = '';

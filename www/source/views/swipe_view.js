@@ -19,6 +19,8 @@ RAD.views.SwipeExt =  RAD.Blanks.View.extend({
     touchStart: function(e){
         this.coordinates.x = [e.originalEvent.changedTouches[0].clientX];
         this.coordinates.y = [e.originalEvent.changedTouches[0].clientY];
+        this.firstX = 0;
+        this.firstY = 0;
         this.directionDefined = false;
         this.startCoord = this.el.getBoundingClientRect();
         this.startScrollCoord = this.nativeScroll.getBoundingClientRect();
@@ -35,16 +37,21 @@ RAD.views.SwipeExt =  RAD.Blanks.View.extend({
                 this.directionVert = true;
                 this.directionDefined = true;
             }
-            this.coordinates.x.push(e.originalEvent.changedTouches[0].clientX);
-            this.coordinates.y.push(e.originalEvent.changedTouches[0].clientY);
+            //this.coordinates.x.push(e.originalEvent.changedTouches[0].clientX);
+            //this.coordinates.y.push(e.originalEvent.changedTouches[0].clientY);
         }else if(!this.directionDefined){
             this.directionVert = this.isVertDirection(this.coordinates.x, this.coordinates.y);
             this.directionDefined = true;
         }else if(this.directionDefined && !this.directionVert){
+            if(!this.firstX){
+                this.firstX = e.originalEvent.changedTouches[0].clientX;
+            }
             this.onMoveHorizontally(e)
         }else if(this.directionDefined && this.directionVert){
             this.onMoveVertically(e)
         }
+        this.coordinates.x.push(e.originalEvent.changedTouches[0].clientX);
+        this.coordinates.y.push(e.originalEvent.changedTouches[0].clientY);
     },
     touchEnd: function(){
         if(this.onTouchEnd){
@@ -62,7 +69,7 @@ RAD.views.SwipeExt =  RAD.Blanks.View.extend({
         this.el.removeAttribute('style');
         this.enableScroll();
         if( this.finishSwipe){
-            this.finishSwipe(value, this.halfWidth);
+            this.finishSwipe(value, this.halfWidth, this.direction);
         }
     },
     disableScroll: function(){
@@ -83,11 +90,14 @@ RAD.views.SwipeExt =  RAD.Blanks.View.extend({
         this.disableScroll();
         this.el.style.transition  = 'none';
         this.el.style.webkitTransition  = 'none';
-        var firstX = this.coordinates.x[this.coordinates.x.length-1],
+
+        var firstX =  this.firstX,
             newX = e.originalEvent.changedTouches[0].clientX,
             diff = this.startCoord.left + (newX - firstX);
 
-        if(diff<0){
+        console.log('------------START------------', this.startCoord.left)
+
+        if(this.getHorDirection(this.coordinates.x) === 'left'){
             this.moveLeft(diff);
         }else{
             this.moveRight(diff);
@@ -111,6 +121,7 @@ RAD.views.SwipeExt =  RAD.Blanks.View.extend({
             }
             diff = 0
         }
+        this.direction = 'left';
         //this.el.style.transform = 'translateX(' + (diff)+ 'px)';
         //this.el.style.webkitTransform = 'translateX(' + (diff)+ 'px)';
     },
@@ -122,8 +133,18 @@ RAD.views.SwipeExt =  RAD.Blanks.View.extend({
         this.publish('view.sidebar_menu.moveSidebarRight', {
             value: diff
         });
+        if(diff < 0){
+            if(this.onMoveRight){
+                this.onMoveRight()
+            }
+            diff = 0
+        }
+        this.direction = 'right';
         //this.el.style.transform = 'translateX(' + (diff)+ 'px)';
         //this.el.style.webkitTransform = 'translateX(' + (diff)+ 'px)';
+    },
+    getHorDirection: function(xArr){
+        return xArr[xArr.length-2] < xArr[xArr.length-1] ? 'right' : 'left';
     },
     isVertDirection: function(xArr, yArr){
         var xSum = 0, ySum = 0;

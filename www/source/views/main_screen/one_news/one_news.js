@@ -21,8 +21,19 @@ RAD.view("view.one_news", RAD.views.SwipeExt.extend({
     openLink: function(e){
         e.preventDefault();
         e.stopPropagation();
+        if(!RAD.utils.checkConnection()){
+           this.showErrorMessage();
+            return;
+        }
         var href = e.currentTarget.href;
         window.open(href, '_blank', 'location=yes');
+    },
+    showErrorMessage: function(){
+        var errorDiv = this.el.querySelector('.message');
+        errorDiv.classList.add('show');
+        window.setTimeout(function(){
+            errorDiv.classList.remove('show');
+        }, 2000)
     },
     toggleFontPopup: function(e){
         if(!e.target.classList.contains('font')) return;

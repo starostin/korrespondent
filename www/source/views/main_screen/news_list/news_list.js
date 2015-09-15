@@ -269,9 +269,9 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
         var isOpen = this.settings.get('sidebarOpen');
         isOpen ? this.nativeScroll.classList.add('stop-scrolling') : this.nativeScroll.classList.remove('stop-scrolling');
     },
-    finishSwipe: function(val, half){
+    finishSwipe: function(val, half, direction){
         var isOpen = false;
-        if(this.settings.get('sidebarOffset') >=50){
+        if(direction === 'right'){
             isOpen = true;
         }
         this.settings.set('sidebarOpen',  isOpen, {silent: true});

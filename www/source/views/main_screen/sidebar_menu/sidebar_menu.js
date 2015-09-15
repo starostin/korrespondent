@@ -45,27 +45,45 @@ RAD.view("view.sidebar_menu", RAD.views.SlipExt.extend({
         }
     },
     moveSidebarRight: function(data){
-        if(this.settings.get('sidebarOpen')) return;
+        if(this.settings.get('sidebarOffset') === this.width) return;
+
         var val = data.value,
             diff = -this.width + (+val);
-        if(diff>=0){
-            diff = 0
-        }
-        this.el.classList.remove('animated');
-        this.el.style.transform = 'translateX(' + diff + 'px)';
-        this.el.style.webkitTransform = 'translateX(' + diff + 'px)';
-        this.settings.set('sidebarOffset', val)
-    },
-    moveSidebarLeft: function(data){
-        var val = data.value,
+
+        if(+val<0){
             diff = +val;
-        if(diff>=0){
-            diff = 0
         }
+        if(diff >=0){
+            diff = 0;
+        }
+        //console.log(this.width + diff)
         this.el.classList.remove('animated');
         this.el.style.transform = 'translateX(' + diff + 'px)';
         this.el.style.webkitTransform = 'translateX(' + diff + 'px)';
         this.settings.set('sidebarOffset', this.width + diff)
+    },
+    moveSidebarLeft: function(data){
+        var val = data.value,
+            diff = -this.width + (+val);
+        if(+val<=0){
+            diff = +val;
+        }
+        if(diff >=0){
+            diff = 0;
+        }
+
+        if(this.el.style.transform === 'translateX(-100%)'|| !this.el.style.transform){
+            return;
+        }
+
+        this.el.classList.remove('animated');
+        this.el.style.transform = 'translateX(' + diff + 'px)';
+        this.el.style.webkitTransform = 'translateX(' + diff + 'px)';
+        this.settings.set('sidebarOffset', this.width + diff)
+    },
+    touchStart: function(){
+        this.startCoord = this.el.getBoundingClientRect();
+        console.log('=--=a-=a-=a-=a-=a-=a-=a-=-=a', this.startCoord.left)
     },
     sendFeedback: function(e){
         if(!window.cordova) {
