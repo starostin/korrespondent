@@ -29,6 +29,8 @@ RAD.views.SwipeExt =  RAD.Blanks.View.extend({
         }
     },
     touchMove: function(e){
+        this.coordinates.x.push(e.originalEvent.changedTouches[0].clientX);
+        this.coordinates.y.push(e.originalEvent.changedTouches[0].clientY);
         if(this.coordinates.x.length<5 && !this.directionDefined){
             if(Math.abs(this.coordinates.x[this.coordinates.x.length-1] - e.originalEvent.changedTouches[0].clientX) >=50){
                 this.directionVert = false;
@@ -37,8 +39,6 @@ RAD.views.SwipeExt =  RAD.Blanks.View.extend({
                 this.directionVert = true;
                 this.directionDefined = true;
             }
-            //this.coordinates.x.push(e.originalEvent.changedTouches[0].clientX);
-            //this.coordinates.y.push(e.originalEvent.changedTouches[0].clientY);
         }else if(!this.directionDefined){
             this.directionVert = this.isVertDirection(this.coordinates.x, this.coordinates.y);
             this.directionDefined = true;
@@ -48,10 +48,11 @@ RAD.views.SwipeExt =  RAD.Blanks.View.extend({
             }
             this.onMoveHorizontally(e)
         }else if(this.directionDefined && this.directionVert){
+            if(!this.firstY){
+                this.firstY = e.originalEvent.changedTouches[0].clientY;
+            }
             this.onMoveVertically(e)
         }
-        this.coordinates.x.push(e.originalEvent.changedTouches[0].clientX);
-        this.coordinates.y.push(e.originalEvent.changedTouches[0].clientY);
     },
     touchEnd: function(){
         if(this.onTouchEnd){
@@ -95,8 +96,6 @@ RAD.views.SwipeExt =  RAD.Blanks.View.extend({
             newX = e.originalEvent.changedTouches[0].clientX,
             diff = this.startCoord.left + (newX - firstX);
 
-        console.log('------------START------------', this.startCoord.left)
-
         if(this.getHorDirection(this.coordinates.x) === 'left'){
             this.moveLeft(diff);
         }else{
@@ -122,8 +121,6 @@ RAD.views.SwipeExt =  RAD.Blanks.View.extend({
             diff = 0
         }
         this.direction = 'left';
-        //this.el.style.transform = 'translateX(' + (diff)+ 'px)';
-        //this.el.style.webkitTransform = 'translateX(' + (diff)+ 'px)';
     },
     moveRight: function(diff){
 
@@ -140,8 +137,6 @@ RAD.views.SwipeExt =  RAD.Blanks.View.extend({
             diff = 0
         }
         this.direction = 'right';
-        //this.el.style.transform = 'translateX(' + (diff)+ 'px)';
-        //this.el.style.webkitTransform = 'translateX(' + (diff)+ 'px)';
     },
     getHorDirection: function(xArr){
         return xArr[xArr.length-2] < xArr[xArr.length-1] ? 'right' : 'left';

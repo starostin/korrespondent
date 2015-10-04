@@ -45,35 +45,30 @@ RAD.view("view.sidebar_menu", RAD.views.SlipExt.extend({
         }
     },
     moveSidebarRight: function(data){
-        if(this.settings.get('sidebarOffset') === this.width) return;
-
-        var val = data.value,
-            diff = -this.width + (+val);
-
-        if(+val<0){
-            diff = +val;
+        var val = data.value;
+        if(+val>this.width){
+            val = this.width;
         }
-        if(diff >=0){
-            diff = 0;
+        var diff = -this.width + (+val);
+
+        if(this.settings.get('sidebarOpen')){
+            diff = (val);
         }
-        //console.log(this.width + diff)
+
         this.el.classList.remove('animated');
         this.el.style.transform = 'translateX(' + diff + 'px)';
         this.el.style.webkitTransform = 'translateX(' + diff + 'px)';
         this.settings.set('sidebarOffset', this.width + diff)
     },
     moveSidebarLeft: function(data){
-        var val = data.value,
-            diff = -this.width + (+val);
-        if(+val<=0){
-            diff = +val;
+        var val = data.value;
+        if(+val>this.width){
+            val = this.width;
         }
-        if(diff >=0){
-            diff = 0;
-        }
+        var diff = -this.width + (+val);
 
-        if(this.el.style.transform === 'translateX(-100%)'|| !this.el.style.transform){
-            return;
+        if(this.settings.get('sidebarOpen')){
+            diff = (val);
         }
 
         this.el.classList.remove('animated');
@@ -83,7 +78,6 @@ RAD.view("view.sidebar_menu", RAD.views.SlipExt.extend({
     },
     touchStart: function(){
         this.startCoord = this.el.getBoundingClientRect();
-        console.log('=--=a-=a-=a-=a-=a-=a-=a-=-=a', this.startCoord.left)
     },
     sendFeedback: function(e){
         if(!window.cordova) {

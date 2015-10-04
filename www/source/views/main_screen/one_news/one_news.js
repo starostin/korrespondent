@@ -9,7 +9,8 @@ RAD.view("view.one_news", RAD.views.SwipeExt.extend({
             'click .font-small': 'makeSmallFont',
             'click .font-big': 'makeBigFont',
             'click .sharing': 'shareNews',
-            'click a': 'openLink'
+            'click a': 'openLink',
+            'click': 'checkSidebar'
         })
     },
     onInitialize: function(){
@@ -34,6 +35,14 @@ RAD.view("view.one_news", RAD.views.SwipeExt.extend({
         window.setTimeout(function(){
             errorDiv.classList.remove('show');
         }, 2000)
+    },
+    checkSidebar: function(){
+        if(this.settings.get('sidebarOpen')){
+            this.closeSidebar();
+        }
+    },
+    closeSidebar: function(){
+        this.settings.set('sidebarOpen', false);
     },
     toggleFontPopup: function(e){
         if(!e.target.classList.contains('font')) return;
@@ -69,24 +78,14 @@ RAD.view("view.one_news", RAD.views.SwipeExt.extend({
         this.oneNews.set(this.parentNews.toJSON());
         this.render();
     },
-    finishSwipe: function(val, half){
+    finishSwipe: function(val, half, direction){
         var isOpen = false;
-        if(this.settings.get('sidebarOffset') >=50){
+        if(direction === 'right'){
             isOpen = true;
         }
         this.settings.set('sidebarOpen',  isOpen, {silent: true});
         this.settings.trigger('change:sidebarOpen');
-        //val >= half ? this.el.classList.add('open') : this.el.classList.remove('open');
-        //val >= half ? this.nativeScroll.classList.add('stop-scrolling') : this.nativeScroll.classList.remove('stop-scrolling');
     },
-    //finishSwipe: function(val, half){
-    //    if(val < half){
-    //        this.el.classList.add('open');
-    //    }else{
-    //        this.el.classList.remove('open');
-    //        this.removeCurrentNews();
-    //    }
-    //},
     showNews: function(model, val, option){
         if(!val){
             this.el.classList.remove('open')

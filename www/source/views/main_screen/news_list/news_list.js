@@ -233,7 +233,7 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
             return;
         }
 
-        var firstY = this.coordinates.y[this.coordinates.y.length-1],
+        var firstY = this.firstY,
             newY = e.originalEvent.changedTouches[0].clientY,
             diff =(newY - firstY);
         if(diff>0){
@@ -276,8 +276,6 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
         }
         this.settings.set('sidebarOpen',  isOpen, {silent: true});
         this.settings.trigger('change:sidebarOpen');
-        //val >= half ? this.el.classList.add('open') : this.el.classList.remove('open');
-        //val >= half ? this.nativeScroll.classList.add('stop-scrolling') : this.nativeScroll.classList.remove('stop-scrolling');
     },
     getNews: function(){
         var self = this,
