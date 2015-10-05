@@ -254,7 +254,7 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
             pullDiv.classList.remove('update');
         }
     },
-    onTouchEnd: function(){
+    onSwipeTouchEnd: function(){
         var pullDiv = this.el.querySelector('.pull-down'),
             arrow = pullDiv.querySelector('.arrow-img'),
             isUpdate = pullDiv.classList.contains('update');

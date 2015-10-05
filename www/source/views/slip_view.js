@@ -1,4 +1,4 @@
-RAD.views.SlipExt = RAD.Blanks.View.extend({
+RAD.views.SlipExt = RAD.views.SwipeExt.extend({
     slip_events: {
         'slip:beforeswipe' : 'onBeforeSwipe',
         'slip:swipe' : 'onSwipe',
@@ -10,6 +10,7 @@ RAD.views.SlipExt = RAD.Blanks.View.extend({
     },
     onrender: function () {
         "use strict";
+        RAD.views.SwipeExt.prototype.onrender.call(this);
         if (this.slip) {
             this.slip.detach();
         }

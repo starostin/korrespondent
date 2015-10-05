@@ -1,7 +1,7 @@
 <div class="side-wrap">
     <div class="header"><div class="lang header-btn">{{ RAD.languages[RAD.models.Settings.get('lang')] }}</div></div>
     <div class="wrapper">
-        <div class="menu-list">
+        <div class="menu-list native-scroll swipe-view">
             <ul>
                 {{# var self = this, favorites = RAD.models.AllNews.where({lang: RAD.models.Settings.get('lang'), favorite: 1}); }}
                 {{# _.each(this.sidebar.toJSON(), function(item, index, items){ }}

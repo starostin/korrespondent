@@ -1,9 +1,11 @@
 RAD.view("view.sidebar_menu", RAD.views.SlipExt.extend({
     url: 'source/views/main_screen/sidebar_menu/sidebar_menu.html',
-    events: {
-        'click li': 'openNewsListPage',
-        'click .lang': 'changeLanguage',
-        'click .support': 'sendFeedback',
+    events: function(){
+        return $.extend(RAD.views.SwipeExt.prototype.events, {
+            'click li': 'openNewsListPage',
+            'click .lang': 'changeLanguage',
+            'click .support': 'sendFeedback',
+        })
     },
     slip_el_name: 'ul',
     className: 'sidebar-menu-view animated',
@@ -76,8 +78,13 @@ RAD.view("view.sidebar_menu", RAD.views.SlipExt.extend({
         this.el.style.webkitTransform = 'translateX(' + diff + 'px)';
         this.settings.set('sidebarOffset', this.width + diff)
     },
-    touchStart: function(){
-        this.startCoord = this.el.getBoundingClientRect();
+    finishSwipe: function(val, half, direction){
+        var isOpen = false;
+        if(direction === 'right'){
+            isOpen = true;
+        }
+        this.settings.set('sidebarOpen',  isOpen, {silent: true});
+        this.settings.trigger('change:sidebarOpen');
     },
     sendFeedback: function(e){
         if(!window.cordova) {
