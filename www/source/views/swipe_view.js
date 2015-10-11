@@ -25,7 +25,7 @@ RAD.views.SwipeExt =  RAD.Blanks.View.extend({
         this.startCoord = this.el.getBoundingClientRect();
         this.startScrollCoord = this.nativeScroll.getBoundingClientRect();
         if(this.onSwipeTouchStart){
-            this.onSwipeTouchStart()
+            this.onSwipeTouchStart(e)
         }
     },
     touchMove: function(e){
@@ -108,30 +108,17 @@ RAD.views.SwipeExt =  RAD.Blanks.View.extend({
     },
     moveLeft: function(diff){
         var viewCoord  = this.el.getBoundingClientRect();
-        this.publish('view.sidebar_menu.moveSidebarLeft', {
-            value: diff
-        });
-        if(diff < 0){
-            if(this.onMoveLeft){
-                this.onMoveLeft(diff)
-            }
-            diff = 0
+        if(this.onMoveLeft){
+            this.onMoveLeft(diff)
         }
         this.direction = 'left';
     },
     moveRight: function(diff){
-
         if(this.rightLineWidth && diff > this.rightLineWidth){
             diff = this.rightLineWidth;
         }
-        this.publish('view.sidebar_menu.moveSidebarRight', {
-            value: diff
-        });
-        if(diff < 0){
-            if(this.onMoveRight){
-                this.onMoveRight(diff)
-            }
-            diff = 0
+        if(this.onMoveRight){
+            this.onMoveRight(diff)
         }
         this.direction = 'right';
     },

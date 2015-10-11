@@ -27,7 +27,7 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
         this.news.on('reset', this.render, this);
         this.news.on('add', this.addNews, this);
         this.news.on('change:buffer', this.showUpdateMessage, this);
-        this.allNews.on('change:favorite', this.markFavorite, this);
+        this.news.on('change:favorite', this.markFavorite, this);
     },
     onStartAttach: function(){
         this.viewCoord  = this.el.getBoundingClientRect();
@@ -269,14 +269,6 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
         var isOpen = this.settings.get('sidebarOpen');
         isOpen ? this.nativeScroll.classList.add('stop-scrolling') : this.nativeScroll.classList.remove('stop-scrolling');
     },
-    finishSwipe: function(val, half, direction){
-        var isOpen = false;
-        if(direction === 'right'){
-            isOpen = true;
-        }
-        this.settings.set('sidebarOpen',  isOpen, {silent: true});
-        this.settings.trigger('change:sidebarOpen');
-    },
     getNews: function(){
         var self = this,
             pullDiv = this.el.querySelector('.pull-down'),
@@ -331,5 +323,26 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
         window.setTimeout(function(){
             errorDiv.classList.remove('show');
         }, 2000)
-    }
+    },
+    onMoveLeft: function(diff){
+        if(this.coordinates.x && this.coordinates.x[0] > 10) return;
+        this.publish('view.sidebar_menu.onMoveLeft', {
+            value: diff
+        });
+    },
+    onMoveRight: function(diff){
+        if(this.coordinates.x && this.coordinates.x[0] > 10) return;
+        this.publish('view.sidebar_menu.onMoveRight', {
+            value: diff
+        });
+    },
+    finishSwipe: function(val, half, direction){
+        if(this.coordinates.x && this.coordinates.x[0] > 10) return;
+        var isOpen = false;
+        if(direction === 'right'){
+            isOpen = true;
+        }
+        this.settings.set('sidebarOpen',  isOpen, {silent: true});
+        this.settings.trigger('change:sidebarOpen');
+    },
 }));

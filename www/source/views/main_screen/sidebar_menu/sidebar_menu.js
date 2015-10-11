@@ -46,8 +46,8 @@ RAD.view("view.sidebar_menu", RAD.views.SlipExt.extend({
             console.log('view.sidebar_menu does not have method '+ method)
         }
     },
-    moveSidebarRight: function(data){
-        var val = data.value;
+    onMoveRight: function(data){
+        var val = _.isNumber(data) ? data : data.value;
         if(+val>this.width){
             val = this.width;
         }
@@ -55,6 +55,9 @@ RAD.view("view.sidebar_menu", RAD.views.SlipExt.extend({
 
         if(this.settings.get('sidebarOpen')){
             diff = (val);
+        }
+        if(diff >0){
+            diff = 0;
         }
 
         this.el.classList.remove('animated');
@@ -62,8 +65,8 @@ RAD.view("view.sidebar_menu", RAD.views.SlipExt.extend({
         this.el.style.webkitTransform = 'translateX(' + diff + 'px)';
         this.settings.set('sidebarOffset', this.width + diff)
     },
-    moveSidebarLeft: function(data){
-        var val = data.value;
+    onMoveLeft: function(data){
+        var val = _.isNumber(data) ? data : data.value;
         if(+val>this.width){
             val = this.width;
         }
@@ -72,7 +75,9 @@ RAD.view("view.sidebar_menu", RAD.views.SlipExt.extend({
         if(this.settings.get('sidebarOpen')){
             diff = (val);
         }
-
+        if(diff >0){
+            diff = 0;
+        }
         this.el.classList.remove('animated');
         this.el.style.transform = 'translateX(' + diff + 'px)';
         this.el.style.webkitTransform = 'translateX(' + diff + 'px)';

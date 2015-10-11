@@ -78,14 +78,6 @@ RAD.view("view.one_news", RAD.views.SwipeExt.extend({
         this.oneNews.set(this.parentNews.toJSON());
         this.render();
     },
-    finishSwipe: function(val, half, direction){
-        var isOpen = false;
-        if(direction === 'right'){
-            isOpen = true;
-        }
-        this.settings.set('sidebarOpen',  isOpen, {silent: true});
-        this.settings.trigger('change:sidebarOpen');
-    },
     showNews: function(model, val, option){
         if(!val){
             this.el.classList.remove('open')
@@ -96,5 +88,26 @@ RAD.view("view.one_news", RAD.views.SwipeExt.extend({
     },
     removeCurrentNews: function(){
         this.settings.unset('currentNews');
-    }
+    },
+    onMoveLeft: function(diff){
+        if(this.coordinates.x && this.coordinates.x[0] > 10) return;
+        this.publish('view.sidebar_menu.onMoveLeft', {
+            value: diff
+        });
+    },
+    onMoveRight: function(diff){
+        if(this.coordinates.x && this.coordinates.x[0] > 10) return;
+        this.publish('view.sidebar_menu.onMoveRight', {
+            value: diff
+        });
+    },
+    finishSwipe: function(val, half, direction){
+        if(this.coordinates.x && this.coordinates.x[0] > 10) return;
+        var isOpen = false;
+        if(direction === 'right'){
+            isOpen = true;
+        }
+        this.settings.set('sidebarOpen',  isOpen, {silent: true});
+        this.settings.trigger('change:sidebarOpen');
+    },
 }));
