@@ -224,6 +224,15 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
         val ? favoriteIcon.classList.remove('hide') : favoriteIcon.classList.add('hide');
 
     },
+    scrollUp: function(top){
+        var header = this.el.querySelector('.header');
+        header.classList.remove('hidden');
+    },
+    scrollDown: function(top){
+        if(top<50) return;
+        var header = this.el.querySelector('.header');
+        header.classList.add('hidden');
+    },
     onMoveVertically: function(e){
         var pullDiv = this.el.querySelector('.pull-down'),
             arrow = pullDiv.querySelector('.arrow-img'),

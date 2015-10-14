@@ -15,6 +15,20 @@ RAD.views.SwipeExt =  RAD.Blanks.View.extend({
     },
     onrender: function(){
         this.nativeScroll = this.el.querySelector('.native-scroll');
+        var self = this,
+            scrollCoordinates = [];
+        this.el.querySelector('.swipe-view').addEventListener('scroll', function(e){
+            scrollCoordinates.push(e.target.scrollTop);
+            if(self.getVertDirection(scrollCoordinates) === 'up'){
+                if(self.scrollUp){
+                    self.scrollUp(e.target.scrollTop)
+                }
+            }else{
+                if(self.scrollDown){
+                    self.scrollDown(e.target.scrollTop)
+                }
+            }
+        });
     },
     touchStart: function(e){
         this.coordinates.x = [e.originalEvent.changedTouches[0].clientX];
@@ -121,6 +135,9 @@ RAD.views.SwipeExt =  RAD.Blanks.View.extend({
             this.onMoveRight(diff)
         }
         this.direction = 'right';
+    },
+    getVertDirection: function(yArr){
+        return yArr[yArr.length-2] < yArr[yArr.length-1] ? 'down' : 'up';
     },
     getHorDirection: function(xArr){
         return xArr[xArr.length-2] < xArr[xArr.length-1] ? 'right' : 'left';

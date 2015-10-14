@@ -39,6 +39,12 @@
     background: #ff6e5a;
     text-align: center;
     z-index: 5;
+    transition: all 0.3s ease-in-out;
+    -webkit-transition: all 0.3s ease-in-out;
+}
+.header.hidden{
+    transform: translateY(-100%);
+    -webkit-transform: translateY(-100%);
 }
 .sub-menu{
     background: white;
@@ -354,6 +360,10 @@ html {
     -webkit-transform: translateX(100%);
     z-index: 400;
     background: white;
+}
+/*TODO refactor*/
+.one-news-view .native-scroll{
+    top: 0px;
 }
 
 .one-news-view.open {

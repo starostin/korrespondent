@@ -16,12 +16,13 @@ RAD.model('News', Backbone.Collection.extend({
     },
     initialize: function(){
         this.on('change:favorite', this.setFavorite, this);
-        this.on('add', this.addNewsToAll, this)
+        this.on('add', this.addNewsToAll, this);
     },
     addNewsToAll: function(model, col, opt){
         RAD.models.AllNews.add(model.toJSON())
     },
     setFavorite: function(model, val, options){
+        RAD.models.AllNews.get(model.id).set('favorite', val);
         RAD.utils.sql.insertRows([model.toJSON()], 'news');
     },
     getLastNews: function(data){

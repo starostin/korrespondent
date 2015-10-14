@@ -19,6 +19,15 @@ RAD.view("view.one_news", RAD.views.SwipeExt.extend({
         this.settings.on('change:currentNews', this.showNews, this);
         this.settings.on('change:font', this.updateFont, this);
     },
+    scrollUp: function(top){
+        var header = this.el.querySelector('.header');
+        header.classList.remove('hidden');
+    },
+    scrollDown: function(top){
+        if(top<50) return;
+        var header = this.el.querySelector('.header');
+        header.classList.add('hidden');
+    },
     openLink: function(e){
         e.preventDefault();
         e.stopPropagation();
