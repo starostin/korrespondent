@@ -31,8 +31,16 @@ RAD.view("view.sidebar_menu", RAD.views.SlipExt.extend({
         this.settings.on('change:lang', this.updateSidebarLanguage, this);
         this.settings.on('change:selectedSubCategory', this.updateSelectedOption, this);
         this.settings.on('change:sidebarOpen', this.toggleSidebar, this);
+        this.settings.on('change:sidebarOffset', this.changeShadow, this);
         this.sidebar.on('change:selected', this.highlightSelected, this);
         this.allNews.on('change:favorite', this.updateFavoritesLength, this);
+    },
+    changeShadow: function(){
+        this.settings.set('shadow', this.getShadowPercent());
+    },
+    getShadowPercent: function(){
+        var percentSide = this.settings.get('sidebarOffset') / this.width;
+        return percentSide * 0.5;
     },
     onStartAttach: function(){
         this.width = this.$el.width()
@@ -175,7 +183,7 @@ RAD.view("view.sidebar_menu", RAD.views.SlipExt.extend({
     toggleSidebar: function(){
         this.el.classList.add('animated');
         var isOpen = this.settings.get('sidebarOpen');
-        isOpen ? this.el.classList.add('open') : this.el.classList.remove('open');
+        //isOpen ? this.el.classList.add('open') : this.el.classList.remove('open');
         isOpen ? this.setSidebarOpen() : this.setSidebarClose();
     },
     onReorder: function (e) {

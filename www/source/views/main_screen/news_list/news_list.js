@@ -9,6 +9,7 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
             'click .one-news': 'openNews',
             'click .news-list': 'openNewsList',
             'click .update-message': 'addBufferNews',
+            'click .shadow': 'toggleSidebar',
             'click .favorites-button': 'openFavorites',
             'touchstart .one-news': 'touchStartSwipe',
             'touchmove .one-news': 'touchMoveSwipe',
@@ -24,6 +25,7 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
         this.settings.on('change:selectedSubCategory', this.setNews, this);
         this.settings.on('change:lang', this.setNews, this);
         this.settings.on('change:sidebarOpen', this.toggleScrollEnable, this);
+        this.settings.on('change:shadow', this.changeShadow, this);
         this.news.on('reset', this.render, this);
         this.news.on('add', this.addNews, this);
         this.news.on('change:buffer', this.showUpdateMessage, this);
@@ -56,6 +58,15 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
         }else{
             console.log('view.news_list does not have method '+ method)
         }
+    },
+    changeShadow: function(model, val){
+        var shadowEl = this.el.querySelector('.shadow');
+        if(!val){
+            shadowEl.classList.add('hide');
+            return;
+        }
+        shadowEl.classList.remove('hide');
+        shadowEl.style.opacity = val;
     },
     closeSidebar: function(){
         this.settings.set('sidebarOpen', false);
@@ -334,19 +345,19 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
         }, 2000)
     },
     onMoveLeft: function(diff){
-        if(this.coordinates.x && this.coordinates.x[0] > 10) return;
+        //if(this.coordinates.x && this.coordinates.x[0] > 10) return;
         this.publish('view.sidebar_menu.onMoveLeft', {
             value: diff
         });
     },
     onMoveRight: function(diff){
-        if(this.coordinates.x && this.coordinates.x[0] > 10) return;
+        //if(this.coordinates.x && this.coordinates.x[0] > 10) return;
         this.publish('view.sidebar_menu.onMoveRight', {
             value: diff
         });
     },
     finishSwipe: function(val, half, direction){
-        if(this.coordinates.x && this.coordinates.x[0] > 10) return;
+        //if(this.coordinates.x && this.coordinates.x[0] > 10) return;
         var isOpen = false;
         if(direction === 'right'){
             isOpen = true;

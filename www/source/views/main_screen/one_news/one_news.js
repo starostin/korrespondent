@@ -10,14 +10,25 @@ RAD.view("view.one_news", RAD.views.SwipeExt.extend({
             'click .font-big': 'makeBigFont',
             'click .sharing': 'shareNews',
             'click a': 'openLink',
-            'click': 'checkSidebar'
+            'click': 'checkSidebar',
+            'click .shadow': 'checkSidebar',
         })
     },
     onInitialize: function(){
         this.oneNews = new Backbone.Model;
         this.settings = RAD.models.Settings;
         this.settings.on('change:currentNews', this.showNews, this);
+        this.settings.on('change:shadow', this.changeShadow, this);
         this.settings.on('change:font', this.updateFont, this);
+    },
+    changeShadow: function(model, val){
+        var shadowEl = this.el.querySelector('.shadow');
+        if(!val){
+            shadowEl.classList.add('hide');
+            return;
+        }
+        shadowEl.classList.remove('hide');
+        shadowEl.style.opacity = val;
     },
     scrollUp: function(top){
         var header = this.el.querySelector('.header-wrapper');

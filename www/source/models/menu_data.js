@@ -193,6 +193,7 @@ RAD.menuMapping = {
 };
 RAD.model('Settings', Backbone.Model.extend({
     initialize: function(){
+        this.set('shadow', 0);
         var lang = window.localStorage.getItem('lang') || 'rus',
             selectedCategory = +window.localStorage.getItem('selectedCategory'),
             selectedSubCategory = +window.localStorage.getItem('selectedSubCategory'),

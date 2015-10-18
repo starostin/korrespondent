@@ -11,6 +11,7 @@
     <div class="message">No Internet!</div>
 </div>
 <div class="wrapper native-scroll">
+    <div class="shadow {{ this.settings.get('shadow') ? '' : 'hide' }}" style="opacity: {{ this.settings.get('shadow') }}"></div>
     <div class="swipe-view parallax">
         {{# var path = this.oneNews.get('bigImageDownloaded') ? settings.rootPath + settings.bigImage + '/' + this.oneNews.get('imageName') : this.oneNews.get('bigImage'); }}
         <div class="big-placeholder-image par-img parallax__layer">
