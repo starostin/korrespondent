@@ -11,7 +11,7 @@
     display: none;
 }
 .stop-scrolling {
-    height: 94.5%;
+    /*height: 94.5%;*/
     overflow: hidden;
 }
 .swipe-view{
@@ -31,6 +31,13 @@
     position: absolute;
     background: #ff6e5a;
     text-align: center;
+    z-index: 6;
+    transition: all 0.3s ease-in-out;
+    -webkit-transition: all 0.3s ease-in-out;
+}
+.header-wrapper.hidden{
+    transform: translateY(-100%);
+    -webkit-transform: translateY(-500%);
 }
 .header{
     height: 50px;

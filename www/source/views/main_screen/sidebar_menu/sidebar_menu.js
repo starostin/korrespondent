@@ -168,6 +168,7 @@ RAD.view("view.sidebar_menu", RAD.views.SlipExt.extend({
         curTar.classList.add('selected');
         this.settings.set('selectedCategory', id);
         this.settings.set('selectedSubCategory', id);
+        this.settings.unset('currentNews');
         this.settings.set('sidebarOpen', !this.settings.get('sidebarOpen'));
         //this.publish('view.news_list.toggleSidebar', null);
     },

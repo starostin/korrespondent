@@ -225,12 +225,12 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
 
     },
     scrollUp: function(top){
-        var header = this.el.querySelector('.header');
+        var header = this.el.querySelector('.header-wrapper');
         header.classList.remove('hidden');
     },
     scrollDown: function(top){
         if(top<50) return;
-        var header = this.el.querySelector('.header');
+        var header = this.el.querySelector('.header-wrapper');
         header.classList.add('hidden');
     },
     onMoveVertically: function(e){
