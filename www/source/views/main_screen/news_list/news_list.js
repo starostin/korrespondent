@@ -59,14 +59,25 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
             console.log('view.news_list does not have method '+ method)
         }
     },
+    hideShadow: function(){
+        var shadowEl = this.el.querySelector('.shadow');
+        shadowEl.classList.add('hide');
+    },
+    removeShadowAnimation: function(){
+        var shadowEl = this.el.querySelector('.shadow');
+        shadowEl.classList.remove('animated');
+    },
+    addShadowAnimation: function(){
+        var shadowEl = this.el.querySelector('.shadow');
+        shadowEl.classList.add('animated');
+    },
     changeShadow: function(model, val){
         var shadowEl = this.el.querySelector('.shadow');
-        if(!val){
-            shadowEl.classList.add('hide');
-            return;
-        }
         shadowEl.classList.remove('hide');
-        shadowEl.style.opacity = val;
+        window.setTimeout(function(){
+            shadowEl.style.opacity = val;
+        }, 0)
+
     },
     closeSidebar: function(){
         this.settings.set('sidebarOpen', false);
@@ -279,6 +290,7 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
             arrow = pullDiv.querySelector('.arrow-img'),
             isUpdate = pullDiv.classList.contains('update');
 
+        this.addShadowAnimation();
         this.nativeScroll.style.transition  = 'all 0.2s ease-in-out';
         this.nativeScroll.style.transform = 'translateY(0)';
         if(isUpdate){
