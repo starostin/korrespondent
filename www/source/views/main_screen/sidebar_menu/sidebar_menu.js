@@ -5,6 +5,7 @@ RAD.view("view.sidebar_menu", RAD.views.SlipExt.extend({
             'click li': 'openNewsListPage',
             'click .lang': 'changeLanguage',
             'click .support': 'sendFeedback',
+            'transitionend ': 'sidebarTransitionEnd'
         })
     },
     slip_el_name: 'ul',
@@ -35,12 +36,18 @@ RAD.view("view.sidebar_menu", RAD.views.SlipExt.extend({
         this.sidebar.on('change:selected', this.highlightSelected, this);
         this.allNews.on('change:favorite', this.updateFavoritesLength, this);
     },
+    sidebarTransitionEnd: function(){
+        if(!this.settings.get('sidebarOffset')){
+            this.publish('view.news_list.hideShadow', {});
+            this.publish('view.one_news.hideShadow', {});
+        }
+    },
     changeShadow: function(){
         this.settings.set('shadow', this.getShadowPercent());
     },
     getShadowPercent: function(){
         var percentSide = this.settings.get('sidebarOffset') / this.width;
-        return percentSide * 0.5;
+        return percentSide * 0.7;
     },
     onStartAttach: function(){
         this.width = this.$el.width()
@@ -53,6 +60,10 @@ RAD.view("view.sidebar_menu", RAD.views.SlipExt.extend({
         }else{
             console.log('view.sidebar_menu does not have method '+ method)
         }
+    },
+    onSwipeTouchEnd: function(){
+        this.publish('view.news_list.addShadowAnimation', {});
+        this.publish('view.one_news.addShadowAnimation', {});
     },
     onMoveRight: function(data){
         var val = _.isNumber(data) ? data : data.value;
@@ -67,7 +78,8 @@ RAD.view("view.sidebar_menu", RAD.views.SlipExt.extend({
         if(diff >0){
             diff = 0;
         }
-
+        this.publish('view.news_list.removeShadowAnimation', {});
+        this.publish('view.one_news.removeShadowAnimation', {});
         this.el.classList.remove('animated');
         this.el.style.transform = 'translateX(' + diff + 'px)';
         this.el.style.webkitTransform = 'translateX(' + diff + 'px)';
@@ -86,6 +98,8 @@ RAD.view("view.sidebar_menu", RAD.views.SlipExt.extend({
         if(diff >0){
             diff = 0;
         }
+        this.publish('view.news_list.removeShadowAnimation', {});
+        this.publish('view.one_news.removeShadowAnimation', {});
         this.el.classList.remove('animated');
         this.el.style.transform = 'translateX(' + diff + 'px)';
         this.el.style.webkitTransform = 'translateX(' + diff + 'px)';
