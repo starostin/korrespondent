@@ -20,14 +20,26 @@ RAD.view("view.one_news", RAD.views.SwipeExt.extend({
         this.settings.on('change:currentNews', this.showNews, this);
         this.settings.on('change:shadow', this.changeShadow, this);
         this.settings.on('change:font', this.updateFont, this);
+        this.settings.on('change:shadowState', this.changeShadowState, this);
+    },
+    onReceiveMsg: function(channel, data){
+        var parts = channel.split('.'),
+            method = parts[2];
+        if(typeof this[method] === 'function'){
+            this[method](data)
+        }else{
+            console.log('view.one_news does not have method '+ method)
+        }
+    },
+    changeShadowState: function(model, val){
+        if(this[val]){
+            this[val]();
+        }
     },
     changeShadow: function(model, val){
         var shadowEl = this.el.querySelector('.shadow');
-        if(!val){
-            shadowEl.classList.add('hide');
-            return;
-        }
         shadowEl.classList.remove('hide');
+        shadowEl.offsetWidth;
         shadowEl.style.opacity = val;
     },
     scrollUp: function(top){
@@ -109,25 +121,65 @@ RAD.view("view.one_news", RAD.views.SwipeExt.extend({
     removeCurrentNews: function(){
         this.settings.unset('currentNews');
     },
+    moveViewRight: function(diff){
+        if(diff <= 0){
+            diff = 0
+        }
+        this.el.style.transform = 'translateX(' + diff + 'px)';
+        this.el.style.webkitTransform = 'translateX(' + diff + 'px)';
+    },
+    moveViewLeft: function(diff){
+        if(diff <= 0){
+            diff = 0
+        }
+        this.el.style.transform = 'translateX(' + diff + 'px)';
+        this.el.style.webkitTransform = 'translateX(' + diff + 'px)';
+    },
     onMoveLeft: function(diff){
-        if(this.coordinates.x && this.coordinates.x[0] > 10) return;
+        if(this.coordinates.x && this.coordinates.x[0] > 10) {
+            this.moveViewLeft(diff);
+            return;
+        }
         this.publish('view.sidebar_menu.onMoveLeft', {
             value: diff
         });
     },
     onMoveRight: function(diff){
-        if(this.coordinates.x && this.coordinates.x[0] > 10) return;
+        if(this.coordinates.x && this.coordinates.x[0] > 10) {
+            this.moveViewRight(diff);
+            return;
+        }
         this.publish('view.sidebar_menu.onMoveRight', {
             value: diff
         });
     },
     finishSwipe: function(val, half, direction){
-        if(this.coordinates.x && this.coordinates.x[0] > 10) return;
         var isOpen = false;
+        if(this.coordinates.x && this.coordinates.x[0] > 10) {
+            if(val/half >= 0.5){
+                this.removeCurrentNews();
+            }
+            return;
+        }
         if(direction === 'right'){
             isOpen = true;
         }
         this.settings.set('sidebarOpen',  isOpen, {silent: true});
         this.settings.trigger('change:sidebarOpen');
     },
+    hideShadow: function(){
+        var shadowEl = this.el.querySelector('.shadow');
+        shadowEl.classList.add('hide');
+    },
+    removeShadowAnimation: function(){
+        var shadowEl = this.el.querySelector('.shadow');
+        shadowEl.classList.remove('animated');
+    },
+    addShadowAnimation: function(){
+        var shadowEl = this.el.querySelector('.shadow');
+        shadowEl.classList.add('animated');
+    },
+    onSwipeTouchEnd: function(){
+        this.addShadowAnimation();
+    }
 }));

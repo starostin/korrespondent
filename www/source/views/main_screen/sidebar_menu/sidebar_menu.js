@@ -38,8 +38,7 @@ RAD.view("view.sidebar_menu", RAD.views.SlipExt.extend({
     },
     sidebarTransitionEnd: function(){
         if(!this.settings.get('sidebarOffset')){
-            this.publish('view.news_list.hideShadow', {});
-            this.publish('view.one_news.hideShadow', {});
+            this.settings.set('shadowState', 'hideShadow');
         }
     },
     changeShadow: function(){
@@ -50,7 +49,7 @@ RAD.view("view.sidebar_menu", RAD.views.SlipExt.extend({
         return percentSide * 0.7;
     },
     onStartAttach: function(){
-        this.width = this.$el.width()
+        this.width = this.$el.width();
     },
     onReceiveMsg: function(channel, data){
         var parts = channel.split('.'),
@@ -62,8 +61,7 @@ RAD.view("view.sidebar_menu", RAD.views.SlipExt.extend({
         }
     },
     onSwipeTouchEnd: function(){
-        this.publish('view.news_list.addShadowAnimation', {});
-        this.publish('view.one_news.addShadowAnimation', {});
+        this.settings.set('shadowState', 'addShadowAnimation');
     },
     onMoveRight: function(data){
         var val = _.isNumber(data) ? data : data.value;
@@ -78,8 +76,7 @@ RAD.view("view.sidebar_menu", RAD.views.SlipExt.extend({
         if(diff >0){
             diff = 0;
         }
-        this.publish('view.news_list.removeShadowAnimation', {});
-        this.publish('view.one_news.removeShadowAnimation', {});
+        this.settings.set('shadowState', 'removeShadowAnimation');
         this.el.classList.remove('animated');
         this.el.style.transform = 'translateX(' + diff + 'px)';
         this.el.style.webkitTransform = 'translateX(' + diff + 'px)';
@@ -98,8 +95,7 @@ RAD.view("view.sidebar_menu", RAD.views.SlipExt.extend({
         if(diff >0){
             diff = 0;
         }
-        this.publish('view.news_list.removeShadowAnimation', {});
-        this.publish('view.one_news.removeShadowAnimation', {});
+        this.settings.set('shadowState', 'removeShadowAnimation');
         this.el.classList.remove('animated');
         this.el.style.transform = 'translateX(' + diff + 'px)';
         this.el.style.webkitTransform = 'translateX(' + diff + 'px)';

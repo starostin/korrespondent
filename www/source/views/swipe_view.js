@@ -84,7 +84,7 @@ RAD.views.SwipeExt =  RAD.Blanks.View.extend({
             value = tr.split('(')[1];
             value = parseInt(value.split(')')[0]);
 
-        this.getSpeed(this.speedArray);
+        //this.getSpeed(this.speedArray);
         this.speedArray = [];
         this.el.removeAttribute('style');
         this.enableScroll();

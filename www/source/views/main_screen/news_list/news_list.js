@@ -26,6 +26,7 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
         this.settings.on('change:lang', this.setNews, this);
         this.settings.on('change:sidebarOpen', this.toggleScrollEnable, this);
         this.settings.on('change:shadow', this.changeShadow, this);
+        this.settings.on('change:shadowState', this.changeShadowState, this);
         this.news.on('reset', this.render, this);
         this.news.on('add', this.addNews, this);
         this.news.on('change:buffer', this.showUpdateMessage, this);
@@ -59,6 +60,11 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
             console.log('view.news_list does not have method '+ method)
         }
     },
+    changeShadowState: function(model, val){
+        if(this[val]){
+            this[val]();
+        }
+    },
     hideShadow: function(){
         var shadowEl = this.el.querySelector('.shadow');
         shadowEl.classList.add('hide');
@@ -74,9 +80,8 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
     changeShadow: function(model, val){
         var shadowEl = this.el.querySelector('.shadow');
         shadowEl.classList.remove('hide');
-        window.setTimeout(function(){
-            shadowEl.style.opacity = val;
-        }, 0)
+        shadowEl.offsetWidth;
+        shadowEl.style.opacity = val;
 
     },
     closeSidebar: function(){
@@ -357,19 +362,19 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
         }, 2000)
     },
     onMoveLeft: function(diff){
-        //if(this.coordinates.x && this.coordinates.x[0] > 10) return;
+        if(this.coordinates.x && this.coordinates.x[0] > 10) return;
         this.publish('view.sidebar_menu.onMoveLeft', {
             value: diff
         });
     },
     onMoveRight: function(diff){
-        //if(this.coordinates.x && this.coordinates.x[0] > 10) return;
+        if(this.coordinates.x && this.coordinates.x[0] > 10) return;
         this.publish('view.sidebar_menu.onMoveRight', {
             value: diff
         });
     },
     finishSwipe: function(val, half, direction){
-        //if(this.coordinates.x && this.coordinates.x[0] > 10) return;
+        if(this.coordinates.x && this.coordinates.x[0] > 10) return;
         var isOpen = false;
         if(direction === 'right'){
             isOpen = true;
