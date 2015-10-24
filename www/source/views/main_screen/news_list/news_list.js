@@ -48,8 +48,8 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
             window.setTimeout(function(e){
                 self.showErrorMessage();
             }, 50)
-
         }
+        this.settings.set('newsListRendered', +new Date());
     },
     onReceiveMsg: function(channel, data){
         var parts = channel.split('.'),
@@ -194,11 +194,13 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
         }
         var li = document.createElement('li'),
             list = this.el.querySelector('.list'),
-            firstLi = list.querySelector('li');
+            firstLi = list.querySelector('li'),
+            path = model.get('imageDownloaded') ? settings.rootPath + settings.image + '/' + model.get('imageName') : model.get('image');
         li.className = 'one-news';
         li.setAttribute('data-cid', model.cid);
+
         li.innerHTML = '<div class="small-img"> <div class="small-img-placeholder" ' +
-            'style="background-image: url(' + (model.get('imagesNativeURL') || model.get('image')) + ')"></div></div>' +
+            'style="background-image: url(' + path + ')"></div></div>' +
             '<div class="news-title">' + model.get('title') + '</div>' +
             '<div class="favorite-news hide" ></div>';
         if(firstLi){

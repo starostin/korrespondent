@@ -36,8 +36,8 @@
     -webkit-transition: all 0.3s ease-in-out;
 }
 .header-wrapper.hidden{
-    transform: translateY(-100%);
-    -webkit-transform: translateY(-500%);
+    transform: translateY(-50px);
+    -webkit-transform: translateY(-50px);
 }
 .header{
     height: 50px;

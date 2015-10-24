@@ -38,6 +38,7 @@ RAD.view("view.one_news", RAD.views.SwipeExt.extend({
     },
     changeShadow: function(model, val){
         var shadowEl = this.el.querySelector('.shadow');
+        if(!shadowEl) return;
         shadowEl.classList.remove('hide');
         shadowEl.offsetWidth;
         shadowEl.style.opacity = val;

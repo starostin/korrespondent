@@ -24,6 +24,7 @@ RAD.view("view.sidebar_menu", RAD.views.SlipExt.extend({
         this.settings.set('sidebarOffset', 0);
     },
     onInitialize: function(){
+        var self = this;
         this.settings = RAD.models.Settings;
         this.sidebar = RAD.models.Sidebar;
         this.allNews = RAD.models.AllNews;
@@ -33,6 +34,9 @@ RAD.view("view.sidebar_menu", RAD.views.SlipExt.extend({
         this.settings.on('change:selectedSubCategory', this.updateSelectedOption, this);
         this.settings.on('change:sidebarOpen', this.toggleSidebar, this);
         this.settings.on('change:sidebarOffset', this.changeShadow, this);
+        this.settings.on('change:newsListRendered', function(){
+            self.settings.set('sidebarOpen', false);
+        }, this);
         this.sidebar.on('change:selected', this.highlightSelected, this);
         this.allNews.on('change:favorite', this.updateFavoritesLength, this);
     },
@@ -45,7 +49,7 @@ RAD.view("view.sidebar_menu", RAD.views.SlipExt.extend({
         this.settings.set('shadow', this.getShadowPercent());
     },
     getShadowPercent: function(){
-        var percentSide = this.settings.get('sidebarOffset') / this.width;
+        var percentSide = this.settings.get('sidebarOffset') / (this.width || 1);
         return percentSide * 0.7;
     },
     onStartAttach: function(){
@@ -182,18 +186,20 @@ RAD.view("view.sidebar_menu", RAD.views.SlipExt.extend({
     },
     openNewsListPage: function(e){
         var curTar = e.currentTarget,
-            id = +curTar.getAttribute('data-id');
+            id = +curTar.getAttribute('data-id'),
+            previousId = this.settings.get('selectedCategory');
         curTar.classList.add('selected');
         this.settings.set('selectedCategory', id);
         this.settings.set('selectedSubCategory', id);
         this.settings.unset('currentNews');
-        this.settings.set('sidebarOpen', !this.settings.get('sidebarOpen'));
-        //this.publish('view.news_list.toggleSidebar', null);
+        if(previousId === id){
+            this.settings.set('sidebarOpen', !this.settings.get('sidebarOpen'));
+        }
+        //this.settings.set('sidebarOpen', !this.settings.get('sidebarOpen'));
     },
     toggleSidebar: function(){
         this.el.classList.add('animated');
         var isOpen = this.settings.get('sidebarOpen');
-        //isOpen ? this.el.classList.add('open') : this.el.classList.remove('open');
         isOpen ? this.setSidebarOpen() : this.setSidebarClose();
     },
     onReorder: function (e) {

@@ -207,7 +207,8 @@ RAD.model('Settings', Backbone.Model.extend({
             lang: lang,
             font: font || 14,
             selectedCategory: selectedCategory || 1,
-            selectedSubCategory: selectedSubCategory || 1
+            selectedSubCategory: selectedSubCategory || 1,
+            shadow: 0
         });
     },
     updateLang: function(model, val, opt){
