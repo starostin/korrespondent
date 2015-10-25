@@ -132,9 +132,11 @@ RAD.view("view.sidebar_menu", RAD.views.SlipExt.extend({
     },
     updateFavoritesLength: function(){
         var favoriteSpan = this.el.querySelector('.favorite-item'),
+            favCount = this.el.querySelector('.fav-item'),
             lang = this.settings.get('lang'),
             favorites = this.allNews.where({lang: lang, favorite: 1});
             favoriteSpan.setAttribute('data-count', favorites.length || '');
+            favCount.setAttribute('data-count', favorites.length || '');
     },
     getUniqueNews: function(news){
         var  uniqueNews = [];
@@ -148,10 +150,12 @@ RAD.view("view.sidebar_menu", RAD.views.SlipExt.extend({
     updateNewsLength: function(model, col, opt){
         var li = this.el.querySelector('[data-id="' + model.get('parentId') + '"]'),
             countSpan = li.querySelector('.count'),
+            itemCount = li.querySelector('.side-item'),
             lang = this.settings.get('lang'),
             news = this.allNews.where({lang: lang, parentId: model.get('parentId'), buffer: 0});
 
         countSpan.setAttribute('data-count', this.getUniqueNews(news).length || '');
+        itemCount.setAttribute('data-count', this.getUniqueNews(news).length || '');
     },
     updateSidebarLanguage: function(){
         this.sidebar.resetWithOrder();

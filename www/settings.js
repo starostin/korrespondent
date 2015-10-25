@@ -14,4 +14,5 @@
     //cordova plugin add https://git-wip-us.apache.org/repos/asf/cordova-plugin-file-transfer.git
     //cordova plugin add https://git-wip-us.apache.org/repos/asf/cordova-plugin-network-information.git
     //cordova plugin add org.apache.cordova.inappbrowser
+    //cordova plugin add https://github.com/apache/cordova-plugin-splashscreen.git
 })(this);

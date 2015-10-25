@@ -27,10 +27,12 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
         this.settings.on('change:sidebarOpen', this.toggleScrollEnable, this);
         this.settings.on('change:shadow', this.changeShadow, this);
         this.settings.on('change:shadowState', this.changeShadowState, this);
+        this.settings.on('change:currentNews', this.makeNewsViewed, this);
         this.news.on('reset', this.render, this);
         this.news.on('add', this.addNews, this);
         this.news.on('change:buffer', this.showUpdateMessage, this);
         this.news.on('change:favorite', this.markFavorite, this);
+        this.news.on('change:viewed', this.changeNewsState, this);
     },
     onStartAttach: function(){
         this.viewCoord  = this.el.getBoundingClientRect();
@@ -50,6 +52,14 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
             }, 50)
         }
         this.settings.set('newsListRendered', +new Date());
+    },
+    makeNewsViewed: function(model, val){
+        if(!val) return;
+        this.news.get(val).set('viewed', 1);
+    },
+    changeNewsState: function(model){
+        var li = this.el.querySelector('[data-cid="' + model.cid + '"]');
+        li.classList.add('viewed');
     },
     onReceiveMsg: function(channel, data){
         var parts = channel.split('.'),
@@ -199,9 +209,11 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
         li.className = 'one-news';
         li.setAttribute('data-cid', model.cid);
 
-        li.innerHTML = '<div class="small-img"> <div class="small-img-placeholder" ' +
+        li.innerHTML = '<div class="news-date">' + RAD.utils.formatDate(model.get("pubDate"), "dd mmmm yyyy | HH:MM") + '</div>' +
+        '<div class="small-img"> <div class="small-img-placeholder" ' +
             'style="background-image: url(' + path + ')"></div></div>' +
             '<div class="news-title">' + model.get('title') + '</div>' +
+            '<div class="news-description">' + model.get('description') + '</div>' +
             '<div class="favorite-news hide" ></div>';
         if(firstLi){
             list.insertBefore(li, firstLi);

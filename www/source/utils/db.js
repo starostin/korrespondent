@@ -1,6 +1,7 @@
 (function(scope, win){
     var columns = {
         ident: "VARCHAR(50) UNIQUE",
+        viewed: "INTEGER",
         favorite: "INTEGER",
         guid: "VARCHAR(50)",
         author: "VARCHAR(100)",

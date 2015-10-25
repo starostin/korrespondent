@@ -16,10 +16,15 @@ RAD.model('News', Backbone.Collection.extend({
     },
     initialize: function(){
         this.on('change:favorite', this.setFavorite, this);
+        this.on('change:viewed', this.setViewed, this);
         this.on('add', this.addNewsToAll, this);
     },
     addNewsToAll: function(model, col, opt){
         RAD.models.AllNews.add(model.toJSON())
+    },
+    setViewed: function(model, val, options){
+        RAD.models.AllNews.get(model.id).set('viewed', val);
+        RAD.utils.sql.insertRows([model.toJSON()], 'news');
     },
     setFavorite: function(model, val, options){
         RAD.models.AllNews.get(model.id).set('favorite', val);
@@ -81,7 +86,7 @@ RAD.model('News', Backbone.Collection.extend({
                 item = {
                     title: $this.find("title").text(),
                     link: $this.find("link").text(),
-                    description: $this.find("description").text(),
+                    description: $this.find("description").text().replace('src', '').replace('img', 'a'),
                     fullText: RAD.utils.updateText($this.find("fulltext").text()),
                     author: $this.find("author").text(),
                     image:  RAD.utils.getImageLink($this.find("image").text()),
@@ -89,6 +94,7 @@ RAD.model('News', Backbone.Collection.extend({
                     guid: $this.find("guid").text(),
                     favorite: 0,
                     buffer: 0,
+                    viewed: 0,
                     imageDownloaded: 0,
                     bigImageDownloaded: 0,
                     newsId: id,

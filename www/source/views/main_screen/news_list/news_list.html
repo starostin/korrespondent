@@ -1,10 +1,12 @@
 {{# console.log('RENDER') }}
 <div class="header-wrapper">
     <div class="header">
-        <div class="sidebar-button header-btn"></div>
+        <div class="sidebar-button header-btn">
+            <span class="header-btn-icon"></span>
+        </div>
         <div class="news-topic">{{ _.findWhere(this.selected.get('subMenus'), {selected: true}).title }}
             {{# if(this.selected.get('subMenus').length > 1) { }}
-            <span>&#65516</span>
+            <span>&#9662</span>
             {{# } }}
         </div>
         <!--<div class="favorites-button header-btn"></div>-->
@@ -33,12 +35,14 @@
         <div class="scroll">
             <ul class="list">
                 {{# _.each(news, function(item, index, items){ }}
-                <li class="one-news" data-cid="{{ item.cid }}">
+                <li class="one-news {{ item.get('viewed') ? 'viewed' : '' }}" data-cid="{{ item.cid }}">
+                    <div class="news-date">{{ RAD.utils.formatDate(item.get('pubDate'), 'dd mmmm yyyy | HH:MM') }}</div>
                     <div class="small-img">
                         {{# var path = item.get('imageDownloaded') ? settings.rootPath + settings.image + '/' + item.get('imageName') : item.get('image'); }}
                         <div class="small-img-placeholder" style="background-image: url('{{ path }}')"></div>
                     </div>
                     <div class="news-title">{{ item.get('title') }}</div>
+                    <div class="news-description">{{ item.get('description') }}</div>
                     <div class="favorite-news {{ !item.get('favorite') && 'hide' }}" ></div>
                 </li>
                 {{# }) }}

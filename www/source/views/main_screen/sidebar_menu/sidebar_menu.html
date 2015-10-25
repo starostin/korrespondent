@@ -1,5 +1,6 @@
 <div class="side-wrap">
-    <div class="header"><div class="lang header-btn">{{ RAD.languages[RAD.models.Settings.get('lang')] }}</div></div>
+    <div class="header"><div class="lang header-btn circle">{{ RAD.languages[RAD.models.Settings.get('lang')] }}</div>
+        <span class="sidebar-title">Корреспондент.net</span></div>
     <div class="wrapper">
         <div class="menu-list native-scroll swipe-view">
             <ul>
@@ -9,22 +10,30 @@
                 <li data-id="{{ item.id }}" class="{{# if(item.selected) { }} selected {{# } }}">
                     <span
                     {{# if(item.id === 1000) { }}
-                    class="favorite-item count" data-count = {{ favorites.length || '' }}
+                    class="favorite-item count sidebar-text" data-count = {{ favorites.length || '' }}
                     {{# } else { }}
-                    class="count" data-count = {{ self.getUniqueNews(news).length || '' }}
+                    class="count sidebar-text" data-count = {{ self.getUniqueNews(news).length || '' }}
                     {{# } }}
                     >
                     {{ item.title }}
                     </span>
-                    <div class="mover-wrapper">
+                    {{# if(item.id === 1000) { }}
+                    <div class="mover-wrapper fav-item" data-count = {{ favorites.length || '' }}>
                         <span class="mover"></span>
                     </div>
+                    {{# } else { }}
+                    <div class="mover-wrapper side-item" data-count = {{ self.getUniqueNews(news).length || '' }}>
+                        <span class="mover"></span>
+                    </div>
+                    {{# } }}
+
                 </li>
                 {{# }) }}
             </ul>
             <div class="support">
-                DEV TEAM
-
+                <span class="dev-icon"></span>
+                <span class="support-text">Написать разработчикам</span>
+                <span class="app-version">v.1.0</span>
             </div>
         </div>
     </div>
