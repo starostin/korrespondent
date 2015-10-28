@@ -16,7 +16,8 @@ RAD.view("view.sidebar_menu", RAD.views.SlipExt.extend({
     setSidebarOpen: function(){
         this.el.style.transform = 'translateX(0)';
         this.el.style.webkitTransform = 'translateX(0)';
-        this.settings.set('sidebarOffset', this.width)
+        this.settings.set('shadowState', '');
+        this.settings.set('sidebarOffset', this.width);
     },
     setSidebarClose: function(){
         this.el.style.transform = 'translateX(-100%)';

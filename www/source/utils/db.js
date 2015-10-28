@@ -41,6 +41,25 @@
         }, function(e){
             console.log(e)
         });
+    scope.getQueryPartsFromJson = function (json) {
+        var obj = {
+                keys: [],
+                mask: [],
+                values: []
+            },
+            key;
+
+        for (key in json) {
+            obj.keys.push(key);
+            obj.mask.push('?');
+            obj.values.push(json[key]);
+        }
+
+        obj.keys = ' (' + (obj.keys.join(', ')) + ') ';
+        obj.mask = ' (' + (obj.mask.join(', ')) + ') ';
+
+        return obj;
+    };
     scope.insertRows = function(data, table){
         var keys = Object.keys(columns).sort(),
             $deferred = $.Deferred(),
@@ -58,12 +77,9 @@
         for(var j=0; j<data.length; j++)(function(j){
             promisesArr.push(
                 korDB.transaction(function(t) {
-                    var dataArr = [];
-                    for(var k=0; k<keys.length; k++){
-                        dataArr.push(data[j][keys[k]] === undefined ? '' : data[j][keys[k]])
-                    }
-                    var queryStr = "INSERT OR REPLACE INTO " + table + " (" + columnsStr + ") VALUES (" + valStr + ")";
-                    t.executeSql(queryStr, dataArr, function(e, rs){
+                    var parsedJson = scope.getQueryPartsFromJson(data[j]);
+                    var queryStr = "INSERT OR REPLACE INTO " + table + parsedJson.keys + 'VALUES' + parsedJson.mask;
+                    t.executeSql(queryStr, parsedJson.values, function(e, rs){
                         $deferred.resolve(e, rs)
                     });
                 }, function(e){
