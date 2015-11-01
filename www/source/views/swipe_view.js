@@ -13,6 +13,7 @@ RAD.views.SwipeExt =  RAD.Blanks.View.extend({
         x: [],
         y: []
     },
+    stopEventsClasses: ['mover-wrapper'],
     speedArray: [],
     onrender: function(){
         this.nativeScroll = this.el.querySelector('.native-scroll');
@@ -32,6 +33,7 @@ RAD.views.SwipeExt =  RAD.Blanks.View.extend({
         });
     },
     touchStart: function(e){
+        if(e.target.className.indexOf(this.stopEventsClasses[0]) !== -1) return;
         this.coordinates.x = [e.originalEvent.changedTouches[0].clientX];
         this.coordinates.y = [e.originalEvent.changedTouches[0].clientY];
         this.firstX = 0;
@@ -70,6 +72,7 @@ RAD.views.SwipeExt =  RAD.Blanks.View.extend({
         }
     },
     touchEnd: function(e){
+        if(e.target.className.indexOf(this.stopEventsClasses[0]) !== -1) return;
         if(this.onSwipeTouchEnd){
             this.onSwipeTouchEnd()
         }

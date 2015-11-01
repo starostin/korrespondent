@@ -200,9 +200,8 @@ RAD.view("view.sidebar_menu", RAD.views.SlipExt.extend({
         this.settings.set('selectedSubCategory', id);
         this.settings.unset('currentNews');
         if(previousId === id){
-            this.settings.set('sidebarOpen', !this.settings.get('sidebarOpen'));
+            this.settings.set('sidebarOpen', false);
         }
-        //this.settings.set('sidebarOpen', !this.settings.get('sidebarOpen'));
     },
     toggleSidebar: function(){
         this.el.classList.add('animated');
