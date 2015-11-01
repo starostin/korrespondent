@@ -35,9 +35,7 @@ RAD.view("view.sidebar_menu", RAD.views.SlipExt.extend({
         this.settings.on('change:selectedSubCategory', this.updateSelectedOption, this);
         this.settings.on('change:sidebarOpen', this.toggleSidebar, this);
         this.settings.on('change:sidebarOffset', this.changeShadow, this);
-        this.settings.on('change:newsListRendered', function(){
-            self.settings.set('sidebarOpen', false);
-        }, this);
+        this.settings.on('change:newsListRendered', this.listRendered, this);
         this.sidebar.on('change:selected', this.highlightSelected, this);
         this.allNews.on('change:favorite', this.updateFavoritesLength, this);
     },
@@ -64,6 +62,10 @@ RAD.view("view.sidebar_menu", RAD.views.SlipExt.extend({
         }else{
             console.log('view.sidebar_menu does not have method '+ method)
         }
+    },
+    listRendered: function(model, val, opt){
+        if(opt && opt.langChanged) return;
+        this.settings.set('sidebarOpen', false);
     },
     onSwipeTouchEnd: function(){
         this.settings.set('shadowState', 'addShadowAnimation');
