@@ -51,7 +51,7 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
                 self.showErrorMessage();
             }, 50)
         }
-        this.settings.set('newsListRendered', +new Date());
+        this.settings.set('newsListRendered', +new Date(), {langChanged: this.langChanged});
     },
     makeNewsViewed: function(model, val){
         if(!val) return;
@@ -141,6 +141,7 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
                 model.set('favorite', '');
             }
             curTar.className = 'one-news';
+            model.get('viewed') && curTar.classList.add('viewed');
         }
         curTar.addEventListener('webkittransitionend', endTransition);
         curTar.addEventListener('transitionend', endTransition);
@@ -171,10 +172,14 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
             lang = this.settings.get('lang'),
             currentNews = RAD.models.AllNews.where({lang: lang, newsId: newsId});
         this.el.classList.remove('favorites-list');
+        this.langChanged = false;
         if(newsId === 1000){
             self.publish('service.check_news.stopTracking');
             self.resetByFavorites();
             return;
+        }
+        if(Object.keys(RAD.languages).indexOf(val) !== -1){
+            this.langChanged = true;
         }
         if(currentNews.length){
             self.news.reset(currentNews);
