@@ -70,12 +70,23 @@ RAD.application(function (core) {
                 app.setEnv('online', false);
                 core.publish('application.offline');
             },
+            deviceBack = function(){
+                if(RAD.models.Settings.get('sidebarOpen')){
+                    RAD.models.Settings.set('sidebarOpen', false);
+                    return;
+                }
+                if(!RAD.models.Settings.get('currentNews')){
+                    navigator.app.exitApp();
+                }else{
+                    RAD.models.Settings.unset('currentNews');
+                }
+            },
             deviceready = function () {
                 document.addEventListener("pause", pause, false);
                 document.addEventListener("resume", resume, false);
                 document.addEventListener("online", online, false);
                 document.addEventListener("offline", offline, false);
-                document.addEventListener("backbutton", app.deviceBack, true);
+                document.addEventListener("backbutton", deviceBack, true);
                 console.log('deviceready');
 
                 app.setEnv('deviceready', true);
@@ -89,17 +100,7 @@ RAD.application(function (core) {
                     }, app);
             };
         document.addEventListener("deviceready", deviceready, false);
-        app.deviceBack = function(){
-            if(RAD.models.Settings.get('sidebarOpen')){
-                RAD.models.Settings.set('sidebarOpen', false);
-                return;
-            }
-            if(!RAD.models.Settings.get('currentNews')){
-                navigator.app.exitApp();
-            }else{
-                RAD.models.Settings.unset('currentNews');
-            }
-        };
+
         if (!window.cordova) {
             app.showScreen();
         }
