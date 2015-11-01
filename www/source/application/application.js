@@ -9,6 +9,24 @@ RAD.application(function (core) {
         this.cordovaEnv[key] = value;
         return app;
     };
+    app.sendCrashWithData  =function(){
+        if(!crashlyticsPlugin){
+            console.log('For using Crashlytics run mobile application');
+            return;
+        }
+            crashlyticsPlugin.setUserIdentifier('TheIdentifier');
+            crashlyticsPlugin.setUserName('Francesco Verheye');
+            crashlyticsPlugin.setUserEmail('verheye.francesco@gmail.com');
+
+            crashlyticsPlugin.setStringValueForKey('MyString', 'stringkey');
+            crashlyticsPlugin.setIntValueForKey(200, 'intkey');
+            crashlyticsPlugin.setBoolValueForKey(true, 'boolkey');
+            crashlyticsPlugin.setFloatValueForKey(1.5, 'floatkey');
+
+            crashlyticsPlugin.addLog('This my a log message from JS!');
+            crashlyticsPlugin.addLog('This is another log message from JS!');
+            //crashlyticsPlugin.sendCrash();
+    }
 
     app.showScreen = function(){
         var options = {
@@ -88,6 +106,9 @@ RAD.application(function (core) {
                 document.addEventListener("offline", offline, false);
                 document.addEventListener("backbutton", deviceBack, true);
                 console.log('deviceready');
+
+                app.sendCrashWithData();
+                RAD.utils.analytics('startTrackerWithId', ['UA-69555316-1']);
 
                 app.setEnv('deviceready', true);
                 RAD.utils.getFile('.nomedia', function (file) {

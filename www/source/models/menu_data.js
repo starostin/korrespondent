@@ -226,6 +226,7 @@ RAD.model('Settings', Backbone.Model.extend({
         window.localStorage.setItem('font', val);
     },
     updateSelectedCategory: function(model, val, opt){
+        RAD.utils.analytics('trackView', [val]);
         window.localStorage.setItem('selectedCategory', val);
     },
     updateSelectedSubCategory: function(model, val, opt){

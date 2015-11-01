@@ -151,6 +151,15 @@ RAD.namespace('RAD.utils.callback', function (callback, context, arg) {
         callback.apply(context, arg);
     }
 });
+RAD.namespace('RAD.utils.analytics', function (method, opt) {
+    if(!window.analytics){
+        console.log('Use application for Google Analytics');
+        return;
+    }
+    if(window.analytics[method]){
+        window.analytics[method].apply(this, opt);
+    }
+});
 RAD.namespace('RAD.utils.updateText', function (data) {
     var template = document.createElement('template');
     template.innerHTML = data;
