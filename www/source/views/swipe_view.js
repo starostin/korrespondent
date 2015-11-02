@@ -13,6 +13,7 @@ RAD.views.SwipeExt =  RAD.Blanks.View.extend({
         x: [],
         y: []
     },
+    stopEventsClasses: ['mover-wrapper'],
     speedArray: [],
     onrender: function(){
         this.nativeScroll = this.el.querySelector('.native-scroll');
@@ -32,12 +33,12 @@ RAD.views.SwipeExt =  RAD.Blanks.View.extend({
         });
     },
     touchStart: function(e){
+        if(e.target.className.indexOf(this.stopEventsClasses[0]) !== -1) return;
         this.coordinates.x = [e.originalEvent.changedTouches[0].clientX];
         this.coordinates.y = [e.originalEvent.changedTouches[0].clientY];
         this.firstX = 0;
         this.firstY = 0;
         this.directionDefined = false;
-        this.speedArray = [];
         this.startCoord = this.el.getBoundingClientRect();
         this.startScrollCoord = this.nativeScroll.getBoundingClientRect();
         if(this.onSwipeTouchStart){
@@ -71,20 +72,19 @@ RAD.views.SwipeExt =  RAD.Blanks.View.extend({
         }
     },
     touchEnd: function(e){
+        if(e.target.className.indexOf(this.stopEventsClasses[0]) !== -1) return;
         if(this.onSwipeTouchEnd){
             this.onSwipeTouchEnd()
         }
-        if(!this.directionDefined || this.directionVert){
-            return;
-        }
-        this.speedArray[this.speedArray.length-1].time = e.timeStamp;
+        //if(!this.directionDefined || this.directionVert){
+        //    return;
+        //}
         this.startCoord = {};
         this.startScrollCoord = {};
         var tr = this.el.style.transform || 'translate3d(0,0,0)',
             value = tr.split('(')[1];
             value = parseInt(value.split(')')[0]);
 
-        //this.getSpeed(this.speedArray);
         this.speedArray = [];
         this.el.removeAttribute('style');
         this.enableScroll();
@@ -98,7 +98,7 @@ RAD.views.SwipeExt =  RAD.Blanks.View.extend({
         if(time > 70) {
             this.swipeSpeed = 0;
             return;
-        };
+        }
         time = time/1000;
         this.swipeSpeed = distance/time;
     },
@@ -125,10 +125,6 @@ RAD.views.SwipeExt =  RAD.Blanks.View.extend({
             newX = e.originalEvent.changedTouches[0].clientX,
             diff = this.startCoord.left + (newX - firstX);
 
-        this.speedArray.push({
-            coord: newX,
-            time: e.timeStamp
-        });
         if(this.getHorDirection(this.coordinates.x) === 'left'){
             this.moveLeft(diff);
         }else{
