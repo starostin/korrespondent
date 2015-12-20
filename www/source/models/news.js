@@ -86,7 +86,7 @@ RAD.model('News', Backbone.Collection.extend({
                 item = {
                     title: $this.find("title").text(),
                     link: $this.find("link").text(),
-                    description: $this.find("description").text().replace('src', '').replace('img', 'a'),
+                    description: $this.find("description").text().replace(/\<(.*?)\>/g, '').replace('<', '').replace('>', ''),
                     fullText: RAD.utils.updateText($this.find("fulltext").text()),
                     author: $this.find("author").text(),
                     image:  RAD.utils.getImageLink($this.find("image").text()),

@@ -12,6 +12,12 @@ body{
     bottom: 0;
     width: 100%;
 }
+a {
+    color: #a00303;
+}
+img {
+    width: 100%;
+}
 .news-list-view .wrapper{
     top: 0;
 }
@@ -24,8 +30,8 @@ body{
 }
 .swipe-view{
     min-height: 100%;
-    transform: translate3d(0,0,0);
-    -webkit-transform: translate3d(0,0,0);
+    /*transform: translate3d(0,0,0);*/
+    /*-webkit-transform: translate3d(0,0,0);*/
 }
 .background{
     position: absolute;
@@ -121,11 +127,12 @@ body{
     -webkit-transform: translateY(100%);
 }
 .sub-menu-item{
-    height: 30px;
-    line-height: 30px;
-    background: white;
+    height: 50px;
+    line-height: 50px;
+    background: rgba(150, 148, 148, 0.98);
     width: 100%;
-    border-bottom: 1px solid black;
+    font-size: 20px;
+    border-bottom: 1px solid #333131;
 }
 .header-btn {
     display: inline-block;
@@ -134,6 +141,9 @@ body{
     float: left;
     width: 10%;
     background: #99ff65;
+}
+.one-news-view .header-btn {
+    width: 12%;
 }
 .favorites-button{
     float: right;
@@ -149,6 +159,9 @@ body{
     margin-left: 15px;
     font-size: 18px;
 }
+.news-topic span{
+    font-size: 10px;
+}
 .news-list-view{
     transition: all 0.3s ease-in-out;
     -webkit-transition: all 0.3s ease-in-out;
@@ -156,11 +169,11 @@ body{
     -webkit-transform: translateX(0);
     z-index: 200;
 }
-.news-list-view .header{
-    -webkit-box-shadow: 0px 3px 5px 0px rgba(0,0,0,0.75);
-    -moz-box-shadow: 0px 3px 5px 0px rgba(0,0,0,0.75);
-    box-shadow: 0px 3px 5px 0px rgba(0,0,0,0.75);
-}
+/*.news-list-view .header{*/
+    /*-webkit-box-shadow: 0px 3px 5px 0px rgba(0,0,0,0.75);*/
+    /*-moz-box-shadow: 0px 3px 5px 0px rgba(0,0,0,0.75);*/
+    /*box-shadow: 0px 3px 5px 0px rgba(0,0,0,0.75);*/
+/*}*/
 .news-list-view .header-btn{
     position: relative;
     width: 24px;
@@ -243,7 +256,15 @@ ul {
 .news-date{
     padding: 15px 0 15px 20px;
     color: #c60304;
-    font-size: 14px;
+    font-size: 16px;
+}
+.par-text .news-date{
+    padding: 30px 0;
+}
+.par-text .news-title{
+    padding: 0 0 30px 0;
+    text-transform: none;
+    margin: 0;
 }
 .shadow{
     position: fixed;
@@ -305,8 +326,8 @@ ul {
 }
 .parallax{
     perspective: 1px;
-    transform-style: preserve-3d;
-    -webkit-transform-style: preserve-3d;
+    /*transform-style: preserve-3d;*/
+    /*-webkit-transform-style: preserve-3d;*/
     height: 100%;
     overflow-y: scroll;
     overflow-x: hidden;
@@ -318,7 +339,6 @@ ul {
     position: relative;
     min-height: 50%;
     box-sizing: border-box;
-    box-shadow: 0 -1px 10px rgba(0, 0, 0, .7);
     transform-style: inherit;
     -webkit-transform-style: inherit;
 }
@@ -341,12 +361,12 @@ ul {
     background-position: center;
 }
 .big-placeholder-image{
-    background-image: url('../img/big-placeholder.jpeg');
+    background-image: url('../img/big_placeholder.png');
 }
 .parallax__layer.par-text{
     background: white;
-    padding: 10px;
-    background-attachment: fixed;
+    padding: 0 15px;
+    /*background-attachment: fixed;*/
 }
 
 /*--------------------------------------SIDEBAR MENU---------------------------------*/
@@ -504,11 +524,11 @@ ul {
     z-index: 400;
     background: white;
 }
-.one-news-view .header{
-    -webkit-box-shadow: 0px 3px 5px 0px rgba(0,0,0,0.75);
-    -moz-box-shadow: 0px 3px 5px 0px rgba(0,0,0,0.75);
-    box-shadow: 0px 3px 5px 0px rgba(0,0,0,0.75);
-}
+/*.one-news-view .header{*/
+    /*-webkit-box-shadow: 0px 3px 5px 0px rgba(0,0,0,0.75);*/
+    /*-moz-box-shadow: 0px 3px 5px 0px rgba(0,0,0,0.75);*/
+    /*box-shadow: 0px 3px 5px 0px rgba(0,0,0,0.75);*/
+/*}*/
 /*TODO refactor*/
 .one-news-view .native-scroll{
     top: 0px;
@@ -519,44 +539,81 @@ ul {
     -webkit-transform: translateX(0);
 }
 .header-btn.favorite{
-    background: white;
+    background: url("../img/ic_favorites.png") center center no-repeat;
     float: right;
 }
 .header-btn.favorite.added{
-    background: #c6c6c6;
+    background: url("../img/ic_favorites_filled.png") center center no-repeat;
     float: right;
 }
 .header-btn.sharing{
-    background: #3587ff;
+    background: url("../img/ic_share.png") center center no-repeat;
     float: right;
 }
 .header-btn.font{
     position: relative;
-    background: #ffad55;
+    background: url("../img/ic_fontsize.png") center center no-repeat;
     float: right;
 }
 .font-popup{
+    border-radius: 8px;
     position: absolute;
-    width: 100px;
-    background: #ffad55;
+    width: 180px;
+    background: #c50304;
     transition: all 0.3s ease-in-out;
     -webkit-transition: all 0.3s ease-in-out;
-    -webkit-transform: translateY(100%) translateX(-12.5%) rotateX(90deg);
-    transform: translateY(100%) translateX(-12.5%) rotateX(90deg);
+    -webkit-transform: translateY(86%) translateX(-28.5%) rotateX(90deg);
+    transform: translateY(86%) translateX(-28.5%) rotateX(90deg);
+    height: 80px;
+    line-height: 80px;
+}
+.arrow-up {
+    position: absolute;
+    margin: auto;
+    top: -15px;
+    left: 75px;
+    border-left: 15px solid transparent;
+    border-right: 15px solid transparent;
+    border-bottom: 15px solid #c50304;
+}
+.separator{
+    background-color: #e65757;
+    width: 2px;
+    height: 60px;
+    display: inline-block;
+    margin: 10px;
 }
 .font.show .font-popup{
-    -webkit-transform: translateY(100%) translateX(-12.5%) rotateX(0deg);
-    transform: translateY(100%) translateX(-12.5%) rotateX(0deg);
+    -webkit-transform: translateY(86%) translateX(-28.5%) rotateX(0deg);
+    transform: translateY(86%) translateX(-28.5%) rotateX(0deg);
 }
 .font-small{
     display: inline-block;
+    color: #fff;
+    font-size: 20px;
     width: 40%;
+    vertical-align: top;
     padding: 0;
 }
 .font-big{
     display: inline-block;
+    color: #fff;
+    font-size: 40px;
+    vertical-align: top;
     width: 40%;
     padding: 0;
+}
+.korr-link{
+    padding: 0 0 30px 0;
+}
+.korr-link a{
+    color: #bababa;
+}
+.par-text p{
+    color: #202020;
+    line-height: 32px;
+    font-family: 'Trebuchet MS';
+    padding-bottom: 10px;
 }
 .video-link{
     display: block;
@@ -566,7 +623,7 @@ ul {
     display: none;
 }
 .video-wrapper{
-    background: url(../img/video-placeholder.png);
+    background: url(../img/video_placeholder.png);
     background-size: cover;
     display: block;
     background-position: center;
@@ -574,7 +631,7 @@ ul {
 .video{
     margin: auto;
     text-align: center;
-    background: url(../img/video-placeholder.png);
+    background: url(../img/video_placeholder.png);
     background-size: cover;
     display: block;
     background-position: center;

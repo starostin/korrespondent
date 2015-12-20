@@ -11,8 +11,13 @@ RAD.view("view.one_news", RAD.views.SwipeExt.extend({
             'click .sharing': 'shareNews',
             'click a': 'openLink',
             'click': 'checkSidebar',
-            'click .shadow': 'checkSidebar',
+            'click .shadow': 'checkSidebar'
         })
+    },
+    fontScaleCoef: {
+        text: 1,
+        date: 0.8,
+        title: 1.5
     },
     onInitialize: function(){
         this.oneNews = new Backbone.Model;
@@ -30,6 +35,10 @@ RAD.view("view.one_news", RAD.views.SwipeExt.extend({
         }else{
             console.log('view.one_news does not have method '+ method)
         }
+    },
+    getFontScale: function(part){
+        var partFont = this.fontScaleCoef[part] || 1;
+        return +this.settings.get('font') * partFont + 'px'
     },
     changeShadowState: function(model, val){
         if(this[val]){
@@ -90,8 +99,12 @@ RAD.view("view.one_news", RAD.views.SwipeExt.extend({
         this.settings.set('font', currentFont + 2)
     },
     updateFont: function(model, val){
-        var textWrapper = this.el.querySelector('.par-text');
-        textWrapper.style.fontSize = model.get('font') + 'px';
+        var textWrapper = this.el.querySelector('.par-text'),
+            date = this.el.querySelector('.news-date'),
+            title = this.el.querySelector('.news-title');
+        textWrapper.style.fontSize = this.getFontScale('text');
+        date.style.fontSize = this.getFontScale('date');
+        title.style.fontSize = this.getFontScale('title');
     },
     shareNews: function(){
         if(!window.cordova) {

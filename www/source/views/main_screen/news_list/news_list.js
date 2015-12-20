@@ -240,8 +240,14 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
         RAD.utils.sql.insertRows(newsArr, 'news');
     },
     toggleSubMenu: function(e){
-        var subMenu = this.el.querySelector('.sub-menu');
+        var subMenu = this.el.querySelector('.sub-menu'),
+            subMenuArrow = this.el.querySelector('.news-topic span');
         subMenu.classList.toggle('open');
+        if(subMenu.classList.contains('open')){
+            subMenuArrow.innerHTML = '&#9650'
+        }else{
+            subMenuArrow.innerHTML = '&#9660'
+        }
     },
     toggleSidebar: function(){
         this.settings.set('sidebarOpen', !this.settings.get('sidebarOpen'));
