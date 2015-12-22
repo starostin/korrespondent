@@ -10,7 +10,7 @@ RAD.application(function (core) {
         return app;
     };
     app.sendCrashWithData  =function(){
-        if(!crashlyticsPlugin){
+        if(!window.crashlyticsPlugin){
             console.log('For using Crashlytics run mobile application');
             return;
         }
@@ -86,6 +86,7 @@ RAD.application(function (core) {
             offline = function () {
                 console.log('offline');
                 app.setEnv('online', false);
+                core.publish('application.offline');
                 core.publish('application.offline');
             },
             deviceBack = function(){

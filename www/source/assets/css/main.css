@@ -30,8 +30,8 @@ img {
 }
 .swipe-view{
     min-height: 100%;
-    /*transform: translate3d(0,0,0);*/
-    /*-webkit-transform: translate3d(0,0,0);*/
+    transform: translate3d(0,0,0);
+    -webkit-transform: translate3d(0,0,0);
 }
 .background{
     position: absolute;
@@ -326,8 +326,6 @@ ul {
 }
 .parallax{
     perspective: 1px;
-    /*transform-style: preserve-3d;*/
-    /*-webkit-transform-style: preserve-3d;*/
     height: 100%;
     overflow-y: scroll;
     overflow-x: hidden;
@@ -346,9 +344,8 @@ ul {
     background: 50% 50% / cover;
 }
 .parallax__layer.par-img{
-    top: -25%;
-    transform: translateZ(-1px) scale(2);
-    -webkit-transform: translateZ(-1px) scale(2);
+    transform: translateZ(-1px) translateY(-45%) scale(2);
+    -webkit-transform: translateZ(-1px) translateY(-45%) scale(2);
     z-index: -1;
     position: relative;
 }

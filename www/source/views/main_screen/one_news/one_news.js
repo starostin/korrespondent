@@ -38,7 +38,7 @@ RAD.view("view.one_news", RAD.views.SwipeExt.extend({
     },
     getFontScale: function(part){
         var partFont = this.fontScaleCoef[part] || 1;
-        return +this.settings.get('font') * partFont + 'px'
+        return parseInt(this.settings.get('font') * partFont) + 'px'
     },
     changeShadowState: function(model, val){
         if(this[val]){
