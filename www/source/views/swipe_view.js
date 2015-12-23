@@ -48,7 +48,7 @@ RAD.views.SwipeExt =  RAD.Blanks.View.extend({
     touchMove: function(e){
         this.coordinates.x.push(e.originalEvent.changedTouches[0].clientX);
         this.coordinates.y.push(e.originalEvent.changedTouches[0].clientY);
-        if(this.coordinates.x.length<5 && !this.directionDefined){
+        if(this.coordinates.x.length<2 && !this.directionDefined){
             if(Math.abs(this.coordinates.x[this.coordinates.x.length-1] - e.originalEvent.changedTouches[0].clientX) >=50){
                 this.directionVert = false;
                 this.directionDefined = true;
@@ -164,6 +164,12 @@ RAD.views.SwipeExt =  RAD.Blanks.View.extend({
         }
         for(var j=0; j<xArr.length; j++){
             ySum+=yArr[j];
+        }
+        if(xArr[0] && xArr[1] && Math.abs(xArr[0] - xArr[1]) >= 10){
+            return false
+        }
+        if(yArr[0] && yArr[1] && Math.abs(yArr[0] - yArr[1]) >= 10){
+            return true
         }
         return Math.abs(xArr[0] - xSum/xArr.length) <= Math.abs(yArr[0] - ySum/yArr.length)
 
