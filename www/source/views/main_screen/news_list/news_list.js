@@ -156,14 +156,18 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
         this.settings.set('currentNews', cid);
     },
     changeSubMenu: function(e){
-        var curTar = e.currentTarget,
+        var self = this,
+            curTar = e.currentTarget,
             newId = +curTar.getAttribute('data-id'),
             oldSelectedSub = _.findWhere(this.selected.get('subMenus'), {selected: true}),
             newSelectedSub = _.findWhere(this.selected.get('subMenus'), {id: newId});
 
         delete oldSelectedSub.selected;
         newSelectedSub.selected = true;
-        this.settings.set('selectedSubCategory', newId);
+       this.toggleSubMenu();
+        window.setTimeout(function(){
+            self.settings.set('selectedSubCategory', newId);
+        }, 300);
     },
     setNews: function(model, val, option){
         var self = this,
@@ -243,6 +247,7 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
         var subMenu = this.el.querySelector('.sub-menu'),
             subMenuArrow = this.el.querySelector('.news-topic span');
         subMenu.classList.toggle('open');
+        if (!subMenuArrow) return;
         if(subMenu.classList.contains('open')){
             subMenuArrow.innerHTML = '&#9650'
         }else{
@@ -288,6 +293,7 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
     onMoveVertically: function(e){
         var pullDiv = this.el.querySelector('.pull-down'),
             arrow = pullDiv.querySelector('.arrow-img'),
+            refreshDiv = this.el.querySelector('.refresh'),
             deg = 0;
 
         if(this.nativeScroll.scrollTop > 0 || this.el.classList.contains('open') || this.el.classList.contains('favorites-list') || this.settings.get('sidebarOpen')){
@@ -303,17 +309,28 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
             this.nativeScroll.classList.remove('stop-scrolling');
             return;
         }
+        refreshDiv.style.width = diff * this.rotateCoef + 'px';
+        if(parseInt(refreshDiv.style.width) >= this.viewCoord.width){
+            pullDiv.classList.add('update');
+            this.getNews();
+        }else{
+            pullDiv.classList.remove('update');
+        }
+        if (diff >= 120) return;
         this.nativeScroll.style.transition  = 'none';
         this.nativeScroll.style.transform = 'translateY(' + (this.startScrollCoord.top + diff*0.4)+ 'px)';
 
-        deg = Math.abs(this.rotateCoef * diff)-180;
+//        deg = Math.abs(this.rotateCoef * diff)-180;
 
-        arrow.style.transform = 'rotate(' + deg + 'deg)';
-        if(diff >=50){
-            pullDiv.classList.add('update');
-        }else if(!pullDiv.classList.contains('update')){
-            pullDiv.classList.remove('update');
-        }
+//        if(arrow){
+//            arrow.style.transform = 'rotate(' + deg + 'deg)';
+//        }
+//
+//        if(diff >=50){
+//            pullDiv.classList.add('update');
+//        }else if(!pullDiv.classList.contains('update')){
+//            pullDiv.classList.remove('update');
+//        }
     },
     onSwipeTouchEnd: function(){
         var pullDiv = this.el.querySelector('.pull-down'),
@@ -335,9 +352,11 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
         var self = this,
             pullDiv = this.el.querySelector('.pull-down'),
             arrow = pullDiv.querySelector('.arrow-img'),
-            spinner = pullDiv.querySelector('.loader');
-        arrow.style.display = 'none';
-        spinner.style.display = '';
+            spinner = pullDiv.querySelector('.refresh');
+        if (arrow) arrow.style.display = 'none';
+        if (spinner) spinner.style.display = '';
+        spinner.classList.add('loader');
+        spinner.style.width = '';
         this.nativeScroll.style.transform = 'translateY(50px)';
         window.setTimeout(function(){
             RAD.models.News.getNews({
@@ -353,13 +372,14 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
                 RAD.utils.sql.insertRows(data, 'news');
                 RAD.models.News.downloadImages(data)
             });
-        }, 1000);
+        }, 2000);
 
         function removeSpinner(){
+            spinner.classList.remove('loader');
             self.nativeScroll.style.transform = 'translateY(0)';
-            spinner.style.display = 'none';
+//            if (spinner) spinner.style.display = 'none';
             pullDiv.classList.remove('update');
-            arrow.style.display = '';
+            if (arrow) arrow.style.display = '';
         }
     },
     showUpdateMessage: function(model){

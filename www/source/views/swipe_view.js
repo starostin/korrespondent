@@ -123,7 +123,7 @@ RAD.views.SwipeExt =  RAD.Blanks.View.extend({
 
         var firstX =  this.firstX,
             newX = e.originalEvent.changedTouches[0].clientX,
-            diff = this.startCoord.left + (newX - firstX);
+            diff = (this.startCoord.left || 0) + (newX - firstX);
 
         if(this.getHorDirection(this.coordinates.x) === 'left'){
             this.moveLeft(diff);

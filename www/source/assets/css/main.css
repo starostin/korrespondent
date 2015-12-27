@@ -46,8 +46,8 @@ img {
     background: #a00303;
     text-align: center;
     z-index: 6;
-    transition: all 0.3s ease-in-out;
-    -webkit-transition: all 0.3s ease-in-out;
+    transition: all 0.2s ease-in-out;
+    -webkit-transition: all 0.2s ease-in-out;
 }
 .header-wrapper.hidden{
     transform: translateY(-50px);
@@ -61,8 +61,8 @@ img {
     background: #c60304;
     text-align: center;
     z-index: 5;
-    transition: all 0.3s ease-in-out;
-    -webkit-transition: all 0.3s ease-in-out;
+    transition: all 0.2s ease-in-out;
+    -webkit-transition: all 0.2s ease-in-out;
 }
 .header.hidden{
     transform: translateY(-100%);
@@ -119,20 +119,21 @@ img {
     bottom: 0;
     transform: translateY(-100%);
     -webkit-transform: translateY(-100%);
-    transition: all 0.3s ease-in-out;
-    -webkit-transition: all 0.3s ease-in-out;
+    transition: all 0.2s ease-in-out;
+    -webkit-transition: all 0.2s ease-in-out;
 }
 .update-message.show{
     transform: translateY(100%);
     -webkit-transform: translateY(100%);
 }
 .sub-menu-item{
+    color: #fff;
     height: 50px;
     line-height: 50px;
-    background: rgba(150, 148, 148, 0.98);
+    background: #919191;
     width: 100%;
     font-size: 20px;
-    border-bottom: 1px solid #333131;
+    border-bottom: 1px solid #fff;
 }
 .header-btn {
     display: inline-block;
@@ -163,8 +164,8 @@ img {
     font-size: 10px;
 }
 .news-list-view{
-    transition: all 0.3s ease-in-out;
-    -webkit-transition: all 0.3s ease-in-out;
+    transition: all 0.2s ease-in-out;
+    -webkit-transition: all 0.2s ease-in-out;
     transform: translateX(0);
     -webkit-transform: translateX(0);
     z-index: 200;
@@ -229,6 +230,12 @@ img {
     height: 50px;
     background: #fff;
 }
+.refresh{
+    background: #ddd;
+    height: 100%;
+    margin: auto;
+    width: 0;
+}
 .news-list {
     position: absolute;
     width: 100%;
@@ -277,8 +284,8 @@ ul {
     -webkit-transform: translateZ(0);
 }
 .shadow.animated{
-    transition: opacity 0.3s ease-in-out;
-    -webkit-transition: opacity 0.3s ease-in-out;
+    transition: opacity 0.2s ease-in-out;
+    -webkit-transition: opacity 0.2s ease-in-out;
 }
 .favorite-news{
     background: url("../img/favorite-icon.png") no-repeat;
@@ -317,6 +324,7 @@ ul {
     font-size: 24px;
     text-align: left;
     margin: 0 10px;
+    padding: 0 70px 0 0;
 }
 .news-description{
     clear: both;
@@ -401,8 +409,8 @@ ul {
     /*box-shadow: 7px 0px 5px -5px rgba(0,0,0,0.7);*/
 }
 #sidebar-menu .sidebar-menu-view.animated{
-    transition: all 0.3s ease-in-out;
-    -webkit-transition: all 0.3s ease-in-out;
+    transition: all 0.2s ease-in-out;
+    -webkit-transition: all 0.2s ease-in-out;
 }
 #sidebar-menu .sidebar-menu-view{
     /*background: #2fb5ff;*/
@@ -514,8 +522,8 @@ ul {
 
 /*--------------------------------------ONE NEWS---------------------------------*/
 .one-news-view{
-    transition: all 0.3s ease-in-out;
-    -webkit-transition: all 0.3s ease-in-out;
+    transition: all 0.2s ease-in-out;
+    -webkit-transition: all 0.2s ease-in-out;
     transform: translateX(100%);
     -webkit-transform: translateX(100%);
     z-index: 400;
@@ -557,8 +565,8 @@ ul {
     position: absolute;
     width: 180px;
     background: #c50304;
-    transition: all 0.3s ease-in-out;
-    -webkit-transition: all 0.3s ease-in-out;
+    transition: all 0.2s ease-in-out;
+    -webkit-transition: all 0.2s ease-in-out;
     -webkit-transform: translateY(86%) translateX(-28.5%) rotateX(90deg);
     transform: translateY(86%) translateX(-28.5%) rotateX(90deg);
     height: 80px;
@@ -644,8 +652,8 @@ ul {
 
 /*--------------------------------------FAVORITES---------------------------------*/
 .favorites-view{
-    transition: all 0.3s ease-in-out;
-    -webkit-transition: all 0.3s ease-in-out;
+    transition: all 0.2s ease-in-out;
+    -webkit-transition: all 0.2s ease-in-out;
     transform: translateX(100%);
     -webkit-transform: translateX(100%);
     z-index: 300;
@@ -659,43 +667,91 @@ ul {
 
 
 /*--------------------------------------SPINNER START-----------------------------*/
-.loader {
-    font-size: 5px;
-    display: inline-block;
-    position: relative;
-    text-indent: -9999em;
-    border-top: 0.5em solid rgba(255, 255, 255, 0.2);
-    border-right: 0.5em solid rgba(255, 255, 255, 0.2);
-    border-bottom: 0.5em solid rgba(255, 255, 255, 0.2);
-    border-left: 0.5em solid #b0b0b0;;
-    -webkit-animation: load8 1.1s infinite linear;
-    animation: load8 1.1s infinite linear;
-}
-.loader,
-.loader:after {
-    border-radius: 50%;
-    width: 42px;
-    height: 42px;
-}
-@-webkit-keyframes load8 {
-    0% {
-        -webkit-transform: rotate(0deg);
-        transform: rotate(0deg);
-    }
-    100% {
-        -webkit-transform: rotate(360deg);
-        transform: rotate(360deg);
-    }
-}
-@keyframes load8 {
-    0% {
-        -webkit-transform: rotate(0deg);
-        transform: rotate(0deg);
-    }
-    100% {
-        -webkit-transform: rotate(360deg);
-        transform: rotate(360deg);
-    }
-}
+/*.loader {*/
+    /*font-size: 5px;*/
+    /*display: inline-block;*/
+    /*position: relative;*/
+    /*text-indent: -9999em;*/
+    /*border-top: 0.5em solid rgba(255, 255, 255, 0.2);*/
+    /*border-right: 0.5em solid rgba(255, 255, 255, 0.2);*/
+    /*border-bottom: 0.5em solid rgba(255, 255, 255, 0.2);*/
+    /*border-left: 0.5em solid #b0b0b0;;*/
+    /*-webkit-animation: load8 1.1s infinite linear;*/
+    /*animation: load8 1.1s infinite linear;*/
+/*}*/
+/*.loader,*/
+/*.loader:after {*/
+    /*border-radius: 50%;*/
+    /*width: 42px;*/
+    /*height: 42px;*/
+/*}*/
+/*@-webkit-keyframes load8 {*/
+    /*0% {*/
+        /*-webkit-transform: rotate(0deg);*/
+        /*transform: rotate(0deg);*/
+    /*}*/
+    /*100% {*/
+        /*-webkit-transform: rotate(360deg);*/
+        /*transform: rotate(360deg);*/
+    /*}*/
+/*}*/
+/*@keyframes load8 {*/
+    /*0% {*/
+        /*-webkit-transform: rotate(0deg);*/
+        /*transform: rotate(0deg);*/
+    /*}*/
+    /*100% {*/
+        /*-webkit-transform: rotate(360deg);*/
+        /*transform: rotate(360deg);*/
+    /*}*/
+/*}*/
 
 /*--------------------------------------SPINNER END-----------------------------*/
+
+/*-----------------------------------ANDROID LOADER---------------------------*/
+.loader {
+    width: 100%;
+    height: 50px;
+    background-color: #ddd;
+    /*top: 50%;*/
+    /*left: 50%;*/
+    /*margin: -40px -200px;*/
+    position: relative;
+    box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.05);
+}
+
+.loader:after {
+    content: "";
+    position: absolute;
+    background-color: #fff;
+    left: 2px;
+    top: 2px;
+    bottom: 2px;
+    right: 300px;
+    animation-name: slide;
+    animation-duration: 2s;
+    animation-easing-function: linear;
+    animation-iteration-count: infinite;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+@keyframes slide {
+    0% {
+        right: 360px;
+        left: 2px;
+    }
+    5% {
+        left: 2px;
+    }
+    50% {
+        right: 2px;
+        left: 360px;
+    }
+    55% {
+        right: 2px;
+    }
+    100% {
+        right: 360px;
+        left: 2px;
+    }
+}
