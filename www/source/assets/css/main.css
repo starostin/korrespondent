@@ -641,9 +641,11 @@ li.selected .sidebar-text{
     padding-bottom: 10px;
     font-weight: 400;
 }
+.video-link-wrapper{
+    margin: 40px 0;
+}
 .video-link{
     display: block;
-    margin: 40px 0;
 }
 .video-link > body{
     display: none;
@@ -682,6 +684,12 @@ li.selected .sidebar-text{
     color: #7b7b7b;
     font-style: italic;
     padding: 16px 0 28px 0;
+    text-align: left;
+}
+.image-title, .video-title{
+    font-size: 30px;
+    text-align: left;
+    padding: 0 0 20px 0;
 }
 
 

@@ -184,14 +184,30 @@ RAD.namespace('RAD.utils.updateText', function (data) {
         name = name.split('?')[0];
         path = settings.rootPath ? settings.rootPath + settings.otherImage + '/' + name : src;
         images[i].parentNode.classList.add('image-wrapper');
-        $(images[i].parentNode).next()[0].classList.add('image-resource');
+        var imgRes = document.createElement('div');
+        imgRes.className = 'image-resource';
+        imgRes.innerHTML = $(images[i].parentNode).next()[0].innerText;
+        var imageTitle = $(images[i].parentNode.parentNode) && $(images[i].parentNode.parentNode).prev(),
+            isTitle = imageTitle[0] && /em|h|strong/.test(imageTitle[0].outerHTML),
+            newImageTitle = document.createElement('div');
+
+        if(isTitle){
+            newImageTitle.className = 'image-title';
+            newImageTitle.innerHTML = imageTitle[0].innerText;
+            $(newImageTitle).insertBefore(images[i]);
+            imageTitle.remove();
+        }
+        images[i].parentNode.appendChild(imgRes);
+        $(images[i].parentNode).next().remove();
         images[i].setAttribute('src', path);
     }(i))
     for(var t=0; t<iframes.length; t++){
+        var videoWrapper = document.createElement('div');
         var span = document.createElement('span');
         var spanWrapper = document.createElement('span');
         var link = document.createElement('a');
         span.className = 'video';
+        videoWrapper.className = 'video-link-wrapper';
         link.className = 'video-link';
         link.target = '_blank';
         var videoSrc = iframes[t].getAttribute('src');
@@ -204,7 +220,21 @@ RAD.namespace('RAD.utils.updateText', function (data) {
         link.href = videoSrc;
         spanWrapper.appendChild(span);
         link.appendChild(spanWrapper);
-        iframes[t].parentNode.replaceChild(link, iframes[t])
+        videoWrapper.appendChild(link);
+        iframes[t].parentNode.replaceChild(videoWrapper, iframes[t])
+    }
+    var videos = fragment.querySelectorAll('.video-link');
+    for(var k=0; k<videos.length; k++){
+        var videoTitle = $(videos[k].parentNode.parentNode) && $(videos[k].parentNode.parentNode).prev(),
+            isVideoTitle = videoTitle[0] && /em|h|strong/.test(videoTitle[0].outerHTML),
+            newVideoTitle = document.createElement('div');
+
+        if(isVideoTitle){
+            newVideoTitle.className = 'video-title';
+            newVideoTitle.innerHTML = videoTitle[0].innerText;
+            $(newVideoTitle).insertBefore(videos[k]);
+            videoTitle.remove();
+        }
     }
     return template.innerHTML
 });
