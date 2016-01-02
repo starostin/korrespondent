@@ -186,7 +186,7 @@ RAD.namespace('RAD.utils.updateText', function (data) {
         images[i].parentNode.classList.add('image-wrapper');
         var imgRes = document.createElement('div');
         imgRes.className = 'image-resource';
-        imgRes.innerHTML = $(images[i].parentNode).next()[0].innerText;
+        imgRes.innerHTML = $(images[i].parentNode).next() && $(images[i].parentNode).next()[0] && $(images[i].parentNode).next()[0].innerText;
         var imageTitle = $(images[i].parentNode.parentNode) && $(images[i].parentNode.parentNode).prev(),
             isTitle = imageTitle[0] && /em|h|strong/.test(imageTitle[0].outerHTML),
             newImageTitle = document.createElement('div');
