@@ -604,7 +604,7 @@ RAD.model('Settings', Backbone.Model.extend({
 
         this.set({
             lang: lang,
-            font: font || 14,
+            font: font || 22,
             selectedCategory: selectedCategory || 1,
             selectedSubCategory: selectedSubCategory || 1,
             shadow: 0

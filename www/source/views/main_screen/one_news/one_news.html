@@ -24,7 +24,7 @@
         <div class="par-text parallax__layer" style="font-size: {{ this.getFontScale('text') }}">
             <div class="news-date" style="font-size: {{ this.getFontScale('date')  }}">{{ RAD.utils.formatDate(this.oneNews.get('pubDate'), 'dd mmmm yyyy | HH:MM') }}</div>
             <div class="news-title" style="font-size: {{ this.getFontScale('title')  }}">{{ this.oneNews.get('title') }}</div>
-            <div class="korr-link">
+            <div class="korr-link" style="font-size: {{ this.getFontScale('korLink')  }}">
                 <a href="http://korrespondent.net/">korrespondent.net</a>
             </div>
             {{ this.oneNews.get('fullText') }}

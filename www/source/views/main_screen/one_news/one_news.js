@@ -16,8 +16,9 @@ RAD.view("view.one_news", RAD.views.SwipeExt.extend({
     },
     fontScaleCoef: {
         text: 1,
-        date: 0.8,
-        title: 1.5
+        date: 0.73,
+        title: 1.5,
+        korLink: 0.82
     },
     onInitialize: function(){
         this.oneNews = new Backbone.Model;
@@ -101,10 +102,13 @@ RAD.view("view.one_news", RAD.views.SwipeExt.extend({
     updateFont: function(model, val){
         var textWrapper = this.el.querySelector('.par-text'),
             date = this.el.querySelector('.news-date'),
-            title = this.el.querySelector('.news-title');
+            title = this.el.querySelector('.news-title'),
+            korLink = this.el.querySelector('.korr-link');
+
         textWrapper.style.fontSize = this.getFontScale('text');
         date.style.fontSize = this.getFontScale('date');
         title.style.fontSize = this.getFontScale('title');
+        korLink.style.fontSize = this.getFontScale('korLink');
     },
     shareNews: function(){
         if(!window.cordova) {

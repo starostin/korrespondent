@@ -157,8 +157,8 @@ RAD.view("view.sidebar_menu", RAD.views.SlipExt.extend({
             lang = this.settings.get('lang'),
             news = this.allNews.where({lang: lang, parentId: model.get('parentId'), buffer: 0});
 
-        countSpan.setAttribute('data-count', this.getUniqueNews(news).length || '');
-        itemCount.setAttribute('data-count', this.getUniqueNews(news).length || '');
+//        countSpan.setAttribute('data-count', this.getUniqueNews(news).length || '');
+//        itemCount.setAttribute('data-count', this.getUniqueNews(news).length || '');
     },
     updateSidebarLanguage: function(){
         this.sidebar.resetWithOrder();

@@ -184,6 +184,7 @@ RAD.namespace('RAD.utils.updateText', function (data) {
         name = name.split('?')[0];
         path = settings.rootPath ? settings.rootPath + settings.otherImage + '/' + name : src;
         images[i].parentNode.classList.add('image-wrapper');
+        $(images[i].parentNode).next()[0].classList.add('image-resource');
         images[i].setAttribute('src', path);
     }(i))
     for(var t=0; t<iframes.length; t++){

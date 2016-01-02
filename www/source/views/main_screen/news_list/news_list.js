@@ -241,6 +241,7 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
             RAD.models.AllNews.get(bufferNews[i].id).set('buffer', 0);
             newsArr.push(bufferNews[i].toJSON())
         }
+        this.nativeScroll.scrollTop = 0;
         RAD.utils.sql.insertRows(newsArr, 'news');
     },
     toggleSubMenu: function(e){
@@ -296,7 +297,8 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
             refreshDiv = this.el.querySelector('.refresh'),
             deg = 0;
 
-        if(this.nativeScroll.scrollTop > 0 || this.el.classList.contains('open') || this.el.classList.contains('favorites-list') || this.settings.get('sidebarOpen')){
+        if(this.nativeScroll.scrollTop > 0 || this.el.classList.contains('open') || this.el.classList.contains('favorites-list') ||
+            this.settings.get('sidebarOpen') || pullDiv.classList.contains('update')){
             return;
         }
 
@@ -316,9 +318,11 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
         }else{
             pullDiv.classList.remove('update');
         }
-        if (diff >= 120) return;
+        if (diff >= 15) {
+            diff = 15;
+        }
         this.nativeScroll.style.transition  = 'none';
-        this.nativeScroll.style.transform = 'translateY(' + (this.startScrollCoord.top + diff*0.4)+ 'px)';
+        this.nativeScroll.style.transform = 'translateY(' + (this.startScrollCoord.top + diff)+ 'px)';
 
 //        deg = Math.abs(this.rotateCoef * diff)-180;
 
@@ -333,15 +337,17 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
 //        }
     },
     onSwipeTouchEnd: function(){
-        var pullDiv = this.el.querySelector('.pull-down'),
+        var self = this,
+            pullDiv = this.el.querySelector('.pull-down'),
             arrow = pullDiv.querySelector('.arrow-img'),
             isUpdate = pullDiv.classList.contains('update');
 
         this.addShadowAnimation();
-        this.nativeScroll.style.transition  = 'all 0.2s ease-in-out';
-        this.nativeScroll.style.transform = 'translateY(0)';
         if(isUpdate){
             this.getNews();
+        }else{
+            this.nativeScroll.style.transition  = 'all 0.2s ease-in-out';
+            this.nativeScroll.style.transform = 'translateY(0)';
         }
     },
     toggleScrollEnable: function(){
@@ -353,11 +359,13 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
             pullDiv = this.el.querySelector('.pull-down'),
             arrow = pullDiv.querySelector('.arrow-img'),
             spinner = pullDiv.querySelector('.refresh');
+        if(spinner.classList.contains('loader')) return;
+        console.log('----------------------')
         if (arrow) arrow.style.display = 'none';
         if (spinner) spinner.style.display = '';
         spinner.classList.add('loader');
         spinner.style.width = '';
-        this.nativeScroll.style.transform = 'translateY(50px)';
+        this.nativeScroll.style.transform = 'translateY(15px)';
         window.setTimeout(function(){
             RAD.models.News.getNews({
                 error: function(){
@@ -375,11 +383,13 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
         }, 2000);
 
         function removeSpinner(){
-            spinner.classList.remove('loader');
+            window.setTimeout(function(){
+                spinner.classList.remove('loader');
+                pullDiv.classList.remove('update');
+                if (arrow) arrow.style.display = '';
+            }, 200);
+            self.nativeScroll.style.transition  = 'all 0.2s ease-in-out';
             self.nativeScroll.style.transform = 'translateY(0)';
-//            if (spinner) spinner.style.display = 'none';
-            pullDiv.classList.remove('update');
-            if (arrow) arrow.style.display = '';
         }
     },
     showUpdateMessage: function(model){

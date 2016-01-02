@@ -1,6 +1,6 @@
 <div class="side-wrap">
     <div class="header"><div class="lang header-btn circle">{{ RAD.languages[RAD.models.Settings.get('lang')] }}</div>
-        <span class="sidebar-title">Корреспондент.net</span></div>
+        <span class="sidebar-title"></span></div>
     <div class="wrapper">
         <div class="menu-list native-scroll swipe-view">
             <ul>
@@ -22,7 +22,8 @@
                         <span class="mover"></span>
                     </div>
                     {{# } else { }}
-                    <div class="mover-wrapper side-item" data-count = {{ self.getUniqueNews(news).length || '' }}>
+        <!--self.getUniqueNews(news).length-->
+                    <div class="mover-wrapper side-item" data-count = ''>
                         <span class="mover"></span>
                     </div>
                     {{# } }}
