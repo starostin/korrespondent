@@ -103,7 +103,7 @@ img {
     -webkit-transform: translateY(100%);
 }
 .update-message:before{
-    content: attr(data-count) ' новых новостей';
+    content: attr(data-count);
     line-height: 40px;
     color: white;
 }
@@ -253,7 +253,7 @@ ul {
     margin: 0;
 }
 .news-list li {
-    height: 216px;
+    min-height: 216px;
     width: 100%;
     background: #fff;
     border-bottom: 1px solid #d1d1d1;
@@ -314,7 +314,7 @@ ul {
     background-repeat: no-repeat;
     background-size: cover;
     background-image: url('../img/small_placeholder.png');
-    margin: 0 12px 20px 24px
+    margin: 0 12px 0 24px
 }
 .small-img-placeholder{
     height: 100%;
@@ -329,12 +329,11 @@ ul {
     font-weight: 700;
     font-family: 'PT Sans', sans-serif;
     text-align: left;
-    margin: 0 10px;
-    padding: 0 70px 0 0;
+    padding: 0 70px 0 168px;
 }
 .news-description{
     clear: both;
-    margin: 0 28px 20px 24px;
+    padding: 20px 28px 20px 24px;;
     font-weight: normal;
     font-size: 21px;
     color: #000;

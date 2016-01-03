@@ -18,10 +18,10 @@
         {{# } }}
         {{# }) }}
     </ul>
-    <div class="message">No Internet!</div>
+    <div class="message"></div>
     {{# var buffer = (this.settings.get('selectedSubCategory') === 1000) ? [] : this.news.where({lang: this.settings.get('lang'), newsId: this.settings.get('selectedSubCategory'), buffer: 1}); }}
     {{# var news = this.news.where({buffer: 0}); }}
-    <div class="update-message {{ buffer.length ? 'show' : '' }}" data-count="{{ buffer.length || '' }}"></div>
+    <div class="update-message {{ buffer.length ? 'show' : '' }}" data-count="{{ buffer.length || '' }}"> {{ RAD.utils.Dictionary("новых новостей") }}</div>
 </div>
 <div class="wrapper">
     <div class="background"></div>

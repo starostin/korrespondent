@@ -329,9 +329,8 @@ RAD.namespace('RAD.utils.formatDate', function (date, mask, useLocalTime) {
                     S: ["th", "st", "nd", "rd"][d % 10 > 3 ? 0 : (d % 100 - d % 10 != 10) * d % 10]
                 };
 
-            console.log(date.getDate())
             if(new Date().getDate() === date.getDate()){
-                flags['dd'] = 'Сегодня';
+                flags['dd'] = RAD.utils.Dictionary('Сегодня');
                 flags['mmmm'] = '';
                 flags['yyyy'] = '';
             }
@@ -368,7 +367,18 @@ RAD.namespace('RAD.utils.formatDate', function (date, mask, useLocalTime) {
             "января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря"
         ],
         monthNamesRus: [
-            "Января", "Февраля", "Марта", "Апреля", "Мая", "Июня", "Июля", "Августа", "Сентября", "Октября", "Ноября", "Декабря"
+            RAD.utils.Dictionary("Января"),
+            RAD.utils.Dictionary("Февраля"),
+            RAD.utils.Dictionary("Марта"),
+            RAD.utils.Dictionary("Апреля"),
+            RAD.utils.Dictionary("Мая"),
+            RAD.utils.Dictionary("Июня"),
+            RAD.utils.Dictionary("Июля"),
+            RAD.utils.Dictionary("Августа"),
+            RAD.utils.Dictionary("Сентября"),
+            RAD.utils.Dictionary("Октября"),
+            RAD.utils.Dictionary("Ноября"),
+            RAD.utils.Dictionary("Декабря")
         ]
     };
 
@@ -380,4 +390,50 @@ RAD.namespace('RAD.utils.formatDate', function (date, mask, useLocalTime) {
         return '';
     }
     return dateFormat(date, mask, !useLocalTime); // by default used UTC time
+});
+RAD.utils.phrases = {
+    ukr:{
+        "Написать разработчикам": 'Написати розробникам',
+        "новых новостей": 'нових новин',
+        "Отсутствует интернет соединение":  "Відсутнє з'єднання з інтернетом",
+        "Сегодня": 'Сьогодні',
+        "Января":'Січень',
+        "Февраля": 'Лютий',
+        "Марта": 'Березень',
+        "Апреля":'Квітень',
+        "Мая":'Травень',
+        "Июня": 'Червень',
+        "Июля": 'Липень',
+        "Августа": 'Серпень',
+        "Сентября": 'Вересень',
+        "Октября": 'Жовтень',
+        "Ноября": 'Листопад',
+        "Декабря": 'Грудень'
+    },
+    rus: {
+        "Написать разработчикам": 'Написать разработчикам',
+        "новых новостей": 'новых носотей',
+        "Отсутствует интернет соединение":  "Отсутствует интернет соединение",
+        "Сегодня": 'Сегодня',
+        "Января":'Января',
+        "Февраля": 'Февраля',
+        "Марта": 'Марта',
+        "Апреля":'Апреля',
+        "Мая":'Мая',
+        "Июня": 'Июня',
+        "Июля": 'Июля',
+        "Августа": 'Августа',
+        "Сентября": 'Сентября',
+        "Октября": 'Октября',
+        "Ноября": 'Ноября',
+        "Декабря": 'Декабря'
+    }
+};
+RAD.namespace('RAD.utils.Dictionary', function (phrase) {
+    var lang = RAD.models.Settings.get('lang');
+    if(!RAD.utils.phrases[lang][phrase]){
+        return phrase
+    }
+
+    return RAD.utils.phrases[lang][phrase];
 });

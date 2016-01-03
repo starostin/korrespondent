@@ -584,7 +584,7 @@ RAD.menuMapping = {
             subMenus: [
                 {
                     id: 1000,
-                    title: 'Обранеф'
+                    title: 'Обране'
                 }
             ]
         }
@@ -601,6 +601,14 @@ RAD.model('Settings', Backbone.Model.extend({
         this.on('change:font', this.updateFont, this);
         this.on('change:selectedCategory', this.updateSelectedCategory, this);
         this.on('change:selectedSubCategory', this.updateSelectedSubCategory, this);
+
+        this.on('change:sidebarOpen', this.trackViews, this);
+        this.on('change:currentNews', this.trackViews, this);
+        this.on('change:selectedCategory', this.trackViews, this);
+        this.on('change:lang', this.trackLang, this);
+        this.on('change:font', this.trackFont, this);
+        this.on('change:selectedCategory', this.trackCategory, this);
+        this.on('change:selectedSubCategory', this.trackSubCategory, this);
 
         this.set({
             lang: lang,
@@ -624,8 +632,48 @@ RAD.model('Settings', Backbone.Model.extend({
         }
         window.localStorage.setItem('font', val);
     },
+    trackViews: function(model, val, opt){
+        var isSidebarOpen = model.get('sidebarOpen');
+        if(isSidebarOpen){
+            RAD.utils.analytics('trackView', ['Sidebar']);
+        }else if(model.get('currentNews')){
+            RAD.utils.analytics('trackView', ['One News']);
+        }else if(model.get('selectedCategory') === 1000){
+            RAD.utils.analytics('trackView', ['Favorites']);
+        }else{
+            RAD.utils.analytics('trackView', ['News List']);
+        }
+    },
+    trackLang: function(model, val, opt){
+        RAD.utils.analytics('trackEvent', ['Options', 'Change language', val]);
+    },
+    trackFont: function(model, val, opt){
+        RAD.utils.analytics('trackEvent', ['Options', 'Change font', val]);
+    },
+    trackCategory: function(model, val, opt){
+        var category = _.findWhere(RAD.menuMapping[model.get('lang')], {id: val})
+        if(!category) {
+            category = val;
+        }else{
+            category = category.title;
+        }
+        RAD.utils.analytics('trackEvent', ['Options', 'Change category', category]);
+    },
+    trackSubCategory: function(model, val, opt){
+        var subCategory = _.findWhere(RAD.menuMapping[model.get('lang')], {id: val});
+        if(!subCategory) {
+            subCategory = val;
+        }else{
+            subCategory = _.findWhere(subCategory.subMenus, {id: val});
+            if(subCategory){
+                subCategory = subCategory.title
+            }else{
+                subCategory = val;
+            }
+        }
+        RAD.utils.analytics('trackEvent', ['Options', 'Change sub category', subCategory]);
+    },
     updateSelectedCategory: function(model, val, opt){
-        RAD.utils.analytics('trackView', [val]);
         window.localStorage.setItem('selectedCategory', val);
     },
     updateSelectedSubCategory: function(model, val, opt){
@@ -647,7 +695,7 @@ RAD.model('MenuData', Backbone.Model.extend({
 }), false);
 RAD.model('Sidebar', Backbone.Collection.extend({
     model: RAD.models.MenuData,
-    arr: [3,2,17,1,428,32,35,45,46,47,1000],
+    arr: [3, 2, 17, 1, 4, 28, 32, 35, 45, 46, 47, 1000],
     resetWithOrder: function(){
         this.reset();
         var sortArr = JSON.parse(window.localStorage.getItem('sidebarOptionsOrder')) || this.arr,

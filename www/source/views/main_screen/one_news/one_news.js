@@ -69,6 +69,7 @@ RAD.view("view.one_news", RAD.views.SwipeExt.extend({
            this.showErrorMessage();
             return;
         }
+        RAD.utils.analytics('trackEvent', ['Link', 'Open external link']);
         var href = e.currentTarget.href;
         window.open(href, '_blank', 'location=yes');
     },
@@ -115,6 +116,7 @@ RAD.view("view.one_news", RAD.views.SwipeExt.extend({
             console.log('Share plugin use cordova');
             return;
         }
+        RAD.utils.analytics('trackEvent', ['Share', 'Share news']);
         window.plugins.socialsharing.share(this.oneNews.get('title'), null, null, this.oneNews.get('link'))
     },
     addNewsToFavorite: function(e){
@@ -122,6 +124,7 @@ RAD.view("view.one_news", RAD.views.SwipeExt.extend({
             isAdd = curTar.classList.contains('added') ? 0 : 1;
         curTar.classList.toggle('added');
         this.parentNews.set('favorite', isAdd);
+        RAD.utils.analytics('trackEvent', ['Favorite', 'Add news to Favorite']);
     },
     setNews: function(){
         this.parentNews = RAD.models.News.get(this.settings.get('currentNews'));

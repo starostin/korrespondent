@@ -189,8 +189,12 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
             self.news.reset(currentNews);
         }else{
             RAD.models.News.getNews({
-                error: function(){
+                error: function(e){
                     self.news.reset();
+                    self.showErrorMessage({
+                        status: e.status,
+                        message: e.statusText
+                    });
                 }
             }, function(data){
                 RAD.utils.sql.insertRows(data, 'news').then(function(){
@@ -368,10 +372,13 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
         this.nativeScroll.style.transform = 'translateY(15px)';
         window.setTimeout(function(){
             RAD.models.News.getNews({
-                error: function(){
+                error: function(e){
                     removeSpinner();
                     self.addBufferNews();
-                    self.showErrorMessage();
+                    self.showErrorMessage({
+                        status: e.status,
+                        message: e.statusText
+                    });
                 }
             }, function(data){
                 removeSpinner();
@@ -409,8 +416,9 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
             updateMessage.classList.remove('show');
         }
     },
-    showErrorMessage: function(){
+    showErrorMessage: function(opt){
         var errorDiv = this.el.querySelector('.message');
+        errorDiv.innerHTML = (opt && opt.status) ? (opt.status + ' ' + opt.message) : RAD.utils.Dictionary('Отсутствует интернет соединение');
         errorDiv.classList.add('show');
         window.setTimeout(function(){
             errorDiv.classList.remove('show');
@@ -436,5 +444,5 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
         }
         this.settings.set('sidebarOpen',  isOpen, {silent: true});
         this.settings.trigger('change:sidebarOpen');
-    },
+    }
 }));

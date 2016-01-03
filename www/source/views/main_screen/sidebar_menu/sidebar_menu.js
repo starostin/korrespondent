@@ -122,6 +122,7 @@ RAD.view("view.sidebar_menu", RAD.views.SlipExt.extend({
             return;
         }
 
+        RAD.utils.analytics('trackEvent', ['Feedback', 'Send feedback']);
         cordova.plugins.email.addAlias('gmail', 'com.google.android.gm');
         cordova.plugins.email.open({
             app: 'gmail',
