@@ -7,12 +7,16 @@
     settings.bigImage = 'bigImages';
     settings.otherImage = 'otherImages';
     settings.version = '1.0';
-    //cordova plugin add https://git-wip-us.apache.org/repos/asf/cordova-plugin-device.git
-    //cordova plugin add de.appplant.cordova.plugin.email-composer@0.8.2
-    //cordova plugin add nl.x-services.plugins.socialsharing
-    //cordova plugin add https://git-wip-us.apache.org/repos/asf/cordova-plugin-file.git
-    //cordova plugin add https://git-wip-us.apache.org/repos/asf/cordova-plugin-file-transfer.git
-    //cordova plugin add https://git-wip-us.apache.org/repos/asf/cordova-plugin-network-information.git
-    //cordova plugin add org.apache.cordova.inappbrowser
-    //cordova plugin add https://github.com/apache/cordova-plugin-splashscreen.git
+//    com.checkroom.plugin.crashlytics 0.4.0 "CrashlyticsPlugin"
+//    cordova-plugin-crosswalk-webview 1.4.0 "Crosswalk WebView Engine"
+//    cordova-plugin-device 1.0.1-dev "Device"
+//    cordova-plugin-file 2.0.1-dev "File"
+//    cordova-plugin-file-transfer 1.0.1-dev "File Transfer"
+//    cordova-plugin-google-analytics 0.8.1 "Google Universal Analytics Plugin"
+//    cordova-plugin-network-information 1.0.2-dev "Network Information"
+//    cordova-plugin-splashscreen 3.0.0-dev "Splashscreen"
+//    cordova-plugin-whitelist 1.0.0 "Whitelist"
+//    de.appplant.cordova.plugin.email-composer 0.8.2 "EmailComposer"
+//    nl.x-services.plugins.socialsharing 4.3.18 "SocialSharing"
+//    org.apache.cordova.inappbrowser 0.6.0 "InAppBrowser"
 })(this);
