@@ -175,6 +175,9 @@ RAD.namespace('RAD.utils.updateText', function (data) {
         allElements[j].removeAttribute('style');
         allElements[j].removeAttribute('class');
         allElements[j].removeAttribute('id');
+        if(!$.trim(allElements[j].innerText) && (allElements[j].innerHTML === '&nbsp;')){
+            $(allElements[j]).remove();
+        }
     }
     for(var i=0; i<images.length; i++)(function(i){
         src = images[i].getAttribute('src');

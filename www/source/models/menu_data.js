@@ -633,12 +633,13 @@ RAD.model('Settings', Backbone.Model.extend({
         window.localStorage.setItem('font', val);
     },
     trackViews: function(model, val, opt){
-        var isSidebarOpen = model.get('sidebarOpen');
+        if(!this) return;
+        var isSidebarOpen = this.get('sidebarOpen');
         if(isSidebarOpen){
             RAD.utils.analytics('trackView', ['Sidebar']);
-        }else if(model.get('currentNews')){
+        }else if(this.get('currentNews')){
             RAD.utils.analytics('trackView', ['One News']);
-        }else if(model.get('selectedCategory') === 1000){
+        }else if(this.get('selectedCategory') === 1000){
             RAD.utils.analytics('trackView', ['Favorites']);
         }else{
             RAD.utils.analytics('trackView', ['News List']);
