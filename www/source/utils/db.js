@@ -22,10 +22,16 @@
         newsId: "INTEGER",
         parentId: "INTEGER",
         lang: "VARCHAR(5)"
-    };
+    }, korDB;
         //Create the database the parameters are 1. the database name 2.version number 3. a description 4. the size of the database (in bytes) 1024 x 1024 = 1MB
-        var korDB = openDatabase("korrespondent_db", "0.1", "A Database of news", 1024 * 1024);
-        korDB.transaction(function(t) {
+
+
+    if(window.device){
+        korDB = window.sqlitePlugin.openDatabase({name: "korrespondent_db", location: 2, androidDatabaseImplementation: 2}, function(){}, function(){});
+    }else{
+        korDB = openDatabase("korrespondent_db", "0.1", "A Database of news", 1024 * 1024);
+    }
+    korDB.transaction(function(t) {
             var query = '',
                 keys = Object.keys(columns);
 

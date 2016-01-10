@@ -18,7 +18,8 @@ RAD.view("view.one_news", RAD.views.SwipeExt.extend({
         text: 1,
         date: 0.73,
         title: 1.5,
-        korLink: 0.82
+        korLink: 0.82,
+        description: 1.18
     },
     onInitialize: function(){
         this.oneNews = new Backbone.Model;
@@ -36,6 +37,17 @@ RAD.view("view.one_news", RAD.views.SwipeExt.extend({
         }else{
             console.log('view.one_news does not have method '+ method)
         }
+    },
+    getCategory: function(){
+        var selected = RAD.models.Sidebar.findWhere({selected: true});
+        var title = '';
+        if(selected){
+            var selectedSubMenu = _.findWhere(selected.get('subMenus'), {selected: true});
+            if(selectedSubMenu){
+                title = selectedSubMenu.title;
+            }
+        }
+        return title;
     },
     getFontScale: function(part){
         var partFont = this.fontScaleCoef[part] || 1;
@@ -104,12 +116,14 @@ RAD.view("view.one_news", RAD.views.SwipeExt.extend({
         var textWrapper = this.el.querySelector('.par-text'),
             date = this.el.querySelector('.news-date'),
             title = this.el.querySelector('.news-title'),
-            korLink = this.el.querySelector('.korr-link');
+            korLink = this.el.querySelector('.korr-link'),
+            description = this.el.querySelector('.news-description');
 
         textWrapper.style.fontSize = this.getFontScale('text');
         date.style.fontSize = this.getFontScale('date');
         title.style.fontSize = this.getFontScale('title');
         korLink.style.fontSize = this.getFontScale('korLink');
+        description.style.fontSize = this.getFontScale('description');
     },
     shareNews: function(){
         if(!window.cordova) {

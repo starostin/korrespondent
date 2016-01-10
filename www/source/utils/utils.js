@@ -168,6 +168,7 @@ RAD.namespace('RAD.utils.updateText', function (data) {
         allElements = fragment.querySelectorAll('*'),
         iframes = fragment.querySelectorAll('iframe'),
         imageParts = [],
+        divImg,
         name = '',
         src = '',
         path = '';
@@ -175,34 +176,50 @@ RAD.namespace('RAD.utils.updateText', function (data) {
         allElements[j].removeAttribute('style');
         allElements[j].removeAttribute('class');
         allElements[j].removeAttribute('id');
-        if(!$.trim(allElements[j].innerText) && (allElements[j].innerHTML === '&nbsp;')){
+        if(!$.trim(allElements[j].innerText) && ($.trim(allElements[j].innerHTML) === '&nbsp;')){
             $(allElements[j]).remove();
         }
     }
     for(var i=0; i<images.length; i++)(function(i){
-        src = images[i].getAttribute('src');
+        var parentHTML = images[i].parentNode.innerHTML;
+        var wrapperDiv =  document.createElement('div');
+        wrapperDiv.className = 'image-wrapper';
+        wrapperDiv.innerHTML = parentHTML;
+        images[i].parentNode.parentNode.replaceChild(wrapperDiv, images[i].parentNode);
+        var image = wrapperDiv.querySelector('img');
+        var imagePlaceholder = document.createElement('div');
+        imagePlaceholder.className = 'image-placeholder';
+        src = image.getAttribute('src');
+        divImg = document.createElement('div');
+        divImg.className = 'internal-img';
         RAD.utils.download(src, settings.otherImage, this);
         imageParts = src.split('/');
         name = imageParts[imageParts.length-1];
         name = name.split('?')[0];
         path = settings.rootPath ? settings.rootPath + settings.otherImage + '/' + name : src;
-        images[i].parentNode.classList.add('image-wrapper');
         var imgRes = document.createElement('div');
         imgRes.className = 'image-resource';
-        imgRes.innerHTML = $(images[i].parentNode).next() && $(images[i].parentNode).next()[0] && $(images[i].parentNode).next()[0].innerText;
-        var imageTitle = $(images[i].parentNode.parentNode) && $(images[i].parentNode.parentNode).prev(),
+        if($(image).next() && $(image).next()[0]){
+            imgRes.innerHTML = $(image).next()[0].innerText;
+            $(image).next().remove();
+        }else{
+            imgRes.innerHTML = $(wrapperDiv).next() && $(wrapperDiv).next()[0] && $(wrapperDiv).next()[0].innerText;
+            $(wrapperDiv).next().remove();
+        }
+        var imageTitle = $(wrapperDiv.parentNode) && $(wrapperDiv.parentNode).prev(),
             isTitle = imageTitle[0] && /em|h|strong/.test(imageTitle[0].outerHTML),
             newImageTitle = document.createElement('div');
-
         if(isTitle){
             newImageTitle.className = 'image-title';
             newImageTitle.innerHTML = imageTitle[0].innerText;
-            $(newImageTitle).insertBefore(images[i]);
+            $(newImageTitle).insertBefore(image);
             imageTitle.remove();
         }
-        images[i].parentNode.appendChild(imgRes);
-        $(images[i].parentNode).next().remove();
-        images[i].setAttribute('src', path);
+        divImg.style.backgroundImage = 'url(' + path + ')';
+        image.parentNode.appendChild(imgRes);
+        image.setAttribute('src', path);
+        imagePlaceholder.appendChild(divImg);
+        image.parentNode.replaceChild(imagePlaceholder, image)
     }(i))
     for(var t=0; t<iframes.length; t++){
         var videoWrapper = document.createElement('div');
@@ -392,7 +409,7 @@ RAD.namespace('RAD.utils.formatDate', function (date, mask, useLocalTime) {
     if (!date) {
         return '';
     }
-    return dateFormat(date, mask, !useLocalTime); // by default used UTC time
+    return dateFormat(date, mask, useLocalTime); // by default used UTC time
 });
 RAD.utils.phrases = {
     ukr:{

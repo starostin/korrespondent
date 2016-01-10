@@ -1,6 +1,7 @@
 <div class="header-wrapper">
     <div class="header">
-        <div class="header-btn back hide">BACK</div>
+        <div class="header-btn back "></div>
+        <div class="header-btn header-category"> {{ this.getCategory() }}</div>
         <div class="header-btn sharing"></div>
         <div class="header-btn font">
             <div class="font-popup">
@@ -27,6 +28,7 @@
             <div class="korr-link" style="font-size: {{ this.getFontScale('korLink')  }}">
                 <a href="http://korrespondent.net/">korrespondent.net</a>
             </div>
+            <div class="news-description" style="font-size: {{ this.getFontScale('description')  }}">{{ this.oneNews.get('description') }}</div>
             {{ this.oneNews.get('fullText') }}
         </div>
     </div>
