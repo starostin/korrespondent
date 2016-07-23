@@ -48,27 +48,33 @@ RAD.views.SwipeExt =  RAD.Blanks.View.extend({
     touchMove: function(e){
         this.coordinates.x.push(e.originalEvent.changedTouches[0].clientX);
         this.coordinates.y.push(e.originalEvent.changedTouches[0].clientY);
-        if(this.coordinates.x.length<2 && !this.directionDefined){
-            if(Math.abs(this.coordinates.x[this.coordinates.x.length-1] - e.originalEvent.changedTouches[0].clientX) >=50){
+        if (this.coordinates.x.length < 2 && !this.directionDefined) {
+            if (Math.abs(this.coordinates.x[this.coordinates.x.length - 1] -
+                    e.originalEvent.changedTouches[0].clientX) >= 50) {
                 this.directionVert = false;
                 this.directionDefined = true;
-            }else if(Math.abs(this.coordinates.y[this.coordinates.y.length-1] - e.originalEvent.changedTouches[0].clientY) >=50){
+            } else if (Math.abs(this.coordinates.y[this.coordinates.y.length - 1] -
+                    e.originalEvent.changedTouches[0].clientY) >= 50) {
                 this.directionVert = true;
                 this.directionDefined = true;
             }
-        }else if(!this.directionDefined){
+        } else if (!this.directionDefined) {
             this.directionVert = this.isVertDirection(this.coordinates.x, this.coordinates.y);
             this.directionDefined = true;
-        }else if(this.directionDefined && !this.directionVert){
-            if(!this.firstX){
+        }
+
+        if (this.directionDefined && !this.directionVert) {
+            if (!this.firstX) {
                 this.firstX = e.originalEvent.changedTouches[0].clientX;
             }
-            this.onMoveHorizontally(e)
-        }else if(this.directionDefined && this.directionVert){
-            if(!this.firstY){
+
+            this.onMoveHorizontally(e);
+        } else if (this.directionDefined && this.directionVert) {
+            if (!this.firstY) {
                 this.firstY = e.originalEvent.changedTouches[0].clientY;
             }
-            this.onMoveVertically(e)
+
+            this.onMoveVertically(e);
         }
     },
     touchEnd: function(e){

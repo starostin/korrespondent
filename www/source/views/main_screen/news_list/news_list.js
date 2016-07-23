@@ -364,7 +364,7 @@ RAD.view("view.news_list", RAD.views.SwipeExt.extend({
             arrow = pullDiv.querySelector('.arrow-img'),
             spinner = pullDiv.querySelector('.refresh');
         if(spinner.classList.contains('loader')) return;
-        console.log('----------------------')
+
         if (arrow) arrow.style.display = 'none';
         if (spinner) spinner.style.display = '';
         spinner.classList.add('loader');

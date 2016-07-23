@@ -70,7 +70,7 @@ RAD.view("view.one_news", RAD.views.SwipeExt.extend({
         header.classList.remove('hidden');
     },
     scrollDown: function(top){
-        if(top<60) return;
+        if(top<115) return;
         var header = this.el.querySelector('.header-wrapper');
         header.classList.add('hidden');
     },

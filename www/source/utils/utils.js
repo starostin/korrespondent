@@ -185,7 +185,9 @@ RAD.namespace('RAD.utils.updateText', function (data) {
         var wrapperDiv =  document.createElement('div');
         wrapperDiv.className = 'image-wrapper';
         wrapperDiv.innerHTML = parentHTML;
-        images[i].parentNode.parentNode.replaceChild(wrapperDiv, images[i].parentNode);
+        if(images[i].parentNode && images[i].parentNode.parentNode){
+            images[i].parentNode.parentNode.replaceChild(wrapperDiv, images[i].parentNode);
+        }
         var image = wrapperDiv.querySelector('img');
         var imagePlaceholder = document.createElement('div');
         imagePlaceholder.className = 'image-placeholder';
